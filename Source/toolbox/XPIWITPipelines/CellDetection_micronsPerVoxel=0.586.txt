@@ -1,0 +1,8 @@
+--output I:/Projects/2020/CellTracking_MorenoAndresUKA/Data/TempLabelImages/
+--input 0, V:/BiomedicalImageAnalysis/CellTracking_MorenoAndresUKA/Widefield/171214-Tuebingen-EIF4AX/RawData/P0014/P0014_t001.tif, 2, float
+--xml I:/Projects/2020/CellTracking_MorenoAndresUKA/Software/CellDetection_micronsPerVoxel=0.586.xml
+--seed 0
+--lockfile off
+--subfolder filterid, filtername
+--outputformat imagename, filtername
+--end

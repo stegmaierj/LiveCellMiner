@@ -1,0 +1,8 @@
+--output I:/Projects/2020/CellTracking_MorenoAndresUKA/Data/TempLabelImages/
+--input 0, V:/BiomedicalImageAnalysis/CellTracking_MorenoAndresUKA/Widefield/140812-1_siRNA-PontinReptin-EXP1/P0016/P0016_t0003_c0001.tif, 2, float
+--xml I:/Projects/2020/CellTracking_MorenoAndresUKA/Software/CellDetection_micronsPerVoxel=0.656.xml
+--seed 0
+--lockfile off
+--subfolder filterid, filtername
+--outputformat imagename, filtername
+--end
