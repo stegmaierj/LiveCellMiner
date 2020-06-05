@@ -30,7 +30,7 @@ function [] = callback_chromatindec_import_project(settings)
     inputFolder = settings.inputFolder;
     outputFolder = settings.outputFolder;
 
-    %% derived parameters
+    %% derived parameters 
     settings.imageFilter = [settings.channelFilter '*.tif'];        %% image filter to select only the image files
     settings.detectionFilter = [settings.channelFilter '*.csv'];    %% detection filter to select only the CSV files corresponding to the detections
     settings.maskFilter = [settings.channelFilter '*.png'];         %% mask filter to select only the files corresponding to the masks
