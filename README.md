@@ -57,21 +57,21 @@ Due to the different durations of pro-, prometa- and metaphase, the *ChromatinDe
 
 - *Update LSTM Classifier:* Function to update the training database as well as the LSTM classifiers used for rejecting incorrect tracks and to perform the automatic synchronization. Each set of 10 cells that was manually checked via *Perform Manual Synchronization* and verified can be added as a valid training sample using the *"G"* key. This information is stored in the single feature `manuallyConfirmed` that determines if cells were manually verified (value 1) or not (value 0).  The classifier and regression LSTMs are then retrained on the updated list and saved in the SciXMiner toolbox folder (`autoSyncData.mat` and `autoSyncLSTMModel.mat`).
 
-![alt text](Figures/ManualAnnotationGUI.png "Manual Annotation GUI. Stages are color-coded into interphase (green), pro, prometa, meta and early anaphase (magenta), late ana, telo, interphase (cyan) and invalid trajectories (red).")
+![alt text](Documentation/Screenshots/ManualAnnotationGUI.png "Manual Annotation GUI. Stages are color-coded into interphase (green), pro, prometa, meta and early anaphase (magenta), late ana, telo, interphase (cyan) and invalid trajectories (red).")
 
 ## Data Selection and ChromatinDec Settings
 
 An important aspect to analyze a particular subset of the data is data selection. This can be accomplished using the standard SciXMiner data selection procedures and most useful in this aspect is the class-based selection using *Edit -> Select -> Data points using classes ...* This opens up the dialog depicted in the following screenshot:
 
-![Data selection dialog](Figures/Dataselection.png "Data selection dialog that allows to select cells based on their output variable (assiciation to microscope, experiment, position, oligoID).")
+![Data selection dialog](Documentation/Screenshots/Dataselection.png "Data selection dialog that allows to select cells based on their output variable (assiciation to microscope, experiment, position, oligoID).")
 
 Use these listboxes to select the subset of the data that you want to analyze in more detail. For instance, select experiments that were acquired with a particular microscope, a subset of OligoIDs, a specific experiment or individual plates. Also any combinations of these output variables can be used. It is also possible to manually add additional output variables using the standard procedure for SciXMiner using the variables `code_alle`, `zgf_y_bez` and `bez_code` (see official documentation [1]). After selection, the selected cell indices are summarized in the selection variable `ind_auswahl` and subsequent visualizations or manual corrections are only performed on the selected cells. Note that additional features are automatically computed for all cells to avoid missing feature values. The SciXMiner project overview shows the current selection as depicted in the following screenshot:
 
-![SciXMiner Project Overview](Figures/SciXMinerProjectOverview.png "The current data selection is summarized in the project overview dialog.")
+![SciXMiner Project Overview](Documentation/Screenshots/SciXMinerProjectOverview.png "The current data selection is summarized in the project overview dialog.")
 
 In addition to selecting data points (i.e., cells), it is possible to select which of the feature time series should be visualized. This can be performed in the dialog *Time series: General options*:
 
-![SciXMiner Time Series Overview](Figures/SciXMinerTimeSeries.png "The overview of the available time series, the selected time window.")
+![SciXMiner Time Series Overview](Documentation/Screenshots/SciXMinerTimeSeries.png "The overview of the available time series, the selected time window.")
 
 The listbox enumerates all available time series allows to select a time series for visualization, analysis or to compute additional features. It is also possible to select multiple time series by pressing the CTRL key while selecting. Each time series is then visualized separately.
 
@@ -81,21 +81,21 @@ The output variable *Selection of output variable* controls how the data are spl
 ## Visualizations
 In addition to the standard visualization possibilities available in SciXMiner, all visualizations specific for the *ChromatinDec* toolbox are summarized in the menu entry *ChromatinDec -> Show*. The visualizations include:
 
-- *Show Heatmaps*: Show heatmaps of the selected time series. Separate figures are created for each of the time series and subplots are created according to the selected output variable and the optional *Summarize experiments* setting that can be adjusted in the *Time series: General options* and *ChromatinDec* dialogs, respectively.
+- *Show Heatmaps*: Show heatmaps of the selected time series. Separate Documentation/Screenshots are created for each of the time series and subplots are created according to the selected output variable and the optional *Summarize experiments* setting that can be adjusted in the *Time series: General options* and *ChromatinDec* dialogs, respectively.
 
-- *Show Line Plots*: Show mean +/- std.dev. line plots of the selected time series. Separate figures are created for each of the time series and subplots are created according to the selected output variable and the optional *Summarize experiments* setting that can be adjusted in the *Time series: General options* and *ChromatinDec* dialogs, respectively.
+- *Show Line Plots*: Show mean +/- std.dev. line plots of the selected time series. Separate Documentation/Screenshots are created for each of the time series and subplots are created according to the selected output variable and the optional *Summarize experiments* setting that can be adjusted in the *Time series: General options* and *ChromatinDec* dialogs, respectively.
 
-- *Show Comb. Line Plots*: Show average time series +/- std. err. of the selected time series. Separate figures are created for each of the time series. Instead of subplots, all lines are summarized in a single plot for direct comparison. Averages and std. err. are summarized according to the selected output variable and the optional *Summarize experiments* setting that can be adjusted in the *Time series: General options* and *ChromatinDec* dialogs, respectively. Error bars can be optionally turned on/off by toggling the *Show Error Bars?* checkbox and the frequency of error bars can be controlled with the edit field *Error Bar Step* which are both located in the *ChromatinDec* settings dialog.
+- *Show Comb. Line Plots*: Show average time series +/- std. err. of the selected time series. Separate Documentation/Screenshots are created for each of the time series. Instead of subplots, all lines are summarized in a single plot for direct comparison. Averages and std. err. are summarized according to the selected output variable and the optional *Summarize experiments* setting that can be adjusted in the *Time series: General options* and *ChromatinDec* dialogs, respectively. Error bars can be optionally turned on/off by toggling the *Show Error Bars?* checkbox and the frequency of error bars can be controlled with the edit field *Error Bar Step* which are both located in the *ChromatinDec* settings dialog.
 
 - *Show Comb. Box Plots*: Shows box plots of the selected single features. Note that single features are not available in the initial project and have to be computed separately (see section on *Data Processing*). Values are summarized according to the selected output variable and the optional *Summarize experiments* setting that can be adjusted in the *Single features* and *ChromatinDec* dialogs, respectively.
 
 The selected data points used for visualization can be grouped in different ways. All selected cells with the same value of the output variable (see section on *Data Selection*) will be plotted in a single figure. Moreover, the *ChromatinDec* settings dialog allows to enable/disable *Summarize experiments?*, where data points of different experiments but with the same output variable are summarized. This can be useful, e.g., to visualize the response of a particular treatment across experiments. When disabled, all experiments are visualized individually. The three panels in the following figure were obtained for a selection of four experiments, where experiments 1-3 were repeats and experiment 4 is a separate experiment also using a different modality (confocal instead of a widefield microscope). The settings for combining the experiments (from left to right) are: (1) *Summarize experiments=true*, *Summary Output Variable=Experiment*, (2) *Summarize experiments=false*, *Summary Output Variable=ExperimentsCombined*, (3), *Summarize experiments=false*, *Summary Output Variable=Experiment*.
 
-![ChromatinDec Experiment Grouping](Figures/ExperimentGrouping.png "The overview of the different ways experiments can be grouped.")
+![ChromatinDec Experiment Grouping](Documentation/Screenshots/ExperimentGrouping.png "The overview of the different ways experiments can be grouped.")
 
 The following figure showcases the four different visualization possibilities (left to right, top to botom) with the *OligoID* output variable selected, the *MeanIntensity* time series and the *Summarize experiments* option enabled to merge cells of different experiments that were treated identically:
 
-![ChromatinDec Visualizations](Figures/Visualizations.png "The overview of the available time series, the selected time window.")
+![ChromatinDec Visualizations](Documentation/Screenshots/Visualizations.png "The overview of the available time series, the selected time window.")
 
 Finally, the settings *Align plots?* in the *ChromatinDec* settings dialog uses the identified synchronization time points for spatial alignment if enabled (default) and the unaligned time series if disabled. The edit field *Aligned Length* specifies the number of frames to use for the aligned heat maps and line plots (default value: 120), and the values *IP Transition* and *MA Transition* indicate at which frame the respective transitions identified during the manual/auto synchronization should be placed (default values: 30 and 60 respectively). 
 
