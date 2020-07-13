@@ -26,55 +26,46 @@
 
 %% the key event handler
 function callback_chromatindec_keyReleaseEventHandler(~,evt)
-    global settings;
+    global parameters;
     global d_orgs;
     global d_org;
 
-    settings.xLim = get(gca, 'XLim');
-    settings.yLim = get(gca, 'YLim');
-    settings.mainFigure;
+    parameters.xLim = get(gca, 'XLim');
+    parameters.yLim = get(gca, 'YLim');
+    parameters.mainFigure;
     %% switch between the images of the loaded series
     if (strcmp(evt.Key, 'rightarrow'))
 
-        settings.currentIdRange = settings.currentIdRange + settings.numVisualizedCells;
-                
-        if (max(settings.currentIdRange) > length(settings.selectedCells))
-            settings.currentIdRange = (length(settings.selectedCells) - settings.numVisualizedCells+1):length(settings.selectedCells);
-            disp('Reached end of the selected cells. Select either more cells to proceed or stop annotating here...');
-        end
-        
-        settings.currentCells = settings.selectedCells(settings.currentIdRange);
-        settings.dirtyFlag = true;
-        callback_chromatindec_update_visualization;
+       callback_chromatindec_show_next_cells;
 
     elseif (strcmp(evt.Key, 'leftarrow'))
         
-        settings.currentIdRange = settings.currentIdRange - settings.numVisualizedCells;
-        if (min(settings.currentIdRange) < 1)
-            settings.currentIdRange = 1:min(length(settings.selectedCells), settings.numVisualizedCells);
+        parameters.currentIdRange = parameters.currentIdRange - parameters.numVisualizedCells;
+        if (min(parameters.currentIdRange) < 1)
+            parameters.currentIdRange = 1:min(length(parameters.selectedCells), parameters.numVisualizedCells);
             disp('Reached beginning of the selected cells. Select either more cells to proceed or stop annotating here...');
         end
         
-        settings.currentCells = settings.selectedCells(settings.currentIdRange);
-        settings.dirtyFlag = true;
+        parameters.currentCells = parameters.selectedCells(parameters.currentIdRange);
+        parameters.dirtyFlag = true;
         callback_chromatindec_update_visualization;
 
     %% display raw image
     elseif(strcmp(evt.Character, '1'))
-        settings.visualizationMode = 1;
-        settings.dirtyFlag = true;
+        parameters.visualizationMode = 1;
+        parameters.dirtyFlag = true;
         callback_chromatindec_update_visualization;
 
     %% display mask image
     elseif(strcmp(evt.Character, '2'))
-        settings.visualizationMode = 2;
-        settings.dirtyFlag = true;
+        parameters.visualizationMode = 2;
+        parameters.dirtyFlag = true;
         callback_chromatindec_update_visualization;    
 
     %% display raw+mask oevrlay image
     elseif(strcmp(evt.Character, '3'))
-        settings.visualizationMode = 3;
-        settings.dirtyFlag = true;
+        parameters.visualizationMode = 3;
+        parameters.dirtyFlag = true;
         callback_chromatindec_update_visualization;
         
     %% display help dialog box
@@ -87,17 +78,27 @@ function callback_chromatindec_keyReleaseEventHandler(~,evt)
 		
     %% toggle the color map
     elseif (strcmp(evt.Character, 'c'))
-        settings.colormapIndex = mod(settings.colormapIndex+1, 3)+1;
+        parameters.colormapIndex = mod(parameters.colormapIndex+1, 3)+1;
         callback_chromatindec_update_visualization;
 
     %% toggle add/delete/deselect mode
     elseif (strcmp(evt.Character, 'a'))
-        settings.axesEqual = ~settings.axesEqual;
+        parameters.axesEqual = ~parameters.axesEqual;
         callback_chromatindec_update_visualization;
     
 	%% set current cells as manually checked
+	elseif (strcmp(evt.Key, 'uparrow'))
+        d_org(parameters.currentCells, parameters.manuallyConfirmedFeature) = 1;
+        disp('Labeled current set of cells as suitable for manual training and going to next frame!');
+        callback_chromatindec_show_next_cells;
+        
+	%% set current cells as manually checked
 	elseif (strcmp(evt.Character, 'g'))
-        d_org(settings.currentCells, settings.manuallyConfirmedFeature) = 1;
+        d_org(parameters.currentCells, parameters.manuallyConfirmedFeature) = 1;
         disp('Labeled current set of cells as suitable for manual training!');
+        
+    elseif (strcmp(evt.Key, 'downarrow'))
+        d_org(parameters.currentCells, parameters.manuallyConfirmedFeature) = 0;
+        disp('Labeled current set of cells as unsuitable for manual training!');
     end
 end

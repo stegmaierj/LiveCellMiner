@@ -24,11 +24,11 @@
 %
 %%
 
-function [d_orgs, var_bez] = PerformSeedDetection(settings)
+function [d_orgs, var_bez] = PerformSeedDetection(parameters)
 
     %% get list of current seed files
-    detectionFiles = dir([settings.detectionFolder settings.detectionFilter]);
-    numFrames = min(length(detectionFiles), settings.numFrames);
+    detectionFiles = dir([parameters.detectionFolder parameters.detectionFilter]);
+    numFrames = min(length(detectionFiles), parameters.numFrames);
         
     %% initialize d_orgs
     d_orgs = zeros(0, numFrames, 11);
@@ -37,13 +37,13 @@ function [d_orgs, var_bez] = PerformSeedDetection(settings)
     %% loop through all seed files and extract the raw seed points
     for i=1:numFrames
        
-        if (settings.seedBasedDetection == true)
-            currentSeeds = dlmread([settings.detectionFolder detectionFiles(i).name], ';', 1, 0);
+        if (parameters.seedBasedDetection == true)
+            currentSeeds = dlmread([parameters.detectionFolder detectionFiles(i).name], ';', 1, 0);
             currentSeeds(:,1) = currentSeeds(:,1) + 1;
-            currentSeeds(:,3:4) = currentSeeds(:,3:4) / settings.micronsPerPixel;
-            d_orgs(1:size(currentSeeds,1), i, :) = [currentSeeds(:,1:5), currentSeeds(:,3:5), sqrt(2) * currentSeeds(:,2) / settings.micronsPerPixel, zeros(size(currentSeeds,1),2)];
+            currentSeeds(:,3:4) = currentSeeds(:,3:4) / parameters.micronsPerPixel;
+            d_orgs(1:size(currentSeeds,1), i, :) = [currentSeeds(:,1:5), currentSeeds(:,3:5), sqrt(2) * currentSeeds(:,2) / parameters.micronsPerPixel, zeros(size(currentSeeds,1),2)];
         else
-            maskImage = imread([settings.detectionFolder detectionFiles(i).name]);
+            maskImage = imread([parameters.detectionFolder detectionFiles(i).name]);
             regionProps = regionprops(maskImage, 'Centroid', 'Area', 'EquivDiameter');
             
             %% TODO: CHECK IF THE CENTROID COORDINATES NEED TO BE SWAPPED!!!

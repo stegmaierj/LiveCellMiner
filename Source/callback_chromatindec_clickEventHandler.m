@@ -25,7 +25,7 @@
 %%
 
 function callback_chromatindec_clickEventHandler(~, ~)
-    global settings;
+    global parameters;
     global d_orgs;
 
     %% get the modifier keys
@@ -39,14 +39,14 @@ function callback_chromatindec_clickEventHandler(~, ~)
     clickPosition = get(gca, 'currentpoint');
     clickPosition = round([clickPosition(1,1), clickPosition(1,2)]);
     
-    if (clickPosition(1) <= 0 || clickPosition(1) > size(settings.labelImage,2) || ...
-        clickPosition(2) <= 0 || clickPosition(2) > size(settings.labelImage,1))
+    if (clickPosition(1) <= 0 || clickPosition(1) > size(parameters.labelImage,2) || ...
+        clickPosition(2) <= 0 || clickPosition(2) > size(parameters.labelImage,1))
         return;
     end
 
 	%% get the id of the current cell based on the click position
-    cellId = settings.labelImage(clickPosition(2), clickPosition(1), 1);
-    frameNumber = settings.labelImage(clickPosition(2), clickPosition(1), 2);
+    cellId = parameters.labelImage(clickPosition(2), clickPosition(1), 1);
+    frameNumber = parameters.labelImage(clickPosition(2), clickPosition(1), 2);
     
 	%% identify the cell pair (one uneven and one even number)
     evenCellId = mod(cellId,2) == 0;
@@ -58,19 +58,19 @@ function callback_chromatindec_clickEventHandler(~, ~)
     
 	%% disable cell if right click is obtained and set the stage otherwise
     if (strcmp(buttonPressed, 'alt'))
-        d_orgs(cellPair, :, settings.manualStageIndex) = -1;
+        d_orgs(cellPair, :, parameters.manualStageIndex) = -1;
     elseif (strcmp(buttonPressed, 'normal'))
         
-        maxIndex = max(squeeze(d_orgs(cellId, :, settings.manualStageIndex)));
+        maxIndex = max(squeeze(d_orgs(cellId, :, parameters.manualStageIndex)));
         
         if (maxIndex > 2 || maxIndex <= 0)
-           d_orgs(cellPair, 1:frameNumber, settings.manualStageIndex) = 1;
-           d_orgs(cellPair, (frameNumber+1):end, settings.manualStageIndex) = 0;
+           d_orgs(cellPair, 1:frameNumber, parameters.manualStageIndex) = 1;
+           d_orgs(cellPair, (frameNumber+1):end, parameters.manualStageIndex) = 0;
         elseif (maxIndex == 1)
-            alreadyLabeledIndices = find(squeeze(d_orgs(cellId, :, settings.manualStageIndex) == 1));
+            alreadyLabeledIndices = find(squeeze(d_orgs(cellId, :, parameters.manualStageIndex) == 1));
             nextIndex = max(alreadyLabeledIndices)+1;
-            d_orgs(cellPair, nextIndex:frameNumber, settings.manualStageIndex) = 2;
-            d_orgs(cellPair, (frameNumber+1):end, settings.manualStageIndex) = 3;
+            d_orgs(cellPair, nextIndex:frameNumber, parameters.manualStageIndex) = 2;
+            d_orgs(cellPair, (frameNumber+1):end, parameters.manualStageIndex) = 3;
         end
     end
     

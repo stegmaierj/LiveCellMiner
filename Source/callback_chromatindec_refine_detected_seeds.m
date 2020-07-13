@@ -24,23 +24,23 @@
 %
 %%
 
-function [d_orgs] = RefineDetectedSeeds(d_orgs, settings)
+function [d_orgs] = RefineDetectedSeeds(d_orgs, parameters)
 
     %% return if no refinement is required
-    if (settings.numRefinementSteps <= 0)
+    if (parameters.numRefinementSteps <= 0)
         disp('Skipping seed refinement...');
         return; 
     end
 
     %% TODO: replace with parametrizable folders
-    rawImageFolder = settings.rawImageFolder;
-    rawImageFiles = dir([rawImageFolder settings.inputFilter]);
+    rawImageFolder = parameters.rawImageFolder;
+    rawImageFiles = dir([rawImageFolder parameters.inputFilter]);
     
     %% get the required parameters
     numFrames = size(d_orgs, 2);
-    numRefinementSteps = settings.numRefinementSteps;
-    refinementRadius = settings.refinementRadius;
-    debugFigures = settings.debugFigures;
+    numRefinementSteps = parameters.numRefinementSteps;
+    refinementRadius = parameters.refinementRadius;
+    debugFigures = parameters.debugFigures;
     
     %% extract all seed points and perform seed point refinement based on iterative weighted centroid estimation
     for i=numFrames:-1:2
@@ -56,7 +56,7 @@ function [d_orgs] = RefineDetectedSeeds(d_orgs, settings)
         for j=validIndices'
 
             %% refine the weighted centroid
-            weightedCentroid = squeeze(round(d_orgs(j, i, settings.prevPosIndices)));
+            weightedCentroid = squeeze(round(d_orgs(j, i, parameters.prevPosIndices)));
             for k=1:numRefinementSteps
 
                 %% extract intensities in a cube surrounding the current weighted centroid
@@ -76,7 +76,7 @@ function [d_orgs] = RefineDetectedSeeds(d_orgs, settings)
             end
 
             %% set the refined weighted centroid
-            d_orgs(j, i, settings.prevPosIndices) = weightedCentroid;
+            d_orgs(j, i, parameters.prevPosIndices) = weightedCentroid;
         end
 
         %% plot debug figures if enabled
@@ -87,8 +87,8 @@ function [d_orgs] = RefineDetectedSeeds(d_orgs, settings)
             %% plot previous raw image with current and refined current seeds
             imagesc(prevRawImage); 
             
-            currentPositions = squeeze(d_orgs(validIndices, i, settings.posIndices));
-            previousPositions = squeeze(d_orgs(validIndices, i, settings.prevPosIndices));
+            currentPositions = squeeze(d_orgs(validIndices, i, parameters.posIndices));
+            previousPositions = squeeze(d_orgs(validIndices, i, parameters.prevPosIndices));
             
             plot(currentPositions(:,1), currentPositions(:,2), '.g');
             plot(previousPositions(:,1), previousPositions(:,2), 'or');

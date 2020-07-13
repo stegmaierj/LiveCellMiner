@@ -85,7 +85,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Import New Experiment';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_chromatindec_import_project';
+elements(mc).callback = 'callback_chromatindec_batch_processing;';
 elements(mc).tag = 'MI_ChromatinDec_Import_Project';
 %is enabled if at least one time series exist
 elements(mc).freischalt = {};

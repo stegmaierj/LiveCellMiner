@@ -24,35 +24,35 @@
 %
 %%
 
-function [] = callback_chromatindec_perform_detection_and_tracking(settings)
+function [] = callback_chromatindec_perform_detection_and_tracking(parameters)
 
     %% setup output folders
-    settings.outputRawFolder = [settings.outputFolder 'Raw'];
-    settings.outputMaskFolder = [settings.outputFolder 'Masks'];
-    if (~isfolder(settings.outputRawFolder)); mkdir(settings.outputRawFolder); end
-    if (~isfolder(settings.outputMaskFolder)); mkdir(settings.outputMaskFolder); end
+    parameters.outputRawFolder = [parameters.outputFolder 'Raw'];
+    parameters.outputMaskFolder = [parameters.outputFolder 'Masks'];
+    if (~isfolder(parameters.outputRawFolder)); mkdir(parameters.outputRawFolder); end
+    if (~isfolder(parameters.outputMaskFolder)); mkdir(parameters.outputMaskFolder); end
 
     %% TODO: maybe replace seed detection with LoG again...
-    [d_orgs, ~] = callback_chromatindec_perform_seed_detection(settings);
+    [d_orgs, ~] = callback_chromatindec_perform_seed_detection(parameters);
 
     %% refine detected seeds based on the weighted centroid on the previous frame
-    [d_orgs] = callback_chromatindec_refine_detected_seeds(d_orgs, settings);
+    [d_orgs] = callback_chromatindec_refine_detected_seeds(d_orgs, parameters);
 
     %[d_orgs_new] = PerformTracking(d_orgs, settings);
-    [d_orgs] = callback_chromatindec_perform_backwards_tracking(d_orgs, settings);
+    [d_orgs] = callback_chromatindec_perform_backwards_tracking(d_orgs, parameters);
 
     %% plot the tracking results
     %PlotTrackingResults(d_orgs, settings);
 
     %% generate the candidate list of valid mitotic events with sufficient frames before and after the division
-    [motherList, daughterList, motherDaughterList] = callback_chromatindec_candidate_list_generation(d_orgs, settings);
+    [motherList, daughterList, motherDaughterList] = callback_chromatindec_candidate_list_generation(d_orgs, parameters);
     candidateList = [motherList; daughterList];
 
     %% Parameters for cell patch extraction
-    [featureNames, featureMatrix, deletionIndices, rawImagePatches, maskImagePatches] = callback_chromatindec_cell_patch_extraction(d_orgs, candidateList, settings);
+    [featureNames, featureMatrix, deletionIndices, rawImagePatches, maskImagePatches] = callback_chromatindec_cell_patch_extraction(d_orgs, candidateList, parameters);
 
     %% combine the mother and daughter features to the final feature matrix
-    [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImagePatches] = callback_chromatindec_combine_mother_daughter_tracks(featureMatrix, motherList, daughterList, motherDaughterList, deletionIndices, rawImagePatches, maskImagePatches, settings);
+    [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImagePatches] = callback_chromatindec_combine_mother_daughter_tracks(featureMatrix, motherList, daughterList, motherDaughterList, deletionIndices, rawImagePatches, maskImagePatches, parameters);
 
     %% compute the CNN features for LSTM-based synchronization
     finalMaskedImageCNNFeatures = cell(size(finalRawImagePatches));
@@ -73,7 +73,7 @@ function [] = callback_chromatindec_perform_detection_and_tracking(settings)
         end
         
         %% assemble the training image for all frames
-        currentImage = zeros(settings.patchWidth, settings.patchWidth, numFrames);
+        currentImage = zeros(parameters.patchWidth, parameters.patchWidth, numFrames);
         for j=1:numFrames
             currentImage(:,:,j) = finalRawImagePatches{i,j} .* finalMaskImagePatches{i,j};
         end
@@ -104,14 +104,14 @@ function [] = callback_chromatindec_perform_detection_and_tracking(settings)
     projekt.daughterList = daughterList;
     projekt.motherDaughterList = motherDaughterList;
     projekt.candidateList = candidateList;
-    projekt.micronsPerPixel = settings.micronsPerPixel;
-    projekt.experimentName = settings.experimentName;
-    projekt.positionNumber = settings.positionNumber;
-    projekt.patchWidth = settings.patchWidth;
-    projekt.timeWindowDaughter = settings.timeWindowDaughter;
-    projekt.timeWindowMother = settings.timeWindowMother;
-    save(strcat(settings.outputFolder, '/', settings.experimentName, '_', settings.positionNumber, '_SciXMiner.prjz'), '-mat', 'd_orgs', 'code', 'var_bez', 'code_alle', 'projekt');
-    save(strcat(settings.outputFolder, '/', settings.experimentName, '_', settings.positionNumber, '_RawImagePatches.mat'), '-mat', 'finalRawImagePatches');
-    save(strcat(settings.outputFolder, '/', settings.experimentName, '_', settings.positionNumber, '_MaskImagePatches.mat'), '-mat', 'finalMaskImagePatches');
-    save(strcat(settings.outputFolder, '/', settings.experimentName, '_', settings.positionNumber, '_MaskedImageCNNFeatures.mat'), '-mat', 'finalMaskedImageCNNFeatures');
+    projekt.micronsPerPixel = parameters.micronsPerPixel;
+    projekt.experimentName = parameters.experimentName;
+    projekt.positionNumber = parameters.positionNumber;
+    projekt.patchWidth = parameters.patchWidth;
+    projekt.timeWindowDaughter = parameters.timeWindowDaughter;
+    projekt.timeWindowMother = parameters.timeWindowMother;
+    save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_SciXMiner.prjz'), '-mat', 'd_orgs', 'code', 'var_bez', 'code_alle', 'projekt');
+    save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_RawImagePatches.mat'), '-mat', 'finalRawImagePatches');
+    save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_MaskImagePatches.mat'), '-mat', 'finalMaskImagePatches');
+    save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_MaskedImageCNNFeatures.mat'), '-mat', 'finalMaskedImageCNNFeatures');
 end

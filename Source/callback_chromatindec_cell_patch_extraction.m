@@ -28,18 +28,18 @@
 %% for a given set of complete cell cycles specified in the candidate list
 
 %% identify cells which fall in the candidate list and has valid Centroid, determined where RegProps doesnot equal NaN
-function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImagePatches] = callback_chromatindec_cell_patch_extraction(d_orgs, candidateList, settings)
+function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImagePatches] = callback_chromatindec_cell_patch_extraction(d_orgs, candidateList, parameters)
 
 	%% start timer
     tic;
     
     %% parse the input directories
-    inputRawFiles = dir([settings.inputFolder settings.imageFilter]);
-    if (~isempty(settings.maskFolder))
-        maskImageFiles = dir([settings.maskFolder settings.maskFilter]);
+    inputRawFiles = dir([parameters.inputFolder parameters.imageFilter]);
+    if (~isempty(parameters.maskFolder))
+        maskImageFiles = dir([parameters.maskFolder parameters.maskFilter]);
     end
     
-    patchWidth = settings.patchWidth;
+    patchWidth = parameters.patchWidth;
     
     %% choose cell ids from candidate list
     numFrames = size(d_orgs, 2);
@@ -58,16 +58,16 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
     for i=1:numFrames
         
         %% read the current image and get the image size
-        rawImage = imread([settings.inputFolder inputRawFiles(i).name]);
+        rawImage = imread([parameters.inputFolder inputRawFiles(i).name]);
         [imgHeight, imgWidth] = size(rawImage);
 
         %% load the mask image if available
-        if (~isempty(settings.maskFolder))
-            maskImage = imread([settings.maskFolder maskImageFiles(i).name]);
+        if (~isempty(parameters.maskFolder))
+            maskImage = imread([parameters.maskFolder maskImageFiles(i).name]);
         end
         
         %% extract centroids, pixel indices and bounding boxes from the labeled regions
-        numLabels = max(max(max(d_orgs(:,i,settings.trackingIdIndex))));
+        numLabels = max(max(max(d_orgs(:,i,parameters.trackingIdIndex))));
 
         %% loop through all cells and extract the occurrence in the current frame
         for j=1:length(cellIDs)
@@ -77,7 +77,7 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
 
                 %% identify the current cell being tracked
                 currentIndex = cellIDs(j, 1);
-                currentCentroid = squeeze(d_orgs(currentIndex, i, settings.posIndices));
+                currentCentroid = squeeze(d_orgs(currentIndex, i, parameters.posIndices));
 
                 %% check if cell is present in the frame
                 if i >= (startTimePoints(j)+1) && i <= (endTimePoints(j)+1)
@@ -103,7 +103,7 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
                         rawImagePatches{currentIndex, i} = croppedImage;
                         
                         %% Segment the nuclues of cell
-                        if (isempty(settings.maskFolder))
+                        if (isempty(parameters.maskFolder))
                             croppedMask = uint16(callback_chromatindec_segment_center_nucleus(croppedImage));
                         else
                             croppedMask = uint16(maskImage(rangeX, rangeY));

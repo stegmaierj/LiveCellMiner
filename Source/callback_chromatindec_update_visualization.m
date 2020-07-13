@@ -24,34 +24,34 @@
 %
 %%
 
-global settings;
+global parameters;
 global parameter;
 global d_orgs;
 global rawImagePatches;
 global maskImagePatches;
 
-settings.timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
+parameters.timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
 
-if (settings.dirtyFlag == true)
+if (parameters.dirtyFlag == true)
     %% get the number of cells 
-    numCells = length(settings.currentCells);
-    timeRange = settings.timeRange;
-    numTimePoints = length(settings.timeRange);
-    imageSize = [settings.patchWidth, settings.patchWidth];
+    numCells = length(parameters.currentCells);
+    timeRange = parameters.timeRange;
+    numTimePoints = length(parameters.timeRange);
+    imageSize = [parameters.patchWidth, parameters.patchWidth];
 
     %% initialize the montage image
-    settings.montageImage = zeros(numCells * imageSize(2), numTimePoints*imageSize(1));
-    settings.labelImage = zeros(numCells * imageSize(2), numTimePoints*imageSize(1), 3);
+    parameters.montageImage = zeros(numCells * imageSize(2), numTimePoints*imageSize(1));
+    parameters.labelImage = zeros(numCells * imageSize(2), numTimePoints*imageSize(1), 3);
 
     %% loop through all selected cells and add them to the montage
     currentCell = 1;
-    for i=generate_rowvector(settings.currentCells)
+    for i=generate_rowvector(parameters.currentCells)
 
         %% depending on the visualization mode, select either the raw or the mask image or the masked raw image
         if (~exist('rawImagePatches', 'var') || isempty(rawImagePatches))
-            if (settings.visualizationMode == 1)
+            if (parameters.visualizationMode == 1)
                 currentImage = double(loadtiff(parameter.projekt.imageFiles{i,1}));
-            elseif (settings.visualizationMode == 2)
+            elseif (parameters.visualizationMode == 2)
                 currentMask = double(loadtiff(parameter.projekt.imageFiles{i,2}) > 0);
             else
                 currentImage = double(loadtiff(parameter.projekt.imageFiles{i,1}));
@@ -60,7 +60,7 @@ if (settings.dirtyFlag == true)
             end
 
             %% adjust intensity of the current patch
-            if (settings.visualizationMode ~= 2)
+            if (parameters.visualizationMode ~= 2)
                 currentImage = (currentImage - min(currentImage(:))) / (max(currentImage(:)) - min(currentImage(:)));
             end
         end
@@ -80,26 +80,26 @@ if (settings.dirtyFlag == true)
                     continue;
                 end
 
-                if (settings.visualizationMode == 1)
-                    settings.montageImage(rangeY, rangeX) = double(rawImagePatches{i, j}) / max(max(double(rawImagePatches{i, j})));
-                elseif (settings.visualizationMode == 2)
-                    settings.montageImage(rangeY, rangeX) = maskImagePatches{i, j};
+                if (parameters.visualizationMode == 1)
+                    parameters.montageImage(rangeY, rangeX) = double(rawImagePatches{i, j}) / max(max(double(rawImagePatches{i, j})));
+                elseif (parameters.visualizationMode == 2)
+                    parameters.montageImage(rangeY, rangeX) = maskImagePatches{i, j};
                 else
-                   settings.montageImage(rangeY, rangeX) = imadjust(rawImagePatches{i, j}) .* maskImagePatches{i, j}; 
+                   parameters.montageImage(rangeY, rangeX) = imadjust(rawImagePatches{i, j}) .* maskImagePatches{i, j}; 
                 end
             else
-                if (settings.visualizationMode == 1)
-                    settings.montageImage(rangeY, rangeX) = double(currentImage(:,:,j)) / max(max(double(currentImage(:,:,j))));
-                elseif (settings.visualizationMode == 2)
-                    settings.montageImage(rangeY, rangeX) = currentMask(:,:,j);
+                if (parameters.visualizationMode == 1)
+                    parameters.montageImage(rangeY, rangeX) = double(currentImage(:,:,j)) / max(max(double(currentImage(:,:,j))));
+                elseif (parameters.visualizationMode == 2)
+                    parameters.montageImage(rangeY, rangeX) = currentMask(:,:,j);
                 else
-                   settings.montageImage(rangeY, rangeX) = currentMask(:,:,j) .* imadjust(currentImage(:,:,j)); 
+                   parameters.montageImage(rangeY, rangeX) = currentMask(:,:,j) .* imadjust(currentImage(:,:,j)); 
                 end
             end
 
             %% initialize the labelImage used for state annotation
-            settings.labelImage(rangeY, rangeX, 1) = i;
-            settings.labelImage(rangeY, rangeX, 2) = j;
+            parameters.labelImage(rangeY, rangeX, 1) = i;
+            parameters.labelImage(rangeY, rangeX, 2) = j;
 
             %% increment the time point counter
             currentTimePoint = currentTimePoint + 1;
@@ -110,34 +110,34 @@ if (settings.dirtyFlag == true)
     end
 
     %% add separation bars for better visibility of the patches
-    maxIntensity = max(settings.montageImage(:));
+    maxIntensity = max(parameters.montageImage(:));
     for i=1:numCells
-        settings.montageImage((i*imageSize(2)-1):(i*imageSize(2)+1), :) = 0.1*maxIntensity;
+        parameters.montageImage((i*imageSize(2)-1):(i*imageSize(2)+1), :) = 0.1*maxIntensity;
     end
     for i=1:numTimePoints
-       settings.montageImage(:, (i*imageSize(1)-1):(i*imageSize(1)+1)) = 0.1*maxIntensity;
+       parameters.montageImage(:, (i*imageSize(1)-1):(i*imageSize(1)+1)) = 0.1*maxIntensity;
     end
 end
 
 %% plot the figure
-figure(settings.mainFigure); clf;
-imagesc(settings.montageImage);
-%set(settings.mainFigure, 'OuterPosition', [1913          33        1936        1056])
+figure(parameters.mainFigure); clf;
+imagesc(parameters.montageImage);
+%set(parameters.mainFigure, 'OuterPosition', [1913          33        1936        1056])
 set(gca,'Units','normalized')
 set(gca,'Position',[0 0 1 1])
 colormap gray;
-axis([0, size(settings.montageImage, 2), 0, size(settings.montageImage, 1)]);
+axis([0, size(parameters.montageImage, 2), 0, size(parameters.montageImage, 1)]);
 axis equal;
 axis tight;
 axis off;
 
-set(settings.mainFigure, 'Name', sprintf('Finished %i / %i cells', min(settings.currentCells), size(d_orgs,1)));
+set(parameters.mainFigure, 'Name', sprintf('Finished %i / %i cells', min(parameters.currentCells), size(d_orgs,1)));
 
 %% draw the currently annotated states
 currentCell = 1;
-for i=generate_rowvector(settings.currentCells)
+for i=generate_rowvector(parameters.currentCells)
     
-    currentStates = squeeze(d_orgs(i, settings.timeRange, settings.manualStageIndex));
+    currentStates = squeeze(d_orgs(i, parameters.timeRange, parameters.manualStageIndex));
     
     invalidIndices = find(currentStates < 0);
     unlabeledIndices = find(currentStates == 0);
@@ -153,4 +153,4 @@ for i=generate_rowvector(settings.currentCells)
     
     currentCell = currentCell + 1;
 end
-settings.dirtyFlag = false;
+parameters.dirtyFlag = false;

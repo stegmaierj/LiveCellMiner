@@ -25,8 +25,8 @@
 %%
 
 %% initialize the global settings variable
-clear settings;
-global settings;
+clear parameters;
+global parameters;
 global d_orgs;
 global d_org;
 global rawImagePatches;
@@ -42,15 +42,15 @@ if (synchronizationIndex == 0)
 end
 
 %% find the manually confirmed index or create it if not present yet
-settings.manuallyConfirmedFeature = callback_chromatindec_find_single_feature(dorgbez, 'manuallyConfirmed');
-if (settings.manuallyConfirmedFeature == 0)
+parameters.manuallyConfirmedFeature = callback_chromatindec_find_single_feature(dorgbez, 'manuallyConfirmed');
+if (parameters.manuallyConfirmedFeature == 0)
     
     if (isempty(d_org))
         d_org = zeros(size(d_orgs,1), 1);
     else
         d_org(:,end+1) = 0;
     end
-    settings.manuallyConfirmedFeature = size(d_org,2);
+    parameters.manuallyConfirmedFeature = size(d_org,2);
     if (~isempty(dorgbez))
         dorgbez = char(dorgbez, 'manuallyConfirmed');
     else
@@ -67,32 +67,32 @@ set(gaitfindobj('CE_Auswahl_ZR'),'value', oldSelection);
 aktparawin;
 
 %% initialize the settings
-settings.numVisualizedCells = 10;
-settings.timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
-settings.patchWidth = parameter.projekt.patchWidth;
-settings.selectedCells = ind_auswahl;
-settings.currentIdRange = 1:min(length(settings.selectedCells), settings.numVisualizedCells);
-settings.currentCells = settings.selectedCells(settings.currentIdRange);
-settings.visualizationMode = 1;
-settings.colormapIndex = 1;
-settings.markerSize = 10;
-settings.gamma = 1;
-settings.axesEqual = false;
-settings.fontSize = 16;
-settings.manualStageIndex = synchronizationIndex;
-settings.colormapStrings = {'gray';'jet';'parula'};
-settings.showInfo = false;
-settings.dirtyFlag = true;
-settings.numStages = 2;
+parameters.numVisualizedCells = 10;
+parameters.timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
+parameters.patchWidth = parameter.projekt.patchWidth;
+parameters.selectedCells = ind_auswahl;
+parameters.currentIdRange = 1:min(length(parameters.selectedCells), parameters.numVisualizedCells);
+parameters.currentCells = parameters.selectedCells(parameters.currentIdRange);
+parameters.visualizationMode = 1;
+parameters.colormapIndex = 1;
+parameters.markerSize = 10;
+parameters.gamma = 1;
+parameters.axesEqual = false;
+parameters.fontSize = 16;
+parameters.manualStageIndex = synchronizationIndex;
+parameters.colormapStrings = {'gray';'jet';'parula'};
+parameters.showInfo = false;
+parameters.dirtyFlag = true;
+parameters.numStages = 2;
 
 %% open the main figure
-settings.mainFigure = figure;
-set(settings.mainFigure, 'units', 'normalized', 'color', 'black', 'OuterPosition', [0 0 1 1]);
+parameters.mainFigure = figure;
+set(parameters.mainFigure, 'units', 'normalized', 'color', 'black', 'OuterPosition', [0 0 1 1]);
 
 %% mouse, keyboard events and window title
-set(settings.mainFigure, 'WindowButtonDownFcn', @callback_chromatindec_clickEventHandler);
-set(settings.mainFigure, 'WindowScrollWheelFcn', @callback_chromatindec_scrollEventHandler);
-set(settings.mainFigure, 'KeyReleaseFcn', @callback_chromatindec_keyReleaseEventHandler);
+set(parameters.mainFigure, 'WindowButtonDownFcn', @callback_chromatindec_clickEventHandler);
+set(parameters.mainFigure, 'WindowScrollWheelFcn', @callback_chromatindec_scrollEventHandler);
+set(parameters.mainFigure, 'KeyReleaseFcn', @callback_chromatindec_keyReleaseEventHandler);
 
 %% updateVisualization
 callback_chromatindec_update_visualization;

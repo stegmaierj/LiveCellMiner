@@ -24,12 +24,12 @@
 %
 %%
 
-function d_orgs_new = PerformBackwardsTracking(d_orgs, settings)
+function d_orgs_new = PerformBackwardsTracking(d_orgs, parameters)
 
     %% get segmentation images if available
-    if (settings.seedBasedDetection == false)
-        inputRawFiles = dir([settings.rawImageFolder settings.inputFilter]);
-        detectionFiles = dir([settings.detectionFolder settings.detectionFilter]);
+    if (parameters.seedBasedDetection == false)
+        inputRawFiles = dir([parameters.rawImageFolder parameters.inputFilter]);
+        detectionFiles = dir([parameters.detectionFolder parameters.detectionFilter]);
     end
 
     numFrames = size(d_orgs, 2);
@@ -44,9 +44,9 @@ function d_orgs_new = PerformBackwardsTracking(d_orgs, settings)
 		validIndices = find(squeeze(d_orgs(:,i,3) > 0));
 		validPositions = squeeze(d_orgs(validIndices, i, :));
 
-        if (settings.seedBasedDetection == true)
+        if (parameters.seedBasedDetection == true)
             %% perform automatic cluster cutoff calculation
-            if (settings.clusterCutoff < 0)
+            if (parameters.clusterCutoff < 0)
                 kdtree = KDTreeSearcher(validPositions(:,3:5));
 
                 [~, nnDistances] = knnsearch(kdtree, validPositions(:,3:5), 'K', 8);
@@ -57,7 +57,7 @@ function d_orgs_new = PerformBackwardsTracking(d_orgs, settings)
                 currentClusterCutoff = clusterCutoff;
             end
         else
-            currentClusterCutoff = mean(validPositions(:, settings.clusterRadiusIndex));
+            currentClusterCutoff = mean(validPositions(:, parameters.clusterRadiusIndex));
         end
         
         %% set the object radii for later segmentation
@@ -77,21 +77,21 @@ function d_orgs_new = PerformBackwardsTracking(d_orgs, settings)
 		%% special case if only one tracked location resides in a cluster -> potential dead end, i.e., apply intensity heuristic or fuse to nearest neighbor
 		for j=unique(clusterIndices)'
 			currentIndices = find(clusterIndices == j);
-			trackingIds = unique(validPositions(currentIndices, settings.trackingIdIndex));
+			trackingIds = unique(validPositions(currentIndices, parameters.trackingIdIndex));
 
 			%% propagate tracking id if it already exists
 			if (sum(trackingIds > 0) == 0)
 				d_orgs_new(currentTrackId, i, :) = mean(validPositions(currentIndices, :), 1);
-				d_orgs_new(currentTrackId, i, settings.trackingIdIndex) = currentTrackId;
+				d_orgs_new(currentTrackId, i, parameters.trackingIdIndex) = currentTrackId;
 				currentTrackId = currentTrackId + 1;
 
 				%% if a single tracking id exists already, use it
 			elseif (sum(trackingIds > 0) == 1)
-				existingTrackingId = max(validPositions(currentIndices, settings.trackingIdIndex));
+				existingTrackingId = max(validPositions(currentIndices, parameters.trackingIdIndex));
 				d_orgs_new(existingTrackingId, i, :) = mean(validPositions(currentIndices, :), 1);
-				d_orgs_new(existingTrackingId, i, settings.trackingIdIndex) = existingTrackingId;
+				d_orgs_new(existingTrackingId, i, parameters.trackingIdIndex) = existingTrackingId;
 				if (i<numFrames)
-					d_orgs_new(existingTrackingId, i+1, settings.predecessorIdIndex) = existingTrackingId;
+					d_orgs_new(existingTrackingId, i+1, parameters.predecessorIdIndex) = existingTrackingId;
 				end
 
 				%% indicator that there's probably a dead end
@@ -103,11 +103,11 @@ function d_orgs_new = PerformBackwardsTracking(d_orgs, settings)
 				%% if multiple ids larger than zero exist, perform a merge
 			else
 				d_orgs_new(currentTrackId, i, :) = mean(validPositions(currentIndices, :), 1);
-				d_orgs_new(currentTrackId, i, settings.trackingIdIndex) = currentTrackId;
+				d_orgs_new(currentTrackId, i, parameters.trackingIdIndex) = currentTrackId;
 
 				%% update the successors
 				for k=trackingIds(trackingIds>0)
-					d_orgs_new(k, i+1, settings.predecessorIdIndex) = currentTrackId;
+					d_orgs_new(k, i+1, parameters.predecessorIdIndex) = currentTrackId;
 				end
 
 				currentTrackId = currentTrackId + 1;
@@ -129,7 +129,7 @@ function d_orgs_new = PerformBackwardsTracking(d_orgs, settings)
                 previousDirection = [0,0,0];
 				
 				%% add the seeds and the seed predictions to the seed frames
-				previousPosition = currentPosition(settings.prevPosIndices);
+				previousPosition = currentPosition(parameters.prevPosIndices);
 
 				%% write seed candidates to the result image
                 d_orgs(currentIndex, i-1, :) = currentPosition;

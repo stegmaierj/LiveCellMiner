@@ -26,13 +26,13 @@
 
 %% combine tracks of mothers and corresponding daughters, which have different ids after the division
 function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImagePatches] = CombineMotherDaughterTracks(featureMatrix, motherList, daughterList, motherDaughterList, deletionIndices, ...
-                                                                         rawImagePatches, maskImagePatches, settings)
+                                                                         rawImagePatches, maskImagePatches, parameters)
     %% create output directories if they don't exist yet
-    outputRawFolder = settings.outputRawFolder;
-    outputMaskFolder = settings.outputMaskFolder;
-    timeWindowMother = settings.timeWindowMother;
-    timeWindowDaughter = settings.timeWindowDaughter;
-    patchWidth = settings.patchWidth;
+    outputRawFolder = parameters.outputRawFolder;
+    outputMaskFolder = parameters.outputMaskFolder;
+    timeWindowMother = parameters.timeWindowMother;
+    timeWindowDaughter = parameters.timeWindowDaughter;
+    patchWidth = parameters.patchWidth;
                                                                      
     %% assemble feature matrix with correct mother daughter relationship
     numFeatures = size(featureMatrix, 3);
@@ -102,7 +102,7 @@ function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImageP
        end
        
 	   %% write image snippets to disk if enabled
-       if (settings.writeImagePatches == true)
+       if (parameters.writeImagePatches == true)
            clear options;
            options.overwrite = true;
            options.compress = 'lzw';

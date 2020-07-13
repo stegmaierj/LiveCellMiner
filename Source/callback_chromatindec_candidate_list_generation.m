@@ -25,13 +25,13 @@
 %%
 
 %% function to generate potential candidates for cell division stages
-function [motherList, daughterList, motherDaughterList] = CandidateListGeneration(d_orgs, settings)
+function [motherList, daughterList, motherDaughterList] = callback_chromatindec_candidate_list_generation(d_orgs, parameters)
 
-    timeWindowMother = settings.timeWindowMother;
-    timeWindowDaughter = settings.timeWindowDaughter;
+    timeWindowMother = parameters.timeWindowMother;
+    timeWindowDaughter = parameters.timeWindowDaughter;
 
     %% extract the tracking information in CTC format
-    maxTrackingId = max(max(max(d_orgs(:,:,settings.trackingIdIndex))));
+    maxTrackingId = max(max(max(d_orgs(:,:,parameters.trackingIdIndex))));
     trackingData = zeros(maxTrackingId, 4);
     for i=1:maxTrackingId
 
@@ -42,10 +42,10 @@ function [motherList, daughterList, motherDaughterList] = CandidateListGeneratio
         end
 
         %% write lines of the result tracking file
-        if (i == d_orgs(i, min(validTimePoints), settings.predecessorIdIndex))
+        if (i == d_orgs(i, min(validTimePoints), parameters.predecessorIdIndex))
             trackingData(i,:) = [i, min(validTimePoints)-1, max(validTimePoints)-1, 0];
         else
-            trackingData(i,:) = [i, min(validTimePoints)-1, max(validTimePoints)-1, d_orgs(i,min(validTimePoints), settings.predecessorIdIndex)];
+            trackingData(i,:) = [i, min(validTimePoints)-1, max(validTimePoints)-1, d_orgs(i,min(validTimePoints), parameters.predecessorIdIndex)];
         end
     end
     
