@@ -28,6 +28,12 @@
 %% containing one row for each position and three columns (Position, OligoID and GeneSymbol).
 %% separator is assumed to be \t (i.e., tab).
 inputFolder = uigetdir('V:\BiomedicalImageAnalysis\CellTracking_MorenoAndresUKA\Confocal\', 'Select the root folder containing the raw image data of all experiments that are part of this project.');
+
+if (inputFolder == 0)
+    disp('ERROR: No input folder selected. Aborting ...');
+    return;
+end
+
 if (inputFolder(end) ~= '/' && inputFolder(end) ~= '\')
    inputFolder(end+1) = filesep; 
 end
@@ -65,7 +71,7 @@ for i=unique(code_alle(:,experimentId))'
     oligoIdTextFile = [currentInputFolder zgf_y_bez(experimentId,i).name '.txt'];
     if (~exist(oligoIdTextFile, 'file'))
         disp(['ERROR: OligoID CSV file was not found in the following path: ' oligoIdTextFile]);
-        break;
+        return;
     end
 
 	%% open the text file and process each line
@@ -97,9 +103,18 @@ for i=unique(code_alle(:,experimentId))'
             oligoIDs{existingID} = currentOligoID;
             zgf_y_bez(newOutputVariable,existingID).name = currentOligoID;
         end
+        
+        %% find positionId in the output variable
+        codeAllePosition = 0;
+        for j=unique(code_alle(:,positionId))'
+            if (str2double(zgf_y_bez(positionId, j).name(end-1:end)) == currentPosition)
+               codeAllePosition = j;
+               break;
+            end
+        end
 
 		%% identify cells belonging to the current position and experiment and set the code value accordingly
-        validIndices = find(code_alle(:,experimentId) == i & code_alle(:,positionId) == currentPosition);
+        validIndices = find(code_alle(:,experimentId) == i & code_alle(:,positionId) == codeAllePosition);
         code_alle(validIndices, newOutputVariable) = existingID;
 
 		%% get the next line
