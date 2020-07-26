@@ -41,7 +41,7 @@ end
 %% find output variable of the experiment
 experimentId = callback_chromatindec_find_output_variable(bez_code, 'Experiment');
 microscopeId = callback_chromatindec_find_output_variable(bez_code, 'Microscope');
-positionId = callback_chromatindec_find_output_variable(bez_code, 'Plate');
+positionId = callback_chromatindec_find_output_variable(bez_code, 'Position');
 
 %% check if the oligoID output variable already exists to avoid creating another one
 newOutputVariable = callback_chromatindec_find_output_variable(bez_code, 'OligoID');

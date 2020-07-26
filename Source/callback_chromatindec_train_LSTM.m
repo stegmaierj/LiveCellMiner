@@ -25,16 +25,18 @@
 %%
 
 %% specify the input paths for the training data and the lstm model
-dataPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'autoSyncData.mat'];
-modelPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'autoSyncLSTMModel.mat'];
-
+if (~exist(dataPath, 'file'))
+    dataPath = uigetfile('*.cdd', 'Select training data to train an LSTM classifier for the currently selected cells!', [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'classifiers' filesep]);
+end
+modelPath = strrep(dataPath, '.cdd', '.cdc');
+    
 %% hard coded parameters
-performValidation = true;
+performValidation = false;
 numHiddenUnits = 125;
 
 %% load the previous data
 if (exist(dataPath, 'file'))
-    load(dataPath);
+    load(dataPath, '-mat');
 else
     disp('Please provide training data first, by manually annotating a few sequences and calling "Chromatindec -> Align -> Update LSTM Classifier"');
     return;
@@ -120,6 +122,7 @@ optionsRegression = trainingOptions('adam', ...
 [classificationLSTM, classificationInfo] = trainNetwork(sequencesTrain, labelsClassificationTrain, classificationNetwork, optionsClassification);
 [regressionLSTM, regressionInfo] = trainNetwork(sequencesTrain, labelsRegressionTrain, regressionNetwork, optionsRegression);
 save(modelPath, 'classificationLSTM', 'regressionLSTM');
+disp(['Finished training classifier. The final model was saved to: ' modelPath]);
 
 %% if validation is enabled, assess the performance of the trained LSTM
 if (performValidation == true)

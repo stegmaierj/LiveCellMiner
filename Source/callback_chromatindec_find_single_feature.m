@@ -29,7 +29,7 @@ function featureId = callback_chromatindec_find_single_feature(dorgbez, featureN
 	%% check if feature is present among dorgbez
     featureId = 0;
     for i=1:size(dorgbez,1)
-        if (contains(dorgbez(i,:), featureName, 'IgnoreCase', true))
+        if (contains(dorgbez(i,:), featureName, 'IgnoreCase', false))
             featureId = i;
             return;
         end
@@ -37,6 +37,6 @@ function featureId = callback_chromatindec_find_single_feature(dorgbez, featureN
 
 	%% return 0 if feature was not found
     if (featureId == 0)
-       disp('Desired single feature was not found!');
+       disp('Desired single feature was not found! The search is case sensitive!');
     end
 end

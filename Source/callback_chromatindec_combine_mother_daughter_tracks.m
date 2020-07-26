@@ -25,8 +25,8 @@
 %%
 
 %% combine tracks of mothers and corresponding daughters, which have different ids after the division
-function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImagePatches] = CombineMotherDaughterTracks(featureMatrix, motherList, daughterList, motherDaughterList, deletionIndices, ...
-                                                                         rawImagePatches, maskImagePatches, parameters)
+function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImagePatches, finalRawImagePatches2] = callback_chromatindec_combine_mother_daughter_tracks(featureMatrix, motherList, daughterList, motherDaughterList, deletionIndices, ...
+                                                                         rawImagePatches, maskImagePatches, rawImagePatches2, parameters)
     %% create output directories if they don't exist yet
     outputRawFolder = parameters.outputRawFolder;
     outputMaskFolder = parameters.outputMaskFolder;
@@ -41,6 +41,10 @@ function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImageP
     finalFeatureMatrix = zeros(size(motherDaughterList,1)*2, timeWindowMother+timeWindowDaughter, numFeatures);
     finalRawImagePatches = cell(size(motherDaughterList,1)*2, timeWindowMother+timeWindowDaughter);
     finalMaskImagePatches = cell(size(motherDaughterList,1)*2, timeWindowMother+timeWindowDaughter);
+    if (~isempty(rawImagePatches2))
+        finalRawImagePatches2 = cell(size(motherDaughterList,1)*2, timeWindowMother+timeWindowDaughter);
+    end
+    
     for j=1:size(motherList,1)
                
        %% get the daughter indices
@@ -74,8 +78,8 @@ function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImageP
        outputImageRaw2 = zeros(patchWidth, patchWidth, timeWindowMother+timeWindowDaughter);
        outputImageMask1 = zeros(patchWidth, patchWidth, timeWindowMother+timeWindowDaughter);
        outputImageMask2 = zeros(patchWidth, patchWidth, timeWindowMother+timeWindowDaughter);
-       outputImageEdge1 = zeros(patchWidth, patchWidth, 3, timeWindowMother+timeWindowDaughter);
-       outputImageEdge2 = zeros(patchWidth, patchWidth, 3, timeWindowMother+timeWindowDaughter);
+       %outputImageEdge1 = zeros(patchWidth, patchWidth, 3, timeWindowMother+timeWindowDaughter);
+       %outputImageEdge2 = zeros(patchWidth, patchWidth, 3, timeWindowMother+timeWindowDaughter);
        
        for i=1:timeWindowMother
             outputImageRaw1(:, :, i) = rawImagePatches{motherIndex, rangeMother(i)};
@@ -87,6 +91,11 @@ function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImageP
             finalRawImagePatches{currentIndex+1, i} = rawImagePatches{motherIndex, rangeMother(i)};
             finalMaskImagePatches{currentIndex, i} = maskImagePatches{motherIndex, rangeMother(i)};
             finalMaskImagePatches{currentIndex+1, i} = maskImagePatches{motherIndex, rangeMother(i)};
+            
+            if (~isempty(rawImagePatches2))
+                finalRawImagePatches2{currentIndex, i} = rawImagePatches2{motherIndex, rangeMother(i)};
+                finalRawImagePatches2{currentIndex+1, i} = rawImagePatches2{motherIndex, rangeMother(i)};
+            end
        end
        
        for i=1:timeWindowDaughter
@@ -99,6 +108,11 @@ function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImageP
             finalRawImagePatches{currentIndex+1, (timeWindowMother+i)} = rawImagePatches{daughter2Index, rangeDaughter2(i)};
             finalMaskImagePatches{currentIndex, (timeWindowMother+i)} = maskImagePatches{daughter1Index, rangeDaughter1(i)};
             finalMaskImagePatches{currentIndex+1, (timeWindowMother+i)} = maskImagePatches{daughter2Index, rangeDaughter2(i)};
+            
+            if (~isempty(rawImagePatches2))
+                finalRawImagePatches2{currentIndex, (timeWindowMother+i)} = rawImagePatches2{daughter1Index, rangeDaughter1(i)};
+                finalRawImagePatches2{currentIndex+1, (timeWindowMother+i)} = rawImagePatches2{daughter2Index, rangeDaughter2(i)};
+            end
        end
        
 	   %% write image snippets to disk if enabled

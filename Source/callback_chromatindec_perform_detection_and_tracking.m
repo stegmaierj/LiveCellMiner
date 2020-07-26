@@ -49,10 +49,10 @@ function [] = callback_chromatindec_perform_detection_and_tracking(parameters)
     candidateList = [motherList; daughterList];
 
     %% Parameters for cell patch extraction
-    [featureNames, featureMatrix, deletionIndices, rawImagePatches, maskImagePatches] = callback_chromatindec_cell_patch_extraction(d_orgs, candidateList, parameters);
+    [featureNames, featureMatrix, deletionIndices, rawImagePatches, maskImagePatches, rawImagePatches2] = callback_chromatindec_cell_patch_extraction(d_orgs, candidateList, parameters);
 
     %% combine the mother and daughter features to the final feature matrix
-    [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImagePatches] = callback_chromatindec_combine_mother_daughter_tracks(featureMatrix, motherList, daughterList, motherDaughterList, deletionIndices, rawImagePatches, maskImagePatches, parameters);
+    [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImagePatches, finalRawImagePatches2] = callback_chromatindec_combine_mother_daughter_tracks(featureMatrix, motherList, daughterList, motherDaughterList, deletionIndices, rawImagePatches, maskImagePatches, rawImagePatches2, parameters);
 
     %% compute the CNN features for LSTM-based synchronization
     finalMaskedImageCNNFeatures = cell(size(finalRawImagePatches));
@@ -94,6 +94,18 @@ function [] = callback_chromatindec_perform_detection_and_tracking(parameters)
         disp(['Finished extracting CNN features for ' num2str(i) ' / ' num2str(size(finalRawImagePatches,1)) '...']);
     end
     
+    %% apply physical spacing to convert all pixel measures into microns
+    xposID = callback_chromatindec_find_time_series(featureNames, 'xpos');
+    yposID = callback_chromatindec_find_time_series(featureNames, 'ypos');
+    minorAxisLenghtID = callback_chromatindec_find_time_series(featureNames, 'MinorAxisLength');
+    majorAxisLengthID = callback_chromatindec_find_time_series(featureNames, 'MajorAxisLength');
+    areaID = callback_chromatindec_find_time_series(featureNames, 'Area');
+    finalFeatureMatrix(:,:,xposID) = finalFeatureMatrix(:,:,xposID) * parameters.micronsPerPixel;
+    finalFeatureMatrix(:,:,yposID) = finalFeatureMatrix(:,:,yposID) * parameters.micronsPerPixel;
+    finalFeatureMatrix(:,:,minorAxisLenghtID) = finalFeatureMatrix(:,:,minorAxisLenghtID) * parameters.micronsPerPixel;
+    finalFeatureMatrix(:,:,majorAxisLengthID) = finalFeatureMatrix(:,:,majorAxisLengthID) * parameters.micronsPerPixel;
+    finalFeatureMatrix(:,:,areaID) = finalFeatureMatrix(:,:,areaID) * (parameters.micronsPerPixel^2);
+    
     %% write the results as SciXMiner project
     d_orgs = finalFeatureMatrix;
     var_bez = featureNames;
@@ -114,4 +126,9 @@ function [] = callback_chromatindec_perform_detection_and_tracking(parameters)
     save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_RawImagePatches.mat'), '-mat', 'finalRawImagePatches');
     save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_MaskImagePatches.mat'), '-mat', 'finalMaskImagePatches');
     save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_MaskedImageCNNFeatures.mat'), '-mat', 'finalMaskedImageCNNFeatures');
+    if (~isempty(finalRawImagePatches2))
+        save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_RawImagePatches2.mat'), '-mat', 'finalRawImagePatches2');
+    end
+    
+    disp(['Processing of input folder experiment ' parameters.experimentName ', position ' parameters.positionNumber ' was successful. Results saved in ' strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '*')]);
 end

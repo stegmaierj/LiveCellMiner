@@ -24,7 +24,7 @@
 %
 %%
 
-function [d_orgs, var_bez] = PerformSeedDetection(parameters)
+function [d_orgs, var_bez] = callback_chromatindec_perform_seed_detection(parameters)
 
     %% get list of current seed files
     detectionFiles = dir([parameters.detectionFolder parameters.detectionFilter]);
@@ -32,7 +32,7 @@ function [d_orgs, var_bez] = PerformSeedDetection(parameters)
         
     %% initialize d_orgs
     d_orgs = zeros(0, numFrames, 11);
-    var_bez = char('id', 'area', 'xpos', 'ypos', 'zpos', 'prevXPos', 'prevYPos', 'prevZPos', 'clusterCutoff', 'trackletId', 'predecessorId');
+    var_bez = char('id', 'scale', 'xpos', 'ypos', 'zpos', 'prevXPos', 'prevYPos', 'prevZPos', 'clusterCutoff', 'trackletId', 'predecessorId');
     
     %% loop through all seed files and extract the raw seed points
     for i=1:numFrames

@@ -28,13 +28,17 @@
 %% for a given set of complete cell cycles specified in the candidate list
 
 %% identify cells which fall in the candidate list and has valid Centroid, determined where RegProps doesnot equal NaN
-function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImagePatches] = callback_chromatindec_cell_patch_extraction(d_orgs, candidateList, parameters)
+function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImagePatches, rawImagePatches2] = callback_chromatindec_cell_patch_extraction(d_orgs, candidateList, parameters)
 
 	%% start timer
     tic;
     
     %% parse the input directories
     inputRawFiles = dir([parameters.inputFolder parameters.imageFilter]);
+    
+    if (~isempty(parameters.channelFilter2))
+       inputRawFiles2 = dir([parameters.inputFolder parameters.imageFilter2]);
+    end    
     if (~isempty(parameters.maskFolder))
         maskImageFiles = dir([parameters.maskFolder parameters.maskFilter]);
     end
@@ -52,6 +56,7 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
     resultMatrix = zeros(maxCellID, numFrames, numFeatures);
     deletionIndices = [];
     rawImagePatches = cell(max(cellIDs), numFrames);
+    rawImagePatches2 = cell(max(cellIDs), numFrames);
     maskImagePatches = cell(max(cellIDs), numFrames);
 
     %% Main loop to extract image snippets
@@ -61,11 +66,18 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
         rawImage = imread([parameters.inputFolder inputRawFiles(i).name]);
         [imgHeight, imgWidth] = size(rawImage);
 
+        %% load the second channel image if available
+        if (~isempty(parameters.channelFilter2))
+           rawImage2 = imread([parameters.inputFolder inputRawFiles2(i).name]);
+        else
+            rawImage2 = [];
+        end
+        
         %% load the mask image if available
         if (~isempty(parameters.maskFolder))
             maskImage = imread([parameters.maskFolder maskImageFiles(i).name]);
         end
-        
+                
         %% extract centroids, pixel indices and bounding boxes from the labeled regions
         numLabels = max(max(max(d_orgs(:,i,parameters.trackingIdIndex))));
 
@@ -101,6 +113,11 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
                         %% extract the copped image
                         croppedImage = uint16(rawImage(rangeX, rangeY));
                         rawImagePatches{currentIndex, i} = croppedImage;
+                        
+                        if (~isempty(rawImage2))
+                            croppedImage2 = uint16(rawImage2(rangeX, rangeY));
+                            rawImagePatches2{currentIndex, i} = croppedImage2; 
+                        end
                         
                         %% Segment the nuclues of cell
                         if (isempty(parameters.maskFolder))
@@ -142,5 +159,5 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
     end
     
     %% add a few default features for id, area and location
-    featureNames = char('id', 'area', 'xpos', 'ypos', 'zpos', 'Tracking state', featureNames);
+    featureNames = char('id', 'scale', 'xpos', 'ypos', 'zpos', 'Tracking state', featureNames);
 end

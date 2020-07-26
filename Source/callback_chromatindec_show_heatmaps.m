@@ -44,24 +44,22 @@ timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segm
 %% get the selected cells
 selectedCells = ind_auswahl;
 
-synchronizationIndex = 0;
-for i=1:size(var_bez, 1)
-   if (strfind(var_bez(i,:), 'manualSynchronization') > 0)
-      synchronizationIndex = i;
-       break;
-   end
+synchronizationIndex = callback_chromatindec_find_time_series(var_bez, 'manualSynchronization');
+if (synchronizationIndex <= 0)
+    disp('Please synchronize the data sets first, e.g., by running "ChromatinDec -> Align -> Perform Auto Sync".');
+    return;
 end
 
-%% identify the contained features, experiments and plates
+%% identify the contained features, experiments and positions
 experimentId = callback_chromatindec_find_output_variable(bez_code, parameter.gui.chromatindec.summaryOutputVariable);
 selectedExperiments = unique(code_alle(selectedCells, experimentId));
 selectedOutputVariable = parameter.gui.merkmale_und_klassen.ausgangsgroesse;
-selectedPlatesOrOligos = unique(code_alle(selectedCells, selectedOutputVariable));
+selectedPositionsOrOligos = unique(code_alle(selectedCells, selectedOutputVariable));
 selectedFeatures = parameter.gui.merkmale_und_klassen.ind_zr;
 
 %% compute the number of required subplots
 numSubPlots = 0;
-for p=generate_rowvector(selectedPlatesOrOligos)
+for p=generate_rowvector(selectedPositionsOrOligos)
     validIndices = ind_auswahl(find(code_alle(ind_auswahl, selectedOutputVariable) == p));
 
     if (isempty(validIndices))
@@ -90,7 +88,7 @@ for f = generate_rowvector(selectedFeatures)
         set(fh, 'color', 'white');
     end
     
-    %% summarize the results of each plate either as a heat map, box plots or line plots
+    %% summarize the results of each position either as a heat map, box plots or line plots
     minValue = inf;
     maxValue = -inf;
     
@@ -98,14 +96,14 @@ for f = generate_rowvector(selectedFeatures)
     
     if (summarizeSelectedExperiments == false)
         for e=generate_rowvector(selectedExperiments)
-            for p=generate_rowvector(selectedPlatesOrOligos)
+            for p=generate_rowvector(selectedPositionsOrOligos)
 
                 %% get stage transitions
                 if (synchronizationIndex > 0 && alignPlots == true)
                     stageTransitions = squeeze(d_orgs(ind_auswahl, 1, synchronizationIndex)) >= 0;
                 end
 
-                %% get the valid cells for the current combination of experiment and plate
+                %% get the valid cells for the current combination of experiment and position
                 if (synchronizationIndex == 0 || alignPlots == false)
                     validIndices = ind_auswahl(find(code_alle(ind_auswahl, experimentId) == e & code_alle(ind_auswahl, selectedOutputVariable) == p));
                 else
@@ -124,14 +122,14 @@ for f = generate_rowvector(selectedFeatures)
             end
         end
     else
-        for p=generate_rowvector(selectedPlatesOrOligos)
+        for p=generate_rowvector(selectedPositionsOrOligos)
 
             %% get stage transitions
             if (synchronizationIndex > 0 && alignPlots == true)
                 stageTransitions = squeeze(d_orgs(ind_auswahl, 1, synchronizationIndex)) >= 0;
             end
 
-            %% get the valid cells for the current combination of experiment and plate
+            %% get the valid cells for the current combination of experiment and position
             if (synchronizationIndex == 0 || alignPlots == false)
                 validIndices = ind_auswahl(find(code_alle(ind_auswahl, selectedOutputVariable) == p));
             else

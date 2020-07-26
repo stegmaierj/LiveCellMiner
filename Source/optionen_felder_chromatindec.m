@@ -112,38 +112,44 @@ felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
-felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_MATransition';
+felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_SisterDistanceThreshold';
 felder(fc).visible(end).pos = [300 240];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
-felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_IPTransition';
+felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_MATransition';
 felder(fc).visible(end).pos = [300 270];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
-felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_SmoothingWindow';
+felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_IPTransition';
 felder(fc).visible(end).pos = [300 300];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
-felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_SmoothingMethod';
+felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_SmoothingWindow';
 felder(fc).visible(end).pos = [300 330];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
-felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_RecoveryMeasureMode';
+felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_SmoothingMethod';
 felder(fc).visible(end).pos = [300 360];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
-felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_SummaryOutputVariable';
+felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_RecoveryMeasureMode';
 felder(fc).visible(end).pos = [300 390];
+felder(fc).visible(end).bez_pos_rel = [-280 -3];
+
+%%%%%%%%%%%%%%%%%%
+% Element: Linke/Rechte Einzüge verwenden
+felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_SummaryOutputVariable';
+felder(fc).visible(end).pos = [300 420];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 

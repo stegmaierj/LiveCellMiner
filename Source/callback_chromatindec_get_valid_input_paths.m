@@ -29,10 +29,7 @@ function [inputFolders, microscopeList, experimentList, positionList] = callback
     
 	%% display status as it may take a bit
 	disp('Recursively scanning input directory for valid position folders ...');
-	
-	%% add third party dependency
-    addpath('toolbox/');
-    
+	    
 	%% ensure that the last character of the path is not a file separator
     if (inputRootFolder(end) == '/' || inputRootFolder(end) == '\')
         inputRootFolder = inputRootFolder(1:end-1);

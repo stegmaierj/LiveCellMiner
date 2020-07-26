@@ -292,6 +292,39 @@ els(ec).bezeichner.hoehe = 20;
 % ChromatinDec for the second control element (here: a edit field for numbers)
 ec = ec+1; 
 %Tag for the handling of the elements, the name must be unique
+els(ec).tag = 'CE_ChromatinDec_SisterDistanceThreshold';
+%number of the handle - added as the last column for the handle matrix 
+els(ec).uihd_code = [newcolumn ec]; 
+els(ec).handle = [];
+%name shown in the GUI
+els(ec).name = 'Sister Chromatin Dist. Threshold';
+%example for a checkbox
+els(ec).style = 'edit';
+%the variable can be use for the access to the element value
+els(ec).variable = 'parameter.gui.chromatindec.sisterDistanceThreshold';
+%default value at the start
+els(ec).default = 13;
+%help text in the context menu
+els(ec).tooltext = 'Default: 13 mu (synchronization point is set to the point where this threshold is exceeded first). Set to -1 to use area criterion instead.';
+%callback for any action at the element, can be empty
+%the function should be exist in the path of the chromatindec package
+els(ec).callback = '';
+%width of the element in points
+els(ec).breite = 200;
+%hight of the element in points
+els(ec).hoehe = 20;
+%optional handle of an additional GUI element with an explanation text
+els(ec).bezeichner.uihd_code = [newcolumn+1 ec];
+els(ec).bezeichner.handle = [];
+%width of the explanation text for the element in points
+els(ec).bezeichner.breite = 250;
+%height of the explanation text for the element in points
+els(ec).bezeichner.hoehe = 20;
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% ChromatinDec for the second control element (here: a edit field for numbers)
+ec = ec+1; 
+%Tag for the handling of the elements, the name must be unique
 els(ec).tag = 'CE_ChromatinDec_IPTransition';
 %number of the handle - added as the last column for the handle matrix 
 els(ec).uihd_code = [newcolumn ec]; 
@@ -508,6 +541,10 @@ els(ec).bezeichner.handle = [];
 els(ec).bezeichner.breite = 250;
 %height of the explanation text for the element in points
 els(ec).bezeichner.hoehe = 20;
+
+
+
+
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%

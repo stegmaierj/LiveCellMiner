@@ -25,16 +25,17 @@
 %%
 
 %% specify the input paths for the training data and the lstm model
-dataPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'autoSyncData.mat'];
-modelPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'autoSyncLSTMModel.mat'];
+[filename, pathname] = uiputfile('*.cdd', 'Select a file name to save the training data to!', [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'classifiers' filesep]);
+dataPath = [pathname filename];
 
-%% load the previous data
-answer = questdlg('Load previous data to extend it?', 'Load previous data?', 'Yes', 'No', 'Cancel', 'No');
-
+%% load the previous data if available and wanted
 appendData = false;
-if (exist(dataPath, 'file') && strcmp(answer, 'Yes'))
-    load(dataPath);
-    appendData = true;
+if (exist(dataPath, 'file'))
+    answer = questdlg('Load previous data to extend it?', 'Load previous data?', 'Yes', 'No', 'Cancel', 'No');
+    if (strcmp(answer, 'Yes'))
+        load(dataPath, '-mat');
+        appendData = true;
+    end
 end
 
 %% loop through all manually corrected cells and add them to the training data
@@ -121,9 +122,9 @@ for i=validIndices'
     end
     
     if (max(d_orgs(i,:,synchronizationIndex)) > 0)
-        validityLabels(currentSequence) = categorical(cellstr('valid'));
+        validityLabels(currentSequence) = cellstr('valid');
     else
-        validityLabels(currentSequence) = categorical(cellstr('invalid'));
+        validityLabels(currentSequence) = cellstr('invalid');
     end
     
     %% display status and increment current sequence counter
@@ -149,3 +150,6 @@ answer = questdlg('Would you like to retrain the LSTM classifier?', 'Retrain cla
 if (strcmp(answer, 'Yes'))
     callback_chromatindec_train_LSTM;
 end
+
+clear dataPath;
+clear modelPath;

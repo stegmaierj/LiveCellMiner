@@ -50,11 +50,11 @@ synchronizationIndex = parameter.gui.merkmale_und_klassen.ind_zr;
 set(gaitfindobj('CE_Auswahl_ZR'),'value', oldSelection);
 aktparawin;
 
-%% identify the contained features, experiments and plates
+%% identify the contained features, experiments and positions
 experimentId = callback_chromatindec_find_output_variable(bez_code, parameter.gui.chromatindec.summaryOutputVariable);
 selectedExperiments = unique(code_alle(selectedCells, experimentId));
 selectedOutputVariable = parameter.gui.merkmale_und_klassen.ausgangsgroesse;
-selectedPlatesOrOligos = unique(code_alle(selectedCells, selectedOutputVariable));
+selectedPositionsOrOligos = unique(code_alle(selectedCells, selectedOutputVariable));
 selectedFeatures = parameter.gui.merkmale_und_klassen.ind_em;
 
 %% compute the number of required subplots
@@ -65,7 +65,7 @@ end
 [numRows, numColumns] = compute_subplot_layout(numSubPlots);
 
 %% specify the color map and the line styles
-colorMap = lines(length(selectedPlatesOrOligos));
+colorMap = lines(length(selectedPositionsOrOligos));
 lineStyles = {'-', '--', ':', '-.'};
 
 %% box plots
@@ -91,7 +91,7 @@ for f = generate_rowvector(selectedFeatures)
     end
     
    
-    %% summarize the results of each plate either as a heat map, box plots or line plots
+    %% summarize the results of each position either as a heat map, box plots or line plots
     minValue = inf;
     maxValue = -inf;
     
@@ -104,7 +104,7 @@ for f = generate_rowvector(selectedFeatures)
             subplot(numRows, numColumns, currentSubPlot); hold on;
                 
             %% plot dummy lines for the proper visualization of the legend
-            for i=1:length(selectedPlatesOrOligos)
+            for i=1:length(selectedPositionsOrOligos)
                 if (visualizationMode == 1)
                     plot([1,1], [1, 1], '-r', 'Color', colorMap(i, :));
                 else
@@ -113,14 +113,14 @@ for f = generate_rowvector(selectedFeatures)
             end
             
             currentCodeValue = 1;
-            for p=generate_rowvector(selectedPlatesOrOligos)
+            for p=generate_rowvector(selectedPositionsOrOligos)
 
                 %% get stage transitions
                 if (synchronizationIndex > 0 && alignPlots == true)
                     stageTransitions = squeeze(d_orgs(ind_auswahl, 1, synchronizationIndex)) >= 0;
                 end
 
-                %% get the valid cells for the current combination of experiment and plate
+                %% get the valid cells for the current combination of experiment and position
                 if (synchronizationIndex == 0 || alignPlots == false)
                     validIndices = ind_auswahl(find(code_alle(ind_auswahl, experimentId) == e & code_alle(ind_auswahl, selectedOutputVariable) == p));
                 else
@@ -189,7 +189,7 @@ for f = generate_rowvector(selectedFeatures)
     else
         
         %% plot dummy lines for the proper visualization of the legend
-        for i=1:length(selectedPlatesOrOligos)
+        for i=1:length(selectedPositionsOrOligos)
             if (visualizationMode == 1)
                 plot([1,1], [1, 1], '-r', 'Color', colorMap(i, :));
             else
@@ -198,14 +198,14 @@ for f = generate_rowvector(selectedFeatures)
         end
         
         currentCodeValue = 1;
-        for p=generate_rowvector(selectedPlatesOrOligos)
+        for p=generate_rowvector(selectedPositionsOrOligos)
 
             %% get stage transitions
             if (synchronizationIndex > 0 && alignPlots == true)
                 stageTransitions = squeeze(d_orgs(ind_auswahl, 1, synchronizationIndex)) >= 0;
             end
 
-            %% get the valid cells for the current combination of experiment and plate
+            %% get the valid cells for the current combination of experiment and position
             if (synchronizationIndex == 0 || alignPlots == false)
                 validIndices = ind_auswahl(find(code_alle(ind_auswahl, selectedOutputVariable) == p));
             else

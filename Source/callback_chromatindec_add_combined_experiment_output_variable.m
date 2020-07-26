@@ -44,6 +44,10 @@ outputVariableId = size(code_alle, 2)+1;
 dlgtitle = 'Assign corresponding repeats the same (unique!) ID.';
 dims = [1 100];
 combinedExperiments = inputdlg(experimentNames, dlgtitle, dims, combinedExperiments);
+if (isempty(combinedExperiments))
+    disp('Operation canceled, no repeat assingment performed ...');
+    return;
+end
 
 %% assemble the new output variable
 code_alle_new(size(d_orgs,1),1) = 0;

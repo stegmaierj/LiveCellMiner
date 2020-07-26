@@ -24,15 +24,26 @@
 %
 %%
 
-%%
-XPIWITPath = 'D:/Programming/XPIWIT/Release/2019/XPIWIT_Windows_x64/Bin/';
-CELLPOSEPath = 'I:/Software/Cellpose/';
-CELLPOSEEnvironment = 'C:/Environments/cellpose/python.exe';
+%% specify the default settings file
+settingsFile = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'externalDependencies.txt'];
+
+%% load previous path if it exists, otherwise request the paths from the user.
+if (exist(settingsFile, 'file'))
+    fileHandle = fopen(settingsFile, 'r');
+    currentLine = fgets(fileHandle);
+    splitString = strsplit(currentLine, ';');
+    XPIWITPath = splitString{1};
+    CELLPOSEPath = splitString{2};
+    CELLPOSEEnvironment = splitString{3};
+    fclose(fileHandle);
+else
+    callback_chromatindec_set_external_dependencies;
+end
 
 %% add external scripts to path
-addpath('toolbox/');
-addpath('toolbox/haralick/');
-addpath('toolbox/saveastiff_4.3/');
+addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'toolbox' filesep]);
+addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'toolbox' filesep 'haralick' filesep]);
+addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'toolbox' filesep 'saveastiff_4.3' filesep]);
 
 %% select the input root folder and identify the folders containing the plates
 defaultSearchFolder = 'V:/';
@@ -66,18 +77,22 @@ end
 dlgtitle = 'Specify the physical spacing in mu for each project.';
 dims = [1 100];
 micronsPerPixel = inputdlg(experimentList, dlgtitle, dims);
-if (isempty(additionalUserSettings))
+if (isempty(micronsPerPixel))
     disp('No microns per pixel provided, stopping processing ...');
     return;
 end
 
-%% prepare question dialog to ask for the physical spacing of the experiments
-dlgtitle = 'Specify suffix to select a particular channel (e.g., c0002) or leave empty.';
+%% prepare question dialog to ask for the channel suffix the experiments
+dlgtitle = 'Specify suffix to select the chromatin channel (e.g., *_c0001) or leave empty.';
 dims = [1 100];
 channelFilter = inputdlg(experimentList, dlgtitle, dims);
-if (isempty(additionalUserSettings))
+if (isempty(channelFilter))
     disp('No channel filter provided, stopping processing ...');
     return;
+else
+    dlgtitle = 'Specify suffix to select an additional channel (e.g., *_c0002) or leave empty.';
+    dims = [1 100];
+    channelFilter2 = inputdlg(experimentList, dlgtitle, dims);
 end
 
 for i=1:length(inputFolders)
@@ -98,8 +113,8 @@ for i=1:length(inputFolders)
     parameters.inputFolder = inputFolders{i};
     parameters.outputRoot = outputRoot;
     parameters.inputFolderCellpose = parameters.inputFolder;
-    if (~isempty(ipBasedInputFolder{2}))
-        parameters.inputFolderCellpose = strrep(parameters.inputFolderCellpose, ipBasedInputFolder{1}, ipBasedInputFolder{2});
+    if (~isempty(additionalUserSettings{2}))
+        parameters.inputFolderCellpose = strrep(parameters.inputFolderCellpose, additionalUserSettings{1}, additionalUserSettings{2});
     end
 
     %% extract project information
@@ -116,6 +131,7 @@ for i=1:length(inputFolders)
     end
     
     parameters.channelFilter = channelFilter{experimentIndex};      %% select a specific channel for processing. Should be specific part of the file name
+    parameters.channelFilter2 = channelFilter2{experimentIndex};    %% select an additional channel. This channel will only be used to extract the corresponding snippets as well for later processing.
     parameters.micronsPerPixel = str2double(micronsPerPixel{experimentIndex});  %% the physical spacing in microns. Note that the seed detection pipelines are selected with this string, so should have consistent number of digits that match the names of the XML pipelines.
 
     %% assemble and create the output folder
@@ -147,7 +163,7 @@ for i=1:length(inputFolders)
     %% specify paths to the external processing tools XPIWIT and Cellpose (only has to be setup once for the entire system)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     parameters.XPIWITPath = XPIWITPath;
-    parameters.XPIWITDetectionPipeline = [strrep(parameter.allgemein.pfad_gaitcad, '\', '/') '/application_specials/chromatindec/toolbox/XPIWITPipelines/CellDetection_micronsPerVoxel=' num2str(parameters.micronsPerPixel) '.xml'];
+    parameters.XPIWITDetectionPipeline = [strrep(parameter.allgemein.pfad_gaitcad, '\', '/') '/application_specials/chromatindec/toolbox/XPIWITPipelines/CellDetection_micronsPerVoxel=' micronsPerPixel{experimentIndex} '.xml'];
     if (~exist(parameters.XPIWITDetectionPipeline, 'file'))
         disp(['ERROR: Couldn''t find processing pipeline ' parameters.XPIWITDetectionPipeline ' . Make sure the file exists or create a pipeline for the selected physical spacing!']);
     end

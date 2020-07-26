@@ -76,8 +76,19 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Import';
 elements(mc).tag = 'MI_ChromatinDec_Import';
-elements(mc).menu_items = {'MI_ChromatinDec_Import_Project', 'MI_ChromatinDec_Fuse_Projects'};
+elements(mc).menu_items = {'MI_ChromatinDec_External_Dependencies', 'MI_ChromatinDec_Import_Project', 'MI_ChromatinDec_Fuse_Projects'};
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Set External Dependencies';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_chromatindec_set_external_dependencies;';
+elements(mc).tag = 'MI_ChromatinDec_External_Dependencies';
+%is enabled if at least one time series exist
+elements(mc).freischalt = {};
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;

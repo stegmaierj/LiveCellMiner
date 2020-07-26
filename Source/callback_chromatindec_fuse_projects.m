@@ -89,7 +89,7 @@ end
 code = code_alle_new(:,1);
 code_alle = code_alle_new;
 d_orgs = d_orgs_new;
-bez_code = char('All', 'Microscope', 'Experiment', 'Plate', 'Cell');
+bez_code = char('All', 'Microscope', 'Experiment', 'Position', 'Cell');
 zgf_y_bez = zgf_y_bez_new;
 projekt.imageFiles = imageFiles;
 save([inputRootFolder 'FusedProjects.prjz'], '-mat', 'd_orgs', 'var_bez', 'code', 'code_alle', 'zgf_y_bez', 'bez_code', 'projekt');

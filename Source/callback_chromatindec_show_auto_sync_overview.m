@@ -39,30 +39,53 @@ aktparawin;
 experimentId = callback_chromatindec_find_output_variable(bez_code, 'Experiment');
 oligoId = callback_chromatindec_find_output_variable(bez_code, 'OligoID');
 
+if (experimentId == 0 || oligoId == 0)
+    disp('ERROR: Experiment or OligoID output variable were not found. Please run "ChromatinDec -> Process -> Add OligoId Output Variable"');
+    return; 
+end
+
 %% check the number of occurrences for the different output classes and experiments (to ensure there are sufficient samples per treatment).
 currentCounts = zeros(max(code_alle(:,experimentId)), max(code_alle(:,oligoId)));
 
 experimentIds = unique(code_alle(:,experimentId));
 oligoIds = unique(code_alle(:,oligoId));
 
+experimentLabels = cell(length(experimentIds), 1);
+oligoLabels = cell(length(oligoIds), 1);
+
 for i=experimentIds'
+    
+    experimentLabels{i} = strrep(zgf_y_bez(experimentId,i).name, '_', '\_');
+    
     for j=oligoIds'
         validIndices = find(code_alle(:,experimentId) == i & code_alle(:,oligoId) == j & squeeze(d_orgs(:,1,syncFeature)) > 0);
         invalidIndices = find(code_alle(:,experimentId) == i & code_alle(:,oligoId) == j & squeeze(d_orgs(:,1,syncFeature)) <= 0);
             
         currentCounts(i, j) = length(validIndices);
         
+        oligoLabels{j} = strrep(zgf_y_bez(oligoId,j).name, '_', '\_');
+        
         if (isempty(validIndices) && isempty(invalidIndices))
             continue;
         end
         
+                
         disp(['Experiment: ' zgf_y_bez(experimentId,i).name ', OligoID: ' zgf_y_bez(oligoId,j).name, ', valid sync information: ' num2str(length(validIndices)) ' / ' num2str(length(validIndices) + length(invalidIndices))]);
     end
 end
 
 disp(['Total number of valid sync information: ' num2str(sum(currentCounts(:))) ' / ' num2str(size(d_orgs,1))]);
 
+for i=1:length(oligoLabels)
+    if (isempty(oligoLabels{i}))
+        oligoLabels{i} = '';
+    end    
+end
+    
 figure(2);
-imagesc(currentCounts);
-ylabel('Experiment');
-xlabel('OligoID');
+h = heatmap(currentCounts);
+h.YLabel = 'Experiment';
+h.XLabel = 'OligoID';
+h.YDisplayLabels = experimentLabels;
+h.XDisplayLabels = oligoLabels;
+h.Title = 'Number of valid cells per experiment / oligo combination';
