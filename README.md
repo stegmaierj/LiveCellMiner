@@ -8,7 +8,7 @@ The *ChromatinDec* toolbox is an extension of the MATLAB toolbox SciXMiner [1] a
 
 After having installed these requirements, download the *ChromatinDec* toolbox and copy it into the *application_specials* folder of SciXMiner. Start SciXMiner using the command `scixminer` and enable the toolbox using *Extras -> Choose application-specific extension packages...* . Restart SciXMiner and you should see a new menu entry called *ChromatinDec*.
 
-To be able to use the external tools XPIWIT and Cellpose from within the toolbox (required to import new projects), the script `callback_ChromatinDec_batch_processing.m` located in the root folder of the *ChromatinDec* application special has to be provided with the paths to the third party software that should be used for processing. In particular, these are the path to the executable of *XPIWIT* (e.g., *D:/XPIWIT/Bin/*) and the path to the Cellpose root folder (e.g., *I:/Software/Cellpose/*). Make sure to create a Python environment that is setup using the Cellpose environment.yml (e.g, using miniconda), activate the environment and start the MATLAB session from the Anaconda prompt to allow MATLAB calling the correct python environment when processing the data with Cellpose. Make sure to install an mx_net version that supports GPU processing, if you have a Cuda-capable GPU installed. This can tremendously decrease processing times.
+To be able to use the external tools XPIWIT and Cellpose from within the toolbox (required to import new projects), the SciXMiner has to be provided with the paths to the third party software that should be used for processing. The paths can be set using the menu entry *ChromatinDec -> Import -> Set External Dependencies*. In particular, these are the path to the executable of *XPIWIT* (e.g., *D:/XPIWIT/Bin/*) and the path to the Cellpose root folder (e.g., *I:/Software/Cellpose/*). Make sure to create a Python environment that is setup using the Cellpose environment.yml (e.g, using miniconda), activate the environment and start the MATLAB session from the Anaconda prompt to allow MATLAB calling the correct python environment when processing the data with Cellpose. Make sure to install an mx_net version that supports GPU processing, if you have a Cuda-capable GPU installed. This can tremendously decrease processing times.
 
 
 ## Importing Projects
@@ -49,13 +49,15 @@ Due to the different durations of pro-, prometa- and metaphase, the *ChromatinDe
     - *1, 2, 3*: Toggles the visualization of raw, mask, raw+mask overlay
     - *Left Arrow*: Load previous montage
     - *Right Arrow* Load next montage
+    - *Up Arrow* Mark current images as suitable training data and load next montage
+    - *Down Arrow* Mark current images as unsuitable training data
     - *Left click*: Set IP and MA transition points
     - *Right click*: Reject the current cell track
     - *G*: Add currently visible cells to the confirmed ground truth (used for the LSTM classifier)
     - *H*: Show this help dialog with an overview of the available keyboard shortcuts.
     - Hint: In case key presses show no effect, left click once on the title bar of the figure window and try hitting the button again. This only happens if the window loses the focus.
 
-- *Update LSTM Classifier:* Function to update the training database as well as the LSTM classifiers used for rejecting incorrect tracks and to perform the automatic synchronization. Each set of 10 cells that was manually checked via *Perform Manual Synchronization* and verified can be added as a valid training sample using the *"G"* key. This information is stored in the single feature `manuallyConfirmed` that determines if cells were manually verified (value 1) or not (value 0).  The classifier and regression LSTMs are then retrained on the updated list and saved in the SciXMiner toolbox folder (`autoSyncData.mat` and `autoSyncLSTMModel.mat`).
+- *Update LSTM Classifier:* Function to update the training database as well as the LSTM classifiers used for rejecting incorrect tracks and to perform the automatic synchronization. All cells that were manually checked via *Perform Manual Synchronization* and verified by confirming via the *Up Arrow*. If cells visualized in the *Perform Manual Synchronization* window should not contribute to the training data set, simply hit the *Down Arrow*. By default, visualized cells are not part of the training set, i.e., you have to explicitly mark them as being suitable as ground truth. This information is stored in the single feature `manuallyConfirmed` that determines if cells were manually verified (value 1) or not (value 0).  The classifier and regression LSTMs are then retrained on the updated list and saved in the SciXMiner toolbox folder (`autoSyncData.mat` and `autoSyncLSTMModel.mat`). The software will always ask for a name of the classifier when retraining and when being applied to the image data. So make sure to store separate classifiers, e.g., for different magnifications or microscope settings. Hint: to only annotate a selected set of cells, you can preselect the desired cells using *Edit -> Select -> Data points using classes...*.
 
 ![alt text](Documentation/Screenshots/ManualAnnotationGUI.png "Manual Annotation GUI. Stages are color-coded into interphase (green), pro, prometa, meta and early anaphase (magenta), late ana, telo, interphase (cyan) and invalid trajectories (red).")
 
@@ -76,6 +78,24 @@ In addition to selecting data points (i.e., cells), it is possible to select whi
 The listbox enumerates all available time series allows to select a time series for visualization, analysis or to compute additional features. It is also possible to select multiple time series by pressing the CTRL key while selecting. Each time series is then visualized separately.
 
 The output variable *Selection of output variable* controls how the data are split for the visualization and uses the same classes as for the class-based data point selection, e.g., to group data points according to the same microscope, experiment, cell Id or oligoID. For instance, if *All* is selected, all cells are plotted in a single plot. If *Experiment* is selected, all cells corresponding to a single experiment are plotted in the same plot, with subplots for each of the experiments. Also useful is e.g., *OligoID* that allows to summarize the results of the same treatment. These selections affect all available visualizations. The two edit fields *Time series segment from* can be used to constrain the time window, e.g., to only focus on the first 40 time points for the manual synchronization. If you want to visualize the entire time series again, hit the *Complete time series* button.
+
+![ChromatinDec Parameters](Documentation/Screenshots/ChromatinDecDialog.png "The overview of the parameters used by the ChromatinDec toolbox.")
+
+- *Summary Output Variable*: Allows to specify which output variable should be used for grouping. This can be useful to summarize repeats of the same experiment but not the oligos of all experiments. Use *ChromatinDec -> Process -> Add Repeats Output Variable* to specify the related repeats.
+- *Recovery Measure Mode*: See documentation of the menu entry *ChromatinDec -> Process -> Compute Rel. Recovery Time Series*.
+- *Smoothing Method*: The smoothing method to be used for smoothing time series features. See valud options for the MATLAB function `smooth`.
+- *Smoothing Window*: The smoothing window to be used for smoothing time series features.
+- *IP Transition*: The position of the interphase -> prophase transition in the aligned visualizations. E.g. 30 means that all interphase frames are put before frame 30.
+- *MA Transition*: The position of the metaphase -> anaphase transition in the aligned visualizations. E.g., 60 means that all phases following anaphase will be placed after frame 60.
+- *Sister Chromatin Dist. Threshold*: Used to refine the synchronization time point based on the distance of the sister chromatin masses. The value is provided in microns. Note that it's important that projects were processed with the correct physical spacing set, as otherwise length and area measures are not comparable.
+- *Aligned Length*: The total number of frames in the aligned plots. IP Transition and MA Transition are within this range. E.g., 0 -> IP Transition -> MA Transition -> end.
+- *Rel. Regression Time Range*: Range of frames relative to the synchronization time point that will be used for computing regression-based single features to be visualized as box plots. E.g., 1-5 would indicate to use frames 1-5 after the mitotic event for computing the slope of the regression line. 
+- *Error Bar Step*: The frequency at which error bars are plotted. Used to avoid cluttered visualizations.
+- *Dark Mode?*: If enabled, dark color scheme is used for visualizations.
+- *Summarize Experiments?*: If enabled, the oligos of different experiments will be summarized.
+- *Show Error Bars?*: If enabled, error bars will be plotted in line plots.
+- *Align Plots?*: If enabled, the synchronization time points will be used for visualization. Otherwise, the original unaligned time series will be used.
+
 
 
 ## Visualizations
