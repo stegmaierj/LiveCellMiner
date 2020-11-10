@@ -31,6 +31,11 @@ alignedLength = parameter.gui.chromatindec.alignedLength;
 alignPlots = parameter.gui.chromatindec.alignPlots;
 errorStep = parameter.gui.chromatindec.errorStep;
 showErrorBars = parameter.gui.chromatindec.showErrorBars;
+
+if (~exist('showHistogram', 'var'))
+   showHistogram = false;
+end
+
 darkMode = parameter.gui.chromatindec.darkMode;
 summarizeSelectedExperiments = parameter.gui.chromatindec.summarizeSelectedExperiments;
 
@@ -94,6 +99,9 @@ for f = generate_rowvector(selectedFeatures)
     %% summarize the results of each position either as a heat map, box plots or line plots
     minValue = inf;
     maxValue = -inf;
+    globalMinValue = min(d_org(:, f));
+    globalMaxValue = max(d_org(:, f));
+    intensityHistogramStep = (globalMaxValue - globalMinValue) / 100;
     
     currentLegend = char();
     currentSubPlot = 1;
@@ -101,8 +109,13 @@ for f = generate_rowvector(selectedFeatures)
     if (summarizeSelectedExperiments == false)
         for e=generate_rowvector(selectedExperiments)
             
+            %% select subplot
             subplot(numRows, numColumns, currentSubPlot); hold on;
-                
+            
+            %% reset data points
+            dataPoints = [];
+            grouping = [];    
+            
             %% plot dummy lines for the proper visualization of the legend
             for i=1:length(selectedPositionsOrOligos)
                 if (visualizationMode == 1)
@@ -163,25 +176,40 @@ for f = generate_rowvector(selectedFeatures)
             if (numGroups == 1)
                 groupColors = [];
             end
-            boxplot(dataPoints, grouping, 'notch', 'on', 'BoxStyle', 'outline', 'Labels', currentLegend, 'ColorGroup', groupColors);
-
+            
             minValue = min(minValue, min(dataPoints(:)));
             maxValue = max(maxValue, max(dataPoints(:)));
-            box off;
+            
+            if (showHistogram == false)
+                boxplot(dataPoints, grouping, 'notch', 'on', 'BoxStyle', 'outline', 'Labels', currentLegend, 'ColorGroup', groupColors);
+                box off;
 
-            %% adjust the boxplot colors depending on the color mode
-            upperWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Upper Whisker');
-            lowerWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Lower Whisker');
-            upperAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Upper Adjacent Value');
-            lowerAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Lower Adjacent Value');
-            set(upperWhiskers, 'Color', markerColor);
-            set(lowerWhiskers, 'Color', markerColor);
-            set(upperAdjacentValue, 'Color', markerColor);
-            set(lowerAdjacentValue, 'Color', markerColor);
-            %xtickangle(15);        
-                        
+                %% adjust the boxplot colors depending on the color mode
+                upperWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Upper Whisker');
+                lowerWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Lower Whisker');
+                upperAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Upper Adjacent Value');
+                lowerAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Lower Adjacent Value');
+                set(upperWhiskers, 'Color', markerColor);
+                set(lowerWhiskers, 'Color', markerColor);
+                set(upperAdjacentValue, 'Color', markerColor);
+                set(lowerAdjacentValue, 'Color', markerColor);
+                %xtickangle(15);        
+
+                ylabel(strrep(kill_lz(dorgbez(f,:)), '_', '\_'));
+            else
+                if (length(unique(grouping)) > 1)
+                    hist3([dataPoints, grouping], 'Ctrs', {globalMinValue:intensityHistogramStep:globalMaxValue unique(grouping)'}, 'CDataMode','auto','FaceColor','interp');
+                else
+                    hist(dataPoints, globalMinValue:intensityHistogramStep:globalMaxValue);
+                end
+                set(gca, 'YTick', unique(grouping), 'YTickLabels', currentLegend);
+                xlabel(strrep(kill_lz(dorgbez(f,:)), '_', '\_'));
+                ylabel('Grouping');
+                zlabel('Number of Cells'); 
+                axis tight; box off;
+            end
+            
             title(strrep(zgf_y_bez(experimentId,e).name, '_', '\_'));
-            ylabel(strrep(kill_lz(dorgbez(f,:)), '_', '\_'));
             
             %% increment subplot counter
             currentSubPlot = currentSubPlot + 1;
@@ -251,24 +279,37 @@ for f = generate_rowvector(selectedFeatures)
             groupColors = [];
         end
 
-        boxplot(dataPoints, grouping, 'notch', 'on', 'BoxStyle', 'outline', 'Labels', currentLegend, 'ColorGroup', groupColors);
-        box off;
-
         minValue = min(minValue, min(dataPoints(:)));
         maxValue = max(minValue, max(dataPoints(:)));
 
-        %% adjust the boxplot colors depending on the color mode
-        upperWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Upper Whisker');
-        lowerWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Lower Whisker');
-        upperAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Upper Adjacent Value');
-        lowerAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Lower Adjacent Value');
-        set(upperWhiskers, 'Color', markerColor);
-        set(lowerWhiskers, 'Color', markerColor);
-        set(upperAdjacentValue, 'Color', markerColor);
-        set(lowerAdjacentValue, 'Color', markerColor);
-        
+        if (showHistogram == false)
+            boxplot(dataPoints, grouping, 'notch', 'on', 'BoxStyle', 'outline', 'Labels', currentLegend, 'ColorGroup', groupColors);
+            box off;
+
+            %% adjust the boxplot colors depending on the color mode
+            upperWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Upper Whisker');
+            lowerWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Lower Whisker');
+            upperAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Upper Adjacent Value');
+            lowerAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Lower Adjacent Value');
+            set(upperWhiskers, 'Color', markerColor);
+            set(lowerWhiskers, 'Color', markerColor);
+            set(upperAdjacentValue, 'Color', markerColor);
+            set(lowerAdjacentValue, 'Color', markerColor);
+            ylabel(strrep(kill_lz(dorgbez(f,:)), '_', '\_'));
+        else
+            if (length(unique(grouping)) > 1)
+                hist3([dataPoints, grouping], 'Ctrs', {globalMinValue:intensityHistogramStep:globalMaxValue [unique(grouping)']}, 'CDataMode','auto','FaceColor','interp');
+            else
+                hist(dataPoints, globalMinValue:intensityHistogramStep:globalMaxValue);
+            end
+            set(gca, 'YTick', unique(grouping), 'YTickLabels', currentLegend);
+            xlabel(strrep(kill_lz(dorgbez(f,:)), '_', '\_'));
+            ylabel('Grouping');
+            zlabel('Number of Cells');
+            axis tight; box off;
+        end
+                
         title('Combined Experiments');
-        ylabel(strrep(kill_lz(dorgbez(f,:)), '_', '\_'));
     end
 end
 

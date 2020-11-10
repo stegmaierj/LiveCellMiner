@@ -197,14 +197,14 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Show';
 elements(mc).tag = 'MI_ChromatinDec_Show';
-elements(mc).menu_items = {'MI_ChromatinDec_ShowHeatMaps', 'MI_ChromatinDec_ShowLinePlots', 'MI_ChromatinDec_ShowCombLinePlots', 'MI_ChromatinDec_ShowCombBoxPlots'};
+elements(mc).menu_items = {'MI_ChromatinDec_ShowHeatMaps', 'MI_ChromatinDec_ShowLinePlots', 'MI_ChromatinDec_ShowCombLinePlots', 'MI_ChromatinDec_ShowCombBoxPlots', 'MI_ChromatinDec_ShowCombHistogramPlots'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
-elements(mc).name = 'Show Heatmaps';
+elements(mc).name = 'Heatmaps';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'visualizationMode = 1; callback_chromatindec_show_heatmaps;';
 elements(mc).tag = 'MI_ChromatinDec_ShowHeatMaps';
@@ -215,7 +215,7 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
-elements(mc).name = 'Show Line Plots';
+elements(mc).name = 'Line Plots';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'visualizationMode = 2; callback_chromatindec_show_heatmaps;';
 elements(mc).tag = 'MI_ChromatinDec_ShowLinePlots';
@@ -227,7 +227,7 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
-elements(mc).name = 'Show Comb. Line Plots';
+elements(mc).name = 'Comb. Line Plots';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'visualizationMode = 2; callback_chromatindec_show_combined_plots;';
 elements(mc).tag = 'MI_ChromatinDec_ShowCombLinePlots';
@@ -238,10 +238,21 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
-elements(mc).name = 'Show Comb. Box Plots';
+elements(mc).name = 'Comb. Box Plots';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_chromatindec_show_combined_boxplots;';
+elements(mc).callback = 'showHistogram = false; callback_chromatindec_show_combined_boxplots;';
 elements(mc).tag = 'MI_ChromatinDec_ShowCombBoxPlots';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Comb. Histogram Plots';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'showHistogram = true; callback_chromatindec_show_combined_boxplots;';
+elements(mc).tag = 'MI_ChromatinDec_ShowCombHistogramPlots';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
@@ -253,7 +264,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Process';
 elements(mc).tag = 'MI_ChromatinDec_Process';
-elements(mc).menu_items = {'MI_ChromatinDec_PerformFeatureNormalization', 'MI_ChromatinDec_SmoothFeatures', 'MI_ChromatinDec_ComputeLinearRegressionSlope', 'MI_ChromatinDec_ComputeRelativeRecoveryTimeSeries', 'MI_ChromatinDec_AddOligoIDOutputVariable', 'MI_ChromatinDec_AddRepeatsOutputVariable'};
+elements(mc).menu_items = {'MI_ChromatinDec_PerformFeatureNormalization', 'MI_ChromatinDec_SmoothFeatures', 'MI_ChromatinDec_ComputeAdditionalSingleFeatures', 'MI_ChromatinDec_ComputeLinearRegressionSlope', 'MI_ChromatinDec_ComputeRelativeRecoveryTimeSeries', 'MI_ChromatinDec_AddOligoIDOutputVariable', 'MI_ChromatinDec_AddRepeatsOutputVariable', 'MI_ChromatinDec_SelSingleFeatureRange'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;
@@ -303,6 +314,17 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
+elements(mc).name = 'Compute Additional Single Features';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_chromatindec_compute_additional_single_features;';
+elements(mc).tag = 'MI_ChromatinDec_ComputeAdditionalSingleFeatures';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
 elements(mc).name = 'Add OligoID Output Variable';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_chromatindec_add_oligoid_output_variable;';
@@ -318,6 +340,17 @@ elements(mc).name = 'Add Repeats Output Variable';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_chromatindec_add_combined_experiment_output_variable;';
 elements(mc).tag = 'MI_ChromatinDec_AddRepeatsOutputVariable';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Select Data Points using Feature Range';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_chromatindec_select_based_on_single_feature_range;';
+elements(mc).tag = 'MI_ChromatinDec_SelSingleFeatureRange';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 

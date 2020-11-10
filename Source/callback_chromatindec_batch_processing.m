@@ -67,7 +67,7 @@ end
 %% prepare question dialog to ask for the physical spacing of the experiments
 dlgtitle = 'Additional settings:';
 dims = [1 100];
-additionalUserSettings = inputdlg({'Input Path Windows Prefix', 'Input Path IP-based Prefix (leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)'}, dlgtitle, dims, {defaultSearchFolder, '\\filesrv\Images\', '0'});
+additionalUserSettings = inputdlg({'Input Path Windows Prefix', 'Input Path IP-based Prefix (leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?'}, dlgtitle, dims, {defaultSearchFolder, '\\filesrv\Images\', '0', '0'});
 if (isempty(additionalUserSettings))
     disp('No additional settings provided, stopping processing ...');
     return;
@@ -103,6 +103,7 @@ for i=1:length(inputFolders)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% project-specific parameters and selection of algrithms to use for processing
     parameters.useCellpose = str2double(additionalUserSettings{3}) > 0; %% if enabled, the cellpose algorithm will be used for segmentation instead of the threshold/watershed default algorithm
+    parameters.reprocessExistingProjects = str2double(additionalUserSettings{4}) > 0;
     parameters.seedBasedDetection = true;             %% if enabled, LoGSSMP seeds will be used. Otherwise, cell pose segmentation results will be used.
     parameters.writeImagePatches = false;             %% if enabled, small image patches will be written separately to disk
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,6 +174,17 @@ for i=1:length(inputFolders)
     parameters.CELLPOSEModelDir = [parameters.CELLPOSEPath 'models/'];
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    %% start the processing
-    callback_chromatindec_import_project(parameters);
+    %% skip processing if the project already exists
+    [~, filesExist] = callback_chromatindec_generate_output_paths(parameters);
+    if (~filesExist.project || ...
+        ~filesExist.rawImagePatches || ...
+        ~filesExist.maskImagePatches || ...
+        ~filesExist.maskedImageCNNFeatures || ...
+        parameters.reprocessExistingProjects)
+    
+        %% process current files if the project didn't exist
+        callback_chromatindec_import_project(parameters);
+    else
+        disp(['Project file for ' parameters.inputFolder ' already exists, skipping processing (To reprocess, manually delete the *.prjz and *.mat files in the project directory).' ]);
+    end
 end

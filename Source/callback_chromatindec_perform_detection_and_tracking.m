@@ -122,13 +122,17 @@ function [] = callback_chromatindec_perform_detection_and_tracking(parameters)
     projekt.patchWidth = parameters.patchWidth;
     projekt.timeWindowDaughter = parameters.timeWindowDaughter;
     projekt.timeWindowMother = parameters.timeWindowMother;
-    save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_SciXMiner.prjz'), '-mat', 'd_orgs', 'code', 'var_bez', 'code_alle', 'projekt');
-    save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_RawImagePatches.mat'), '-mat', 'finalRawImagePatches');
-    save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_MaskImagePatches.mat'), '-mat', 'finalMaskImagePatches');
-    save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_MaskedImageCNNFeatures.mat'), '-mat', 'finalMaskedImageCNNFeatures');
+    
+    %% create the output file names for the current project
+    outputNames = callback_chromatindec_generate_output_paths(parameters);
+    save(outputNames.project, '-mat', 'd_orgs', 'code', 'var_bez', 'code_alle', 'projekt');
+    save(outputNames.rawImagePatches, '-mat', 'finalRawImagePatches');
+    save(outputNames.maskImagePatches, '-mat', 'finalMaskImagePatches');
+    save(outputNames.maskedImageCNNFeatures, '-mat', 'finalMaskedImageCNNFeatures');
     if (~isempty(finalRawImagePatches2))
-        save(strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_RawImagePatches2.mat'), '-mat', 'finalRawImagePatches2');
+        save(outputNames.rawImagePatches2, '-mat', 'finalRawImagePatches2');
     end
     
+    %% display success message
     disp(['Processing of input folder experiment ' parameters.experimentName ', position ' parameters.positionNumber ' was successful. Results saved in ' strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '*')]);
 end
