@@ -292,7 +292,7 @@ els(ec).bezeichner.hoehe = 20;
 % ChromatinDec for the second control element (here: a edit field for numbers)
 ec = ec+1; 
 %Tag for the handling of the elements, the name must be unique
-els(ec).tag = 'CE_ChromatinDec_SisterDistanceThreshold';
+els(ec).tag = 'CE_ChromatinDec_SisterDistanceThreshold'; 
 %number of the handle - added as the last column for the handle matrix 
 els(ec).uihd_code = [newcolumn ec]; 
 els(ec).handle = [];

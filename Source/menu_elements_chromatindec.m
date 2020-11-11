@@ -317,7 +317,7 @@ elements(mc).handle = [];
 elements(mc).name = 'Compute Additional Single Features';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_chromatindec_compute_additional_single_features;';
-elements(mc).tag = 'MI_ChromatinDec_ComputeAdditionalSingleFeatures';
+elements(mc).tag = 'MI_ChromatinDec_ComputeAdditionalSingleFeatures'; 
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 

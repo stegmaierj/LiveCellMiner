@@ -37,6 +37,6 @@ function featureId = callback_chromatindec_find_single_feature(dorgbez, featureN
 
 	%% return 0 if feature was not found
     if (featureId == 0)
-       disp('Desired single feature was not found! The search is case sensitive!');
+       disp(['Desired single feature ' featureName ' was not found! The search is case sensitive!']);
     end
 end

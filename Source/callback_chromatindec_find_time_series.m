@@ -37,6 +37,6 @@ function featureId = callback_chromatindec_find_time_series(var_bez, featureName
 
 	%% return 0 if feature was not found
     if (featureId == 0)
-       disp('Desired time series was not found! The search is case sensitive!');
+       disp(['Desired time series ' featureName ' was not found! The search is case sensitive!']);
     end
 end

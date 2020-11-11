@@ -37,6 +37,6 @@ function outputVariableId = callback_chromatindec_find_output_variable(bez_code,
 
 	%% return 0 if not found
     if (outputVariableId == 0)
-       disp('Output variables either for Experiment or for OligoID are missing!');
+       disp(['Output variables ' outputVariableName ' either for Experiment or for OligoID are missing!']);
     end
 end

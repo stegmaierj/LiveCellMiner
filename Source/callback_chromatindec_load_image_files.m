@@ -38,7 +38,7 @@ inputRootFolder = [inputRootFolder filesep];
 
 %% initialize the SciXMiner variables
 numTotalCells = size(d_orgs, 1);
-numFrames = 90;
+numFrames = size(d_orgs,2);
 
 rawImagePatches = cell(numTotalCells, numFrames);
 maskImagePatches = cell(numTotalCells, numFrames);

@@ -34,10 +34,10 @@ function [featureNames, featureVector] = callback_chromatindec_extract_nucleus_f
     adjustedRawImg = imadjust(rawImage);
     labelImage = bwlabel(maskImage);
     gradMagImage  = imgradient(rawImage);
-    featureNames1 = char('Area', 'MajorAxisLength', 'MinorAxisLength', 'Circularity', 'MeanIntensity', 'StdIntensity', 'StdIntensityGradMag');
+    featureNames1 = char('Area', 'MajorAxisLength', 'MinorAxisLength', 'Orientation', 'Circularity', 'MeanIntensity', 'StdIntensity', 'StdIntensityGradMag');
 
     % compute the basic features from the raw image
-    regPropRaw = regionprops(labelImage, rawImage, 'Area', 'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Circularity', 'MeanIntensity');
+    regPropRaw = regionprops(labelImage, rawImage, 'Area', 'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation', 'Circularity', 'MeanIntensity');
 
     % extract the label of the connected component located in the center
     imageSize = size(labelImage);
@@ -71,7 +71,7 @@ function [featureNames, featureVector] = callback_chromatindec_extract_nucleus_f
         stdIntensity = std2(rawImage(validIndices));   % std for raw image
         stdIntensityGradMag = std2(gradMagImage(validIndices));
         featureVector1 = [regPropRaw(centerLabel).Area, regPropRaw(centerLabel).MajorAxisLength, ...
-                          regPropRaw(centerLabel).MinorAxisLength, regPropRaw(centerLabel).Circularity, ...
+                          regPropRaw(centerLabel).MinorAxisLength, regPropRaw(centerLabel).Orientation, regPropRaw(centerLabel).Circularity, ...
                           regPropRaw(centerLabel).MeanIntensity, stdIntensity, stdIntensityGradMag];
     end
 

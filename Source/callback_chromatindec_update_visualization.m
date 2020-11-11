@@ -24,8 +24,8 @@
 %
 %%
 
-global parameters;
 global parameter;
+global parameters;
 global d_orgs;
 global rawImagePatches;
 global maskImagePatches;
@@ -145,11 +145,11 @@ for i=generate_rowvector(parameters.currentCells)
     beforeMA = find(currentStates == 2);
     afterMA = find(currentStates == 3);
     
-    if (~isempty(invalidIndices)); rectangle('Position', [(invalidIndices(1)-1)*90+1, (currentCell-1)*90+1, 90*length(invalidIndices), 89], 'EdgeColor','r'); end
-    if (~isempty(unlabeledIndices)); rectangle('Position', [(unlabeledIndices(1)-1)*90+1, (currentCell-1)*90+1, 90*length(unlabeledIndices), 89], 'EdgeColor','b'); end
-    if (~isempty(beforeIP)); rectangle('Position', [(beforeIP(1)-1)*90+1, (currentCell-1)*90+1, 90*length(beforeIP), 89], 'EdgeColor','g'); end
-    if (~isempty(beforeMA)); rectangle('Position', [(beforeMA(1)-1)*90+1, (currentCell-1)*90+1, 90*length(beforeMA), 89], 'EdgeColor','m'); end
-    if (~isempty(afterMA)); rectangle('Position', [(afterMA(1)-1)*90+1, (currentCell-1)*90+1, 90*length(afterMA), 89], 'EdgeColor','c'); end
+    if (~isempty(invalidIndices)); rectangle('Position', [(invalidIndices(1)-1)*parameter.projekt.patchWidth+1, (currentCell-1)*parameter.projekt.patchWidth+1, parameter.projekt.patchWidth*length(invalidIndices), (parameter.projekt.patchWidth-1)], 'EdgeColor','r'); end
+    if (~isempty(unlabeledIndices)); rectangle('Position', [(unlabeledIndices(1)-1)*parameter.projekt.patchWidth+1, (currentCell-1)*parameter.projekt.patchWidth+1, parameter.projekt.patchWidth*length(unlabeledIndices), (parameter.projekt.patchWidth-1)], 'EdgeColor','b'); end
+    if (~isempty(beforeIP)); rectangle('Position', [(beforeIP(1)-1)*parameter.projekt.patchWidth+1, (currentCell-1)*parameter.projekt.patchWidth+1, parameter.projekt.patchWidth*length(beforeIP), (parameter.projekt.patchWidth-1)], 'EdgeColor','g'); end
+    if (~isempty(beforeMA)); rectangle('Position', [(beforeMA(1)-1)*parameter.projekt.patchWidth+1, (currentCell-1)*parameter.projekt.patchWidth+1, parameter.projekt.patchWidth*length(beforeMA), (parameter.projekt.patchWidth-1)], 'EdgeColor','m'); end
+    if (~isempty(afterMA)); rectangle('Position', [(afterMA(1)-1)*parameter.projekt.patchWidth+1, (currentCell-1)*parameter.projekt.patchWidth+1, parameter.projekt.patchWidth*length(afterMA), (parameter.projekt.patchWidth-1)], 'EdgeColor','c'); end
     
     currentCell = currentCell + 1;
 end

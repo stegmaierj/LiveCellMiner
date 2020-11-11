@@ -27,25 +27,25 @@
 %% enable/disable debug figures
 debugFigures = false;
 
-%% load image files if not already loaded
-if (~exist('maskImagePatches', 'var') || ~exist('rawImagePatches', 'var') || ~exist('maskedImageCNNFeatures', 'var') || ...
-    isempty(maskImagePatches) || isempty(rawImagePatches) || isempty(maskedImageCNNFeatures))
-    disp('Image snippets and CNN features are not loaded yet. Precaching image files and CNN features for faster processing ...');
-    callback_chromatindec_load_image_files;
-end
-
 %% load the previous data
+modelPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'autoSyncLSTMModel.mat'];
 syncMethod = questdlg('Which synchronization method do you want to use?', 'Select Synchronization Mode', 'Classical', 'Classical + Auto Rejection', 'LSTM + HMM + Auto Rejection', 'Classical + Auto Rejection');
-useClassicalSync = contains(syncMethod, 'Classical');
-useAutoRejection = contains(syncMethod, 'Auto Rejection');
+useClassicalSync = ~isempty(strfind(syncMethod, 'Classical'));
+useAutoRejection = ~isempty(strfind(syncMethod, 'Auto Rejection'));
+
+if (useAutoRejection == true)
+    
+end
 
 %% path to the pretrained model
 if (useAutoRejection == true)
-    [filename, pathname] = uigetfile('*.cdc', 'Select a trained classifier suitable for the currently selected cells!', [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'classifiers' filesep]);
-    modelPath = [pathname filename];
+    
+    if (~exist('maskedImageCNNFeatures', 'var'))
+        callback_chromatindec_load_image_files;
+    end    
     
     if (exist(modelPath, 'file'))
-        load(modelPath, '-mat');
+        load(modelPath);
     else
         disp('LSTM classifier for discarding invalid tracks and auto sync was not found. Perform manual annotations first and train a classifier using "Chromatindec -> Align -> Update LSTM Classifier"');
     end
@@ -53,54 +53,23 @@ end
 
 %% add new time series for the synchronization time point
 synchronizationIndex = callback_chromatindec_find_time_series(var_bez, 'manualSynchronization');
-if (synchronizationIndex == 0)
+if (synchronizationIndex <= 0)
    d_orgs(:,:,end+1) = 0;
    var_bez = char(var_bez(1:size(d_orgs,3)-1,:), 'manualSynchronization');
    aktparawin;
 end
 
 %% identify features required for the automatic synchronization
-oldSelection = parameter.gui.merkmale_und_klassen.ind_zr;
-set_textauswahl_listbox(gaitfindobj('CE_Auswahl_ZR'),{'manualSynchronization'});eval(gaitfindobj_callback('CE_Auswahl_ZR'));
-synchronizationIndex = parameter.gui.merkmale_und_klassen.ind_zr;
-
-set_textauswahl_listbox(gaitfindobj('CE_Auswahl_ZR'),{'MeanIntensity'});eval(gaitfindobj_callback('CE_Auswahl_ZR'));
-meanIntensityIndex = parameter.gui.merkmale_und_klassen.ind_zr;
-
-set_textauswahl_listbox(gaitfindobj('CE_Auswahl_ZR'),{'StdIntensity'});eval(gaitfindobj_callback('CE_Auswahl_ZR'));
-stdIntensityIndex = parameter.gui.merkmale_und_klassen.ind_zr;
-
-set_textauswahl_listbox(gaitfindobj('CE_Auswahl_ZR'),{'Entropy'});eval(gaitfindobj_callback('CE_Auswahl_ZR'));
-entropyIndex = parameter.gui.merkmale_und_klassen.ind_zr;
-
-set_textauswahl_listbox(gaitfindobj('CE_Auswahl_ZR'),{'Area'});eval(gaitfindobj_callback('CE_Auswahl_ZR'));
-areaIndex = parameter.gui.merkmale_und_klassen.ind_zr;
-
-set_textauswahl_listbox(gaitfindobj('CE_Auswahl_ZR'),{'Circularity'});eval(gaitfindobj_callback('CE_Auswahl_ZR'));
-circularityIndex = parameter.gui.merkmale_und_klassen.ind_zr;
-
-%% specify the cluster features
+synchronizationIndex = callback_chromatindec_find_time_series(var_bez, 'manualSynchronization'); 
+areaIndex = callback_chromatindec_find_time_series(var_bez, 'Area');
+circularityIndex = callback_chromatindec_find_time_series(var_bez, 'Circularity');
+meanIntensityIndex = callback_chromatindec_find_time_series(var_bez, 'MeanIntensity');
+stdIntensityIndex = callback_chromatindec_find_time_series(var_bez, 'StdIntensity');
+entropyIndex = callback_chromatindec_find_time_series(var_bez, 'Entropy');
 clusterFeatures = [areaIndex, circularityIndex, meanIntensityIndex, stdIntensityIndex];
-
-%% restore the old selection
-set(gaitfindobj('CE_Auswahl_ZR'),'value', oldSelection);
-aktparawin;
 
 %% check if a manually confirmed feature exists to skip auto-alignment for manually corrected ones.
 manuallyConfirmedIndex = callback_chromatindec_find_single_feature(dorgbez, 'manuallyConfirmed');
-
-%% check if a daughter distance feature exists and compute it otherwise.
-sisterDistanceIndex = callback_chromatindec_find_time_series(var_bez, 'SisterCellDistance');
-if (sisterDistanceIndex == 0)
-    callback_chromatindec_compute_sister_distance;
-    sisterDistanceIndex = callback_chromatindec_find_time_series(var_bez, 'SisterCellDistance');
-end
-
-if (parameter.gui.chromatindec.sisterDistanceThreshold > 0)    
-    disp(['Using sister cell distance-based heuristic with a distance threshold set to ' num2str(parameter.gui.chromatindec.sisterDistanceThreshold) ' to detect the meta to anaphase transition.']);
-else
-    disp('Using area-based heuristic to detect the meta to anaphase transition (set non-negative sister distance threshold to use this feature instead!');
-end
 
 %% counters to check how many cells were properly sync'ed
 MATransition = 30;
@@ -195,36 +164,25 @@ for i=ind_auswahl'%1:2:size(d_orgs,1)
     anaPhaseFrames = MATransition:numFrames;
     bestMA = MATransition;
 
-    %% refine the ma transition point
-    if (parameter.gui.chromatindec.sisterDistanceThreshold <= 0)
-        %% check if current sync point is early anaphase
-        area11 = d_orgs(i, anaPhaseFrames(1), areaIndex);
-        area12 = d_orgs(i, anaPhaseFrames(2), areaIndex);
-        area21 = d_orgs(i+1, anaPhaseFrames(1), areaIndex);
-        area22 = d_orgs(i+1, anaPhaseFrames(2), areaIndex);
-        intensity11 = d_orgs(i, anaPhaseFrames(1), meanIntensityIndex);
-        intensity12 = d_orgs(i, anaPhaseFrames(2), meanIntensityIndex);
-        intensity21 = d_orgs(i+1, anaPhaseFrames(1), meanIntensityIndex);
-        intensity22 = d_orgs(i+1, anaPhaseFrames(2), meanIntensityIndex);
+    %% check if current sync point is early anaphase
+    area11 = d_orgs(i, anaPhaseFrames(1), areaIndex);
+    area12 = d_orgs(i, anaPhaseFrames(2), areaIndex);
+    area21 = d_orgs(i+1, anaPhaseFrames(1), areaIndex);
+    area22 = d_orgs(i+1, anaPhaseFrames(2), areaIndex);
+    intensity11 = d_orgs(i, anaPhaseFrames(1), meanIntensityIndex);
+    intensity12 = d_orgs(i, anaPhaseFrames(2), meanIntensityIndex);
+    intensity21 = d_orgs(i+1, anaPhaseFrames(1), meanIntensityIndex);
+    intensity22 = d_orgs(i+1, anaPhaseFrames(2), meanIntensityIndex);
 
-        %% shift meta-ana transition time point by a frame if:
-        %% 1. the area of both daughters is smaller in the next frame OR
-        %% 2. the intensity of both daughters is higher in the next frame
-        %% both cases indicate a stronger compaction of the chromatin and a
-        %% void selecting early ana phase as the transition.
-        if ((area11 > area12 || area21 > area22) || ...
-            (intensity11 < intensity12 && intensity21 < intensity22))
-            bestMA = bestMA + 1;
-        end
-    else
-        sisterDistances = d_orgs(i, anaPhaseFrames, sisterDistanceIndex);
-        validFrames = find(sisterDistances > parameter.gui.chromatindec.sisterDistanceThreshold);
-        bestMA = bestMA + min(validFrames) - 1;
-        
-        if (min(validFrames) > 1)
-           test = 1; 
-        end
-    end
+    %% shift meta-ana transition time point by a frame if:
+    %% 1. the area of both daughters is smaller in the next frame OR
+    %% 2. the intensity of both daughters is higher in the next frame
+    %% both cases indicate a stronger compaction of the chromatin and a
+    %% void selecting early ana phase as the transition.
+    if ((area11 > area12 || area21 > area22) || ...
+        (intensity11 < intensity12 && intensity21 < intensity22))
+        bestMA = bestMA + 1;
+    end    
 
     %% set the synchronization time points
     d_orgs(i:(i+1), 1:(bestIP-1), synchronizationIndex) = 1;

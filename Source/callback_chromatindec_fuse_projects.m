@@ -31,7 +31,7 @@ inputRootFolder = [inputRootFolder filesep];
 
 %% initialize the SciXMiner variables
 numFrames = 90;
-numFeatures = 29;
+numFeatures = 30;
 d_orgs_new = zeros(0, numFrames, numFeatures);
 code_alle_new = zeros(0, 5);
 zgf_y_bez_new = struct();

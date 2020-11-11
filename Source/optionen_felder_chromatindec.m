@@ -112,7 +112,7 @@ felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
-felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_SisterDistanceThreshold';
+felder(fc).visible(end+1).i_control_elements = 'CE_ChromatinDec_SisterDistanceThreshold'; 
 felder(fc).visible(end).pos = [300 240];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
 

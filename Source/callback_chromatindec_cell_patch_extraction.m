@@ -47,7 +47,7 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
     
     %% choose cell ids from candidate list
     numFrames = size(d_orgs, 2);
-    numFeatures = 29;
+    numFeatures = 30;
     sortedList = sortrows(candidateList);
     cellIDs = sortedList(:,1);
     maxCellID = max(cellIDs);
@@ -115,15 +115,19 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
                         
                         %% scale and crop the image snippet depending on the physical pixel size
                         scaleFactor = parameters.micronsPerPixel / parameters.patchRescaleFactor;
-                        croppedImage = imresize(croppedImage, scaleFactor, 'linear');
+                        croppedImage = imresize(croppedImage, scaleFactor, 'bilinear');
                         newTopLeftCorner = round((size(croppedImage) - parameters.patchWidth) / 2);
-                        croppedImage = imcrop(croppedImage, [newTopLeftCorner(1), newTopLeftCorner(2), parameters.patchWidth, parameters.patchWidth]);
+                        newRangeX = (newTopLeftCorner(1)+1):(newTopLeftCorner(1)+parameters.patchWidth);
+                        newRangeY = (newTopLeftCorner(2)+1):(newTopLeftCorner(2)+parameters.patchWidth);
+                        croppedImage = croppedImage(newRangeX, newRangeY);
                         
                         rawImagePatches{currentIndex, i} = croppedImage;
                         
                         if (~isempty(rawImage2))
                             croppedImage2 = uint16(rawImage2(rangeX, rangeY));
-                            rawImagePatches2{currentIndex, i} = croppedImage2; 
+                            croppedImage2 = imresize(croppedImage2, scaleFactor, 'bilinear');
+                            croppedImage2 = croppedImage2(newRangeX, newRangeY);
+                            rawImagePatches2{currentIndex, i} = croppedImage2;
                         end
                         
                         %% Segment the nuclues of cell
@@ -131,6 +135,8 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
                             croppedMask = uint16(callback_chromatindec_segment_center_nucleus(croppedImage));
                         else
                             croppedMask = uint16(maskImage(rangeX, rangeY));
+                            croppedMask = imresize(croppedMask, scaleFactor, 'nearest');
+                            croppedMask = croppedMask(newRangeX, newRangeY);
                             centerLabel = croppedMask(patchWidth/2, patchWidth/2);
                             
                             if (centerLabel > 0)
