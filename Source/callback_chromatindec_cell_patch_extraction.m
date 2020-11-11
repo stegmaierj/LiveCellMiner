@@ -112,6 +112,13 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
 
                         %% extract the copped image
                         croppedImage = uint16(rawImage(rangeX, rangeY));
+                        
+                        %% scale and crop the image snippet depending on the physical pixel size
+                        scaleFactor = parameters.micronsPerPixel / parameters.patchRescaleFactor;
+                        croppedImage = imresize(croppedImage, scaleFactor, 'linear');
+                        newTopLeftCorner = round((size(croppedImage) - parameters.patchWidth) / 2);
+                        croppedImage = imcrop(croppedImage, [newTopLeftCorner(1), newTopLeftCorner(2), parameters.patchWidth, parameters.patchWidth]);
+                        
                         rawImagePatches{currentIndex, i} = croppedImage;
                         
                         if (~isempty(rawImage2))

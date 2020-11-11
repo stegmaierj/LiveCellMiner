@@ -100,11 +100,11 @@ function [] = callback_chromatindec_perform_detection_and_tracking(parameters)
     minorAxisLenghtID = callback_chromatindec_find_time_series(featureNames, 'MinorAxisLength');
     majorAxisLengthID = callback_chromatindec_find_time_series(featureNames, 'MajorAxisLength');
     areaID = callback_chromatindec_find_time_series(featureNames, 'Area');
-    finalFeatureMatrix(:,:,xposID) = finalFeatureMatrix(:,:,xposID) * parameters.micronsPerPixel;
-    finalFeatureMatrix(:,:,yposID) = finalFeatureMatrix(:,:,yposID) * parameters.micronsPerPixel;
-    finalFeatureMatrix(:,:,minorAxisLenghtID) = finalFeatureMatrix(:,:,minorAxisLenghtID) * parameters.micronsPerPixel;
-    finalFeatureMatrix(:,:,majorAxisLengthID) = finalFeatureMatrix(:,:,majorAxisLengthID) * parameters.micronsPerPixel;
-    finalFeatureMatrix(:,:,areaID) = finalFeatureMatrix(:,:,areaID) * (parameters.micronsPerPixel^2);
+    finalFeatureMatrix(:,:,xposID) = finalFeatureMatrix(:,:,xposID) * parameters.micronsPerPixel; %% rescaling is not applied to the positions, thus they use the original pixel spacing
+    finalFeatureMatrix(:,:,yposID) = finalFeatureMatrix(:,:,yposID) * parameters.micronsPerPixel; %% rescaling is not applied to the positions, thus they use the original pixel spacing
+    finalFeatureMatrix(:,:,minorAxisLenghtID) = finalFeatureMatrix(:,:,minorAxisLenghtID) * parameters.patchRescaleFactor; %% as the image patches were rescaled with parameters.patchRescaleFactor
+    finalFeatureMatrix(:,:,majorAxisLengthID) = finalFeatureMatrix(:,:,majorAxisLengthID) * parameters.patchRescaleFactor; %% as the image patches were rescaled with parameters.patchRescaleFactor
+    finalFeatureMatrix(:,:,areaID) = finalFeatureMatrix(:,:,areaID) * (parameters.patchRescaleFactor^2); %% as the image patches were rescaled with parameters.patchRescaleFactor
     
     %% write the results as SciXMiner project
     d_orgs = finalFeatureMatrix;
@@ -117,6 +117,7 @@ function [] = callback_chromatindec_perform_detection_and_tracking(parameters)
     projekt.motherDaughterList = motherDaughterList;
     projekt.candidateList = candidateList;
     projekt.micronsPerPixel = parameters.micronsPerPixel;
+    projekt.patchRescaleFactor = parameters.patchRescaleFactor;
     projekt.experimentName = parameters.experimentName;
     projekt.positionNumber = parameters.positionNumber;
     projekt.patchWidth = parameters.patchWidth;
