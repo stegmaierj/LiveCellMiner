@@ -26,6 +26,12 @@
 
 %% get the root directory of the projects to import
 inputRootFolder = uigetdir();
+if (inputRootFolder == 0)
+   disp('Please select a valid input folder. Aborting ...');
+   return;
+end
+
+%% import all subfolders
 inputRootFolder = [inputRootFolder filesep];
 [inputFolders, microscopeList, experimentList, positionList] = callback_chromatindec_get_valid_input_paths(inputRootFolder);
 
