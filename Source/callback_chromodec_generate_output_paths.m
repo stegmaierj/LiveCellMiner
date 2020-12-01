@@ -1,0 +1,42 @@
+%%
+% ChromatinDec.
+% Copyright (C) 2020 A. Bhattacharyya, D. Moreno-Andres, J. Stegmaier
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the Liceense at
+%
+%     http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
+%
+% Please refer to the documentation for more information about the software
+% as well as for installation instructions.
+%
+% If you use this application for your work, please cite the repository and one
+% of the following publications:
+%
+% TBA
+%
+%%
+
+function [outputNames, filesExist] = callback_chromodec_generate_output_paths(parameters)
+
+    %% assemble output project names
+    outputNames.project = strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_SciXMiner.prjz');
+    outputNames.rawImagePatches = strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_RawImagePatches.mat');
+    outputNames.rawImagePatches2 = strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_RawImagePatches2.mat');
+    outputNames.maskImagePatches = strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_MaskImagePatches.mat');
+    outputNames.maskedImageCNNFeatures = strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '_MaskedImageCNNFeatures.mat');
+    
+    %% check if files already exist
+    filesExist.project = isfile(outputNames.project);
+    filesExist.rawImagePatches = isfile(outputNames.rawImagePatches);
+    filesExist.rawImagePatches2 = isfile(outputNames.rawImagePatches2);
+    filesExist.maskImagePatches = isfile(outputNames.maskImagePatches);
+    filesExist.maskedImageCNNFeatures = isfile(outputNames.maskedImageCNNFeatures);
+end
