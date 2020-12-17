@@ -1,6 +1,6 @@
 %%
-% ChromatinDec.
-% Copyright (C) 2020 A. Bhattacharyya, D. Moreno-Andres, J. Stegmaier
+% LiveCellMiner.
+% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -66,8 +66,8 @@ if (visualizationMode == 1)
     ylabel(kill_lz(var_bez(f,:)));
 
     if (alignPlots == true)
-        plot([IPTransition, IPTransition], [0, length(validIndices)], '--k', 'LineWidth', 2);
-        plot([MATransition, MATransition], [0, length(validIndices)], '--k', 'LineWidth', 2);
+        plot([IPTransition, IPTransition], [-10000, 10000], '--k', 'LineWidth', 2);
+        plot([MATransition, MATransition], [-10000, 10000], '--k', 'LineWidth', 2);
     end
     colormap jet;
     axis tight;
@@ -111,8 +111,8 @@ else
         if (darkMode == true)
             lineStyle = '--w';
         end
-        plot([IPTransition, IPTransition], [0, max(meanCurve + stdCurve)], lineStyle, 'LineWidth', 2);
-        plot([MATransition, MATransition], [0, max(meanCurve + stdCurve)], lineStyle, 'LineWidth', 2);
+        plot([IPTransition, IPTransition], [-10000, 10000], lineStyle, 'LineWidth', 2);
+        plot([MATransition, MATransition], [-10000, 10000], lineStyle, 'LineWidth', 2);
     end
 
     maxValue = max(maxValue, max(meanCurve + stdCurve));
