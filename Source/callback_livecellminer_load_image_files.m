@@ -31,11 +31,12 @@ global rawImagePatches2;
 global maskedImageCNNFeatures;
 
 %% get the root directory of the projects to import
-inputRootFolder = parameter.projekt.pfad;
-if (~isfolder(inputRootFolder))
-    inputRootFolder = uigetdir();
+inputRootFolder = cell(1,1);
+inputRootFolder{1} = parameter.projekt.pfad;
+if (~isfolder(inputRootFolder{1}))
+    inputRootFolder{1} = uigetdir();
 end
-inputRootFolder = [inputRootFolder filesep];
+inputRootFolder{1} = [inputRootFolder{1} filesep];
 [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolder);
 
 %% initialize the SciXMiner variables

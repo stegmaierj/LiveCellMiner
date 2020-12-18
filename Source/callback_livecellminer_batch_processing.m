@@ -46,22 +46,29 @@ addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep
 addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'saveastiff_4.3' filesep]);
 
 %% select the input root folder and identify the folders containing the plates
-defaultSearchFolder = 'V:/';
-inputRootFolder = uigetdir(defaultSearchFolder, 'Select the input directory ...');
-if (inputRootFolder == 0)
-    disp('No input folder selected. Aborting ...');
-    return;
+multiFolderSelection = true;
+if (multiFolderSelection == false)
+    defaultSearchFolder = 'V:/';
+    inputRootFolders = cell(1,1);
+    inputRootFolders{1} = uigetdir(defaultSearchFolder, 'Select the input directory ...');
+    if (inputRootFolders{1} == 0)
+        disp('No input folder selected. Aborting ...');
+        return;
+    end
+else
+    inputRootFolders = uipickfiles();
 end
 
 %% recursively find the valid input paths
-[inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolder);
+[inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolders);
 
 %% get the output path
 outputRoot = uigetdir(defaultSearchFolder, 'Select the output directory ...');
-outputRoot = [outputRoot filesep];
-if (inputRootFolder == 0)
+if (outputRoot == 0)
     disp('No output folder selected. Aborting ...');
     return;
+else
+    outputRoot = [outputRoot filesep];
 end
 
 %% prepare question dialog to ask for the physical spacing of the experiments

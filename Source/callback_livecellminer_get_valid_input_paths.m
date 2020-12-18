@@ -25,103 +25,112 @@
 %%
 
 %% lists all subdirectories and searches for valid position folders containing image data.
-function [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolder)
-    
-	%% display status as it may take a bit
-	disp('Recursively scanning input directory for valid position folders ...');
-	    
-	%% ensure that the last character of the path is not a file separator
-    if (inputRootFolder(end) == '/' || inputRootFolder(end) == '\')
-        inputRootFolder = inputRootFolder(1:end-1);
-    end
-
-	%% get the list of subdirectories
-    subdirList = subdir(inputRootFolder);
-    if (isempty(subdirList))
-        subdirList{1} = inputRootFolder;
-    end
-
-	%% initialize the cell arrays for files, microscopes, experiments and positions
+function [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolders)
+       
+    %% initialize folder, experiment and position variables
     currentFolderIndex = 1;
+    experimentIndex = 1;
+    microscopeIndex = 1;
+    positionIndex = 1;
+    
+    %% initialize the cell arrays for files, microscopes, experiments and positions
     microscopeList = cell(1,1);
     experimentList = cell(1,1);
     micronsPerPixel = cell(1,1);
     channelFilter = cell(1,1);
     positionList = cell(1,1);
-    experimentIndex = 1;
-    microscopeIndex = 1;
-    positionIndex = 1;
-	
-	%% iterate over all subdirs and add them if appropriate
-    for i=1:length(subdirList)
+
+    %% process all selected folders
+    for f=1:length(inputRootFolders)
         
-		%% convert to unix-style paths
-        currentSubDir = strrep(subdirList{i}, '\', '/');
-        
-		%% perform regexp search for a valid plate idenfier
-        expression = 'P00[0123456789]+';
-        splitString = strsplit(currentSubDir, '/');
-        startIndex = regexp(splitString{end}, expression);
+        %% get the current root folder
+        inputRootFolder = inputRootFolders{f};
 
-		%% only add path if the regular expression was found
-        if (~isempty(startIndex))
-		
-			%% set the input folder
-            inputFolders{currentFolderIndex} = currentSubDir;
+        %% display status as it may take a bit
+        disp('Recursively scanning input directory for valid position folders ...');
 
-            %% extract the microscope, experiment and position from the file name
-            currentMicroscope = splitString{end-2};
-            currentExperiment = splitString{end-1};
-            currentPosition = splitString{end};
+        %% ensure that the last character of the path is not a file separator
+        if (inputRootFolder(end) == '/' || inputRootFolder(end) == '\')
+            inputRootFolder = inputRootFolder(1:end-1);
+        end
 
-			%% check if any of the output variables already exists
-            microscopeFound = false;
-            experimentFound = false;
-            positionFound = false;
-            for j=1:length(microscopeList)
-               if (strcmp(microscopeList{j}, currentMicroscope))
-                   microscopeFound = true;
-               end
+        %% get the list of subdirectories
+        subdirList = subdir(inputRootFolder);
+        if (isempty(subdirList))
+            subdirList{1} = inputRootFolder;
+        end
+
+        %% iterate over all subdirs and add them if appropriate
+        for i=1:length(subdirList)
+
+            %% convert to unix-style paths
+            currentSubDir = strrep(subdirList{i}, '\', '/');
+
+            %% perform regexp search for a valid plate idenfier
+            expression = 'P00[0123456789]+';
+            splitString = strsplit(currentSubDir, '/');
+            startIndex = regexp(splitString{end}, expression);
+
+            %% only add path if the regular expression was found
+            if (~isempty(startIndex))
+
+                %% set the input folder
+                inputFolders{currentFolderIndex} = currentSubDir;
+
+                %% extract the microscope, experiment and position from the file name
+                currentMicroscope = splitString{end-2};
+                currentExperiment = splitString{end-1};
+                currentPosition = splitString{end};
+
+                %% check if any of the output variables already exists
+                microscopeFound = false;
+                experimentFound = false;
+                positionFound = false;
+                for j=1:length(microscopeList)
+                   if (strcmp(microscopeList{j}, currentMicroscope))
+                       microscopeFound = true;
+                   end
+                end
+
+                for j=1:length(experimentList)
+                   if (strcmp(experimentList{j}, currentExperiment))
+                       experimentFound = true;
+                   end
+                end
+
+                for j=1:length(positionList)
+                   if (strcmp(positionList{j}, currentPosition))
+                       positionFound = true;
+                   end
+                end
+
+                %% add output variables if they were not contained yet
+                if (microscopeFound == false)
+                    microscopeList{microscopeIndex} = currentMicroscope;
+                    microscopeIndex = microscopeIndex + 1;
+                end
+
+                if (experimentFound == false)
+                    micronsPerPixel{experimentIndex} = '1.0';
+                    channelFilter{experimentIndex} = '';
+                    experimentList{experimentIndex} = currentExperiment;
+                    experimentIndex = experimentIndex + 1;
+                end
+
+                if (positionFound == false)
+                    positionList{positionIndex} = currentPosition;
+                    positionIndex = positionIndex + 1;
+                end
+
+                %% add file separator at the end of each folder
+                if (inputFolders{currentFolderIndex}(end) ~= '/')
+                    inputFolders{currentFolderIndex} = [inputFolders{currentFolderIndex} '/'];
+                end
+
+                %% display status and increment index for the next folder
+                disp(['Added folder ' inputFolders{currentFolderIndex} ' to the input list.']);
+                currentFolderIndex = currentFolderIndex + 1;
             end
-
-            for j=1:length(experimentList)
-               if (strcmp(experimentList{j}, currentExperiment))
-                   experimentFound = true;
-               end
-            end
-
-            for j=1:length(positionList)
-               if (strcmp(positionList{j}, currentPosition))
-                   positionFound = true;
-               end
-            end
-
-			%% add output variables if they were not contained yet
-            if (microscopeFound == false)
-                microscopeList{microscopeIndex} = currentMicroscope;
-                microscopeIndex = microscopeIndex + 1;
-            end
-
-            if (experimentFound == false)
-                micronsPerPixel{experimentIndex} = '1.0';
-                channelFilter{experimentIndex} = '';
-                experimentList{experimentIndex} = currentExperiment;
-                experimentIndex = experimentIndex + 1;
-            end
-
-            if (positionFound == false)
-                positionList{positionIndex} = currentPosition;
-                positionIndex = positionIndex + 1;
-            end
-
-			%% add file separator at the end of each folder
-            if (inputFolders{currentFolderIndex}(end) ~= '/')
-                inputFolders{currentFolderIndex} = [inputFolders{currentFolderIndex} '/'];
-            end
-			
-			%% display status and increment index for the next folder
-            disp(['Added folder ' inputFolders{currentFolderIndex} ' to the input list.']);
-            currentFolderIndex = currentFolderIndex + 1;
         end
     end
 end
