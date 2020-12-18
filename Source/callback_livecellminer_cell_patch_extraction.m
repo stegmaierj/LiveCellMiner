@@ -162,7 +162,7 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
                             if (centerLabel > 0)
                                 croppedMask = uint16(croppedMask == centerLabel);
                             else
-                                croppedMask = uint16(callback_livecellminer_segment_center_nucleus(croppedImage));
+                                croppedMask = uint16(callback_livecellminer_segment_center_nucleus(croppedImage, singleCenterCC));
                             end
                         end
                         %maskImagePatches{currentIndex, i} = croppedMask;

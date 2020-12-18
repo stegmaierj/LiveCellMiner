@@ -76,18 +76,42 @@ function [] = callback_livecellminer_import_project(parameters)
 
     %% perform cell pose segmentation (optional)
     if (parameters.useCellpose == true)
+        outputDataExists = true;
         outputFolderCellpose = [outputFolder 'Cellpose/'];
-        if (~isfolder(outputFolderCellpose)); mkdir(outputFolderCellpose); end
-        parameters.maskFolder = outputFolderCellpose;
-        cd(parameters.CELLPOSEPath);
-        
-        CELLPOSEFilter = '';
-        if (~isempty(parameters.channelFilter))
-            CELLPOSEFilter = [' --img_filter ' parameters.channelFilter];
+        if (~isfolder(outputFolderCellpose))
+            mkdir(outputFolderCellpose); 
+        else
+            %% check if output images already exist
+            inputFiles = dir([inputFolder '*.tif']);
+            outputFiles = dir([outputFolderCellpose '*_cp_masks.png']);
+            numInputFiles = length(inputFiles);
+            numOutputFiles = length(outputFiles);
+            
+            if (numInputFiles > numOutputFiles)
+                outputDataExists = false;
+            else
+                for i=1:length(inputFiles)
+                    if (~strcmp(strrep(lower(inputFiles(i).name), '.tif', ''), strrep(lower(outputFiles(i).name), '_cp_masks.png', '')))
+                        outputDataExists = false;
+                        break;
+                    end
+                end
+            end
         end
                 
-        CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 --model_dir ' parameters.CELLPOSEModelDir CELLPOSEFilter ' --pretrained_model nuclei --output_dir ' outputFolderCellpose ' --diameter 30 --use_gpu --save_png'];
-        system(CELLPOSECommand);
+        %% only process if data does not exist yet
+        if (outputDataExists == false)
+            parameters.maskFolder = outputFolderCellpose;
+            cd(parameters.CELLPOSEPath);
+
+            CELLPOSEFilter = '';
+            if (~isempty(parameters.channelFilter))
+                CELLPOSEFilter = [' --img_filter ' parameters.channelFilter];
+            end
+
+            CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 --model_dir ' parameters.CELLPOSEModelDir CELLPOSEFilter ' --pretrained_model nuclei --output_dir ' outputFolderCellpose ' --diameter 30 --use_gpu --save_png'];
+            system(CELLPOSECommand);
+        end
     end
 
     %% perform feature extraction, tracking and project generation

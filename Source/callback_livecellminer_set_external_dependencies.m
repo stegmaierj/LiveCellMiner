@@ -60,11 +60,13 @@ answer = inputdlg(prompt,dlgtitle,dims,definput);
 %% write the new path to disk
 if (~isempty(answer) && isfolder(answer{1}) && isfolder(answer{2}) && isfile(answer{3}))
     
-    XPIWITPath = strrep(XPIWITPath, '\', '/');
+    XPIWITPath = strrep(answer{1}, '\', '/');
     if (XPIWITPath(end) ~= '/'); XPIWITPath = [XPIWITPath '/']; end
     
-    CELLPOSEPath = strrep(CELLPOSEPath, '\', '/');
+    CELLPOSEPath = strrep(answer{2}, '\', '/');
     if (CELLPOSEPath(end) ~= '/'); CELLPOSEPath = [CELLPOSEPath '/']; end
+    
+    CELLPOSEEnvironment = answer{3};
     
     fileHandle = fopen(settingsFile, 'wb');
     fprintf(fileHandle, '%s;%s;%s', XPIWITPath, CELLPOSEPath, CELLPOSEEnvironment);

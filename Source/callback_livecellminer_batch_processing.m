@@ -47,8 +47,8 @@ addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep
 
 %% select the input root folder and identify the folders containing the plates
 multiFolderSelection = true;
+defaultSearchFolder = 'V:/';
 if (multiFolderSelection == false)
-    defaultSearchFolder = 'V:/';
     inputRootFolders = cell(1,1);
     inputRootFolders{1} = uigetdir(defaultSearchFolder, 'Select the input directory ...');
     if (inputRootFolders{1} == 0)
