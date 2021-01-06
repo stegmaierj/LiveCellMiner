@@ -39,6 +39,12 @@ function [inputFolders, microscopeList, experimentList, positionList] = callback
     micronsPerPixel = cell(1,1);
     channelFilter = cell(1,1);
     positionList = cell(1,1);
+    
+    if (~iscell(inputRootFolders))
+        inputRootFoldersTemp = cell(1,1);
+        inputRootFoldersTemp{1} = inputRootFolders;
+        inputRootFolders = inputRootFoldersTemp;
+    end
 
     %% process all selected folders
     for f=1:length(inputRootFolders)
@@ -55,7 +61,16 @@ function [inputFolders, microscopeList, experimentList, positionList] = callback
         end
 
         %% get the list of subdirectories
-        subdirList = subdir(inputRootFolder);
+        initialSubdirList = dir([inputRootFolder filesep '**']);
+        subdirList = cell(1,1);
+        currentSubDir = 1;
+        for i=1:length(initialSubdirList)
+           if (initialSubdirList(i).isdir && ~strcmp(initialSubdirList(i).name, '.') && ~strcmp(initialSubdirList(i).name, '..'))
+               subdirList{currentSubDir} = [initialSubdirList(i).folder filesep initialSubdirList(i).name];
+               currentSubDir = currentSubDir + 1;
+           end
+        end
+        
         if (isempty(subdirList))
             subdirList{1} = inputRootFolder;
         end

@@ -25,16 +25,14 @@
 %%
 
 %% get the root directory of the projects to import
-inputRootFolder = cell(1,1);
-inputRootFolder{1} = uigetdir();
-if (inputRootFolder{1} == 0)
+inputRootFolders = uipickfiles();
+if (~iscell(inputRootFolders) && inputRootFolders == 0)
    disp('Please select a valid input folder. Aborting ...');
    return;
 end
 
 %% import all subfolders
-inputRootFolder{1} = [inputRootFolder{1} filesep];
-[inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolder);
+[inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolders);
 
 %% initialize the SciXMiner variables
 numFrames = 90;
@@ -99,11 +97,14 @@ d_orgs = d_orgs_new;
 bez_code = char('All', 'Microscope', 'Experiment', 'Position', 'Cell');
 zgf_y_bez = zgf_y_bez_new;
 projekt.imageFiles = imageFiles;
-save([inputRootFolder{1} 'FusedProjects.prjz'], '-mat', 'd_orgs', 'var_bez', 'code', 'code_alle', 'zgf_y_bez', 'bez_code', 'projekt');
+
+[file,path] = uiputfile('*.prjz', 'Specify the name of the fused project', 'FusedProjects.prjz');
+outputFileName = [path file];
+save(outputFileName, '-mat', 'd_orgs', 'var_bez', 'code', 'code_alle', 'zgf_y_bez', 'bez_code', 'projekt');
 
 %% directly load the generated project
 result = questdlg('Directly load generated project?', 'Load project?');
 if (strcmp(result, 'Yes'))
-    next_function_parameter = [inputRootFolder{1} 'FusedProjects.prjz'];
+    next_function_parameter = outputFileName;
     ldprj_g;
 end

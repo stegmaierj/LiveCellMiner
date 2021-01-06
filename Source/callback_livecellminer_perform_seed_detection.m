@@ -28,10 +28,17 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
 
     %% get list of current seed files
     detectionFiles = dir([parameters.detectionFolder parameters.detectionFilter]);
+    
+    %% use cell pose results for seed refinement
+    if (parameters.useCellpose == true)
+        cellposeFiles = dir([parameters.outputFolderCellPose '*.png']);
+    end
+        
     numFrames = min(length(detectionFiles), parameters.numFrames);
         
     %% initialize d_orgs
-    d_orgs = zeros(0, numFrames, 11);
+    numFeatures = 11;
+    d_orgs = zeros(0, numFrames, numFeatures);
     var_bez = char('id', 'scale', 'xpos', 'ypos', 'zpos', 'prevXPos', 'prevYPos', 'prevZPos', 'clusterCutoff', 'trackletId', 'predecessorId');
     
     %% loop through all seed files and extract the raw seed points
@@ -63,10 +70,38 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
                end
             end            
             
+            %% update the seed spacing
             currentSeeds(:,1) = currentSeeds(:,1) + 1;
-            currentSeeds(:,3:4) = currentSeeds(:,3:4) / parameters.micronsPerPixel;
+            currentSeeds(:,3:4) = (currentSeeds(:,3:4) + 1) / parameters.micronsPerPixel;
             currentSeeds(:,5) = 0; %% set z-coordinate to 0 as we're only processing 2D images.
-            d_orgs(1:size(currentSeeds,1), i, :) = [currentSeeds(:,1:5), currentSeeds(:,3:5), sqrt(2) * currentSeeds(:,2) / parameters.micronsPerPixel, zeros(size(currentSeeds,1),2)];
+            
+            if (parameters.useCellpose == true)
+                cellposeSegmentation = imread([parameters.outputFolderCellPose cellposeFiles(i).name]);
+                regionProps = regionprops(cellposeSegmentation, 'Centroid', 'Area', 'EquivDiameter');
+                
+                keepIndices = ones(size(currentSeeds,1),1) > 0;
+                for j=1:size(currentSeeds,1)
+                    if (cellposeSegmentation(round(currentSeeds(j,4)), round(currentSeeds(j,3))) > 0)
+                        keepIndices(j) = false;
+                    end
+                end
+                
+                finalSeeds = zeros(sum(keepIndices)+length(regionProps), numFeatures);
+                finalSeeds(1:sum(keepIndices),:) = [currentSeeds(keepIndices,1:5), currentSeeds(keepIndices,3:5), sqrt(2) * currentSeeds(keepIndices,2) / parameters.micronsPerPixel, zeros(sum(keepIndices),2)];
+                
+                currentSeedId = sum(keepIndices) + 1;
+                for j=1:length(regionProps)
+                    finalSeeds(currentSeedId, :) = [currentSeedId, regionProps(j).Area, ...
+                                                    round(regionProps(j).Centroid(1)), round(regionProps(j).Centroid(2)), 0, ...
+                                                    round(regionProps(j).Centroid(1)), round(regionProps(j).Centroid(2)), 0, ...
+                                                    0.5*regionProps(j).EquivDiameter, 0, 0];
+                    currentSeedId = currentSeedId + 1;
+                end
+                
+                d_orgs(1:size(finalSeeds,1), i, :) = finalSeeds;
+            else
+                d_orgs(1:size(currentSeeds,1), i, :) = [currentSeeds(:,1:5), currentSeeds(:,3:5), sqrt(2) * currentSeeds(:,2) / parameters.micronsPerPixel, zeros(size(currentSeeds,1),2)];
+            end           
         else
             maskImage = imread([parameters.detectionFolder detectionFiles(i).name]);
             regionProps = regionprops(maskImage, 'Centroid', 'Area', 'EquivDiameter');

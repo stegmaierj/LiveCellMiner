@@ -39,7 +39,7 @@ function [] = callback_livecellminer_import_project(parameters)
     %% output directories for seeds and segmentation
     outputFolderSeeds = [outputFolder 'Detections/'];
     if (~isfolder(outputFolderSeeds)); mkdir(outputFolderSeeds); end
-
+    
     %% result folders
     parameters.detectionFolder = [outputFolderSeeds 'item_0005_ExtractSeedBasedIntensityWindowFilter/'];
     parameters.detectionExtension = '_ExtractSeedBasedIntensityWindowFilter_.csv';
@@ -57,7 +57,7 @@ function [] = callback_livecellminer_import_project(parameters)
         [~, ~, ext] = fileparts(inputFiles(f).name);        
         currentOutputFile = [parameters.detectionFolder strrep(inputFiles(f).name, ext, parameters.detectionExtension)];
         
-        if (isfile(currentOutputFile) && ~parameters.reprocessExistingProjects)
+        if (isfile(currentOutputFile))
             continue;
         end
         
@@ -76,14 +76,14 @@ function [] = callback_livecellminer_import_project(parameters)
 
     %% perform cell pose segmentation (optional)
     if (parameters.useCellpose == true)
+        parameters.outputFolderCellPose = [outputFolder 'Cellpose/'];
         outputDataExists = true;
-        outputFolderCellpose = [outputFolder 'Cellpose/'];
-        if (~isfolder(outputFolderCellpose))
-            mkdir(outputFolderCellpose); 
+        if (~isfolder(parameters.outputFolderCellPose))
+            mkdir(parameters.outputFolderCellPose); 
         else
             %% check if output images already exist
             inputFiles = dir([inputFolder '*.tif']);
-            outputFiles = dir([outputFolderCellpose '*_cp_masks.png']);
+            outputFiles = dir([parameters.outputFolderCellPose '*_cp_masks.png']);
             numInputFiles = length(inputFiles);
             numOutputFiles = length(outputFiles);
             
@@ -101,7 +101,7 @@ function [] = callback_livecellminer_import_project(parameters)
                 
         %% only process if data does not exist yet
         if (outputDataExists == false)
-            parameters.maskFolder = outputFolderCellpose;
+            parameters.maskFolder = parameters.outputFolderCellPose;
             cd(parameters.CELLPOSEPath);
 
             CELLPOSEFilter = '';
@@ -109,7 +109,7 @@ function [] = callback_livecellminer_import_project(parameters)
                 CELLPOSEFilter = [' --img_filter ' parameters.channelFilter];
             end
 
-            CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 --model_dir ' parameters.CELLPOSEModelDir CELLPOSEFilter ' --pretrained_model nuclei --output_dir ' outputFolderCellpose ' --diameter 30 --use_gpu --save_png'];
+            CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 --model_dir ' parameters.CELLPOSEModelDir CELLPOSEFilter ' --pretrained_model nuclei --output_dir ' parameters.outputFolderCellPose ' --diameter 30 --use_gpu --save_png'];
             system(CELLPOSECommand);
         end
     end
