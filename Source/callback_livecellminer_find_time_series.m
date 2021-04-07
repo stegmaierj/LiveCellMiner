@@ -29,7 +29,7 @@ function featureId = callback_livecellminer_find_time_series(var_bez, featureNam
 	%% check if feature is present among dorgbez
     featureId = 0;
     for i=1:size(var_bez,1)
-        if (contains(var_bez(i,:), featureName, 'IgnoreCase', false))
+        if (strcmp(kill_lz(var_bez(i,:)), featureName))
             featureId = i;
             return;
         end

@@ -28,7 +28,6 @@
 debugFigures = false;
 
 %% load the previous data
-modelPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'autoSyncLSTMModel.mat'];
 syncMethod = questdlg('Which synchronization method do you want to use?', 'Select Synchronization Mode', 'Classical', 'Classical + Auto Rejection', 'LSTM + HMM + Auto Rejection', 'Classical + Auto Rejection');
 useClassicalSync = ~isempty(strfind(syncMethod, 'Classical'));
 useAutoRejection = ~isempty(strfind(syncMethod, 'Auto Rejection'));
@@ -40,12 +39,14 @@ end
 %% path to the pretrained model
 if (useAutoRejection == true)
     
+    modelPath = uigetfile('*.cdc', 'Select LSTM classifier for the current data set!');
+    
     if (~exist('maskedImageCNNFeatures', 'var'))
         callback_livecellminer_load_image_files;
     end    
     
     if (exist(modelPath, 'file'))
-        load(modelPath);
+        load(modelPath, '-mat');
     else
         disp('LSTM classifier for discarding invalid tracks and auto sync was not found. Perform manual annotations first and train a classifier using "Chromatindec -> Align -> Update LSTM Classifier"');
     end

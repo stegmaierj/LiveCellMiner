@@ -74,9 +74,18 @@ end
 %% prepare question dialog to ask for the physical spacing of the experiments
 dlgtitle = 'Additional settings:';
 dims = [1 100];
-additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?'}, dlgtitle, dims, {'', '', '0', '0'});
+additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?', 'Time Window Before Mitosis (min)', 'Time Window After Mitosis (min)'}, dlgtitle, dims, {'', '', '0', '0', '150', '180'});
 if (isempty(additionalUserSettings))
     disp('No additional settings provided, stopping processing ...');
+    return;
+end
+
+%% prepare question dialog to ask for the physical spacing of the experiments
+dlgtitle = 'Specify the frame interval for each project in minutes.';
+dims = [1 100];
+frameInterval = inputdlg(experimentList, dlgtitle, dims);
+if (isempty(frameInterval))
+    disp('No frame interval information provided, stopping processing ...');
     return;
 end
 
@@ -141,7 +150,8 @@ for i=1:length(inputFolders)
     parameters.channelFilter = channelFilter{experimentIndex};      %% select a specific channel for processing. Should be specific part of the file name
     parameters.channelFilter2 = channelFilter2{experimentIndex};    %% select an additional channel. This channel will only be used to extract the corresponding snippets as well for later processing.
     parameters.micronsPerPixel = str2double(micronsPerPixel{experimentIndex});  %% the physical spacing in microns. Note that the seed detection pipelines are selected with this string, so should have consistent number of digits that match the names of the XML pipelines.
-
+    parameters.frameInterval = str2double(frameInterval{experimentIndex}); %% the time interval between two successive frames in minutes
+    
     %% assemble and create the output folder
     parameters.outputFolder = [parameters.outputRoot parameters.microscopeName '/' parameters.experimentName '/' parameters.positionNumber '/'];
     if (~isfolder(parameters.outputFolder)); mkdir(parameters.outputFolder); end
@@ -149,10 +159,10 @@ for i=1:length(inputFolders)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% advanced parameters (usually no need for change)
-    parameters.framesBeforeIP = 30;               %% the number of frames to extract before the division event
-    parameters.framesAfterMA = 60;                %% the number of frames to extract after the division event
-    parameters.timeWindowMother = 30;             %% the number of frames to extract before the division event
-    parameters.timeWindowDaughter = 60;           %% the number of frames to extract after the division event
+    parameters.framesBeforeIP = additionalUserSettings{5} / parameters.frameInterval;     %% the number of frames to extract before the division event
+    parameters.framesAfterMA = additionalUserSettings{6} / parameters.frameInterval;      %% the number of frames to extract after the division event
+    parameters.timeWindowMother = additionalUserSettings{5} / parameters.frameInterval;   %% the number of frames to extract before the division event
+    parameters.timeWindowDaughter = additionalUserSettings{6} / parameters.frameInterval;  %% the number of frames to extract after the division event
     parameters.singleCellCCDisableRadius = 3;     %% the number of frames before/after the division time point where the single connected component segmentation is disabled (used for early ana segmentation)
     parameters.patchWidth = 96;                   %% patch width used for extracting the image snippets
     parameters.patchRescaleFactor = 0.415;        %% use spacing of confocal images as reference, i.e., they remain unscaled whereas widefield images are enlarged to ideally have a single cell in the center

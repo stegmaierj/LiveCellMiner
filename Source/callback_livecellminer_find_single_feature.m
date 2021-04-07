@@ -29,7 +29,7 @@ function featureId = callback_livecellminer_find_single_feature(dorgbez, feature
 	%% check if feature is present among dorgbez
     featureId = 0;
     for i=1:size(dorgbez,1)
-        if (contains(dorgbez(i,:), featureName, 'IgnoreCase', false))
+        if (strcmp(kill_lz(dorgbez(i,:)), featureName))
             featureId = i;
             return;
         end

@@ -27,6 +27,7 @@
 %% initialize the global settings variable
 clear parameters;
 global parameters;
+global d_org;
 
 %% preload image files if not done yet
 if (~exist('rawImagePatches', 'var') || isempty(rawImagePatches))
