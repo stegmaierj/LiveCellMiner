@@ -159,14 +159,14 @@ for i=1:length(inputFolders)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% advanced parameters (usually no need for change)
-    parameters.framesBeforeIP = additionalUserSettings{5} / parameters.frameInterval;     %% the number of frames to extract before the division event
-    parameters.framesAfterMA = additionalUserSettings{6} / parameters.frameInterval;      %% the number of frames to extract after the division event
-    parameters.timeWindowMother = additionalUserSettings{5} / parameters.frameInterval;   %% the number of frames to extract before the division event
-    parameters.timeWindowDaughter = additionalUserSettings{6} / parameters.frameInterval;  %% the number of frames to extract after the division event
+    parameters.framesBeforeIP = round(str2double(additionalUserSettings{5}) / parameters.frameInterval);     %% the number of frames to extract before the division event
+    parameters.framesAfterMA = round(str2double(additionalUserSettings{6}) / parameters.frameInterval);      %% the number of frames to extract after the division event
+    parameters.timeWindowMother = round(str2double(additionalUserSettings{5}) / parameters.frameInterval);   %% the number of frames to extract before the division event
+    parameters.timeWindowDaughter = round(str2double(additionalUserSettings{6}) / parameters.frameInterval);  %% the number of frames to extract after the division event
     parameters.singleCellCCDisableRadius = 3;     %% the number of frames before/after the division time point where the single connected component segmentation is disabled (used for early ana segmentation)
     parameters.patchWidth = 96;                   %% patch width used for extracting the image snippets
     parameters.patchRescaleFactor = 0.415;        %% use spacing of confocal images as reference, i.e., they remain unscaled whereas widefield images are enlarged to ideally have a single cell in the center
-    parameters.maxRadius = 10;                    %% maximum radius to search for neighboring cells during tracking
+    parameters.maxRadius = 15;                    %% maximum radius to search for neighboring cells during tracking
     parameters.clusterRadiusIndex = 9;            %% index to the cluster radius feature
     parameters.trackingIdIndex = 10;              %% index to the tracking id
     parameters.predecessorIdIndex = 11;           %% index to the predecessor

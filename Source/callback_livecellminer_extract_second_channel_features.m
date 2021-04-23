@@ -77,7 +77,7 @@ tic;
 threadResults = cell(numFrames, 1);
 
 %% process all frames
-parfor i=1:numFrames
+for i=1:numFrames
     
     %% initialize the current results
     currentResults = zeros(numCells, numFeatures);

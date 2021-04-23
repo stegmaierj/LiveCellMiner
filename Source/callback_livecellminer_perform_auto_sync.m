@@ -73,7 +73,7 @@ clusterFeatures = [areaIndex, circularityIndex, meanIntensityIndex, stdIntensity
 manuallyConfirmedIndex = callback_livecellminer_find_single_feature(dorgbez, 'manuallyConfirmed');
 
 %% counters to check how many cells were properly sync'ed
-MATransition = 30;
+MATransition = parameter.projekt.timeWindowMother;
 validSynchronization = 0;
 invalidSynchronization = 0;
 numFrames = size(d_orgs, 2);

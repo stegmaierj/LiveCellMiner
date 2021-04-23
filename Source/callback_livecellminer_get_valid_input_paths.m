@@ -71,7 +71,7 @@ function [inputFolders, microscopeList, experimentList, positionList] = callback
            end
         end
         
-        if (isempty(subdirList))
+        if (isempty(subdirList) || isempty(subdirList{1}))
             subdirList{1} = inputRootFolder;
         end
 

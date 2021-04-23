@@ -130,7 +130,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Align';
 elements(mc).tag = 'MI_LiveCellMiner_Align';
-elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_UpdateLSTMClassifier'};
+elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_UpdateLSTMClassifier', -1, 'MI_LiveCellMiner_ExportSync', 'MI_LiveCellMiner_ImportSync'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,6 +164,28 @@ elements(mc).name = 'Update LSTM Classifier';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_livecellminer_update_auto_sync_classifier;';
 elements(mc).tag = 'MI_LiveCellMiner_UpdateLSTMClassifier';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Export Synchronization';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_export_sync;';
+elements(mc).tag = 'MI_LiveCellMiner_ExportSync';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Import Synchronization';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_import_sync;';
+elements(mc).tag = 'MI_LiveCellMiner_ImportSync';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 

@@ -43,7 +43,12 @@ for f=generate_rowvector(selectedFeatures)
 
     %% initialize a new feature and add a new specifier
     d_orgs(:,:,end+1) = 0;
-    var_bez = char(var_bez(1:end-1, :), [kill_lz(var_bez(f, :)) '-Normalized']);
+    
+    if (var_bez(end,1) == 'y')
+        var_bez = char(var_bez(1:end-1, :), [kill_lz(var_bez(f, :)) '-Normalized']);
+    else
+        var_bez = char(var_bez, [kill_lz(var_bez(f, :)) '-Normalized']);
+    end
 
     %% process all data points and use the frame after the synchronization time point for normalization.
     for i=1:size(d_orgs,1)

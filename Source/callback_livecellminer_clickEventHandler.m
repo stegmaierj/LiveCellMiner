@@ -58,7 +58,11 @@ function callback_livecellminer_clickEventHandler(~, ~)
     
 	%% disable cell if right click is obtained and set the stage otherwise
     if (strcmp(buttonPressed, 'alt'))
-        d_orgs(cellPair, :, parameters.manualStageIndex) = -1;
+        if (min(min(d_orgs(cellPair, :, parameters.manualStageIndex))) == -1)
+            d_orgs(cellPair, :, parameters.manualStageIndex) = 0;
+        else
+            d_orgs(cellPair, :, parameters.manualStageIndex) = -1;
+        end
     elseif (strcmp(buttonPressed, 'normal'))
         
         maxIndex = max(squeeze(d_orgs(cellId, :, parameters.manualStageIndex)));
