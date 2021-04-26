@@ -167,27 +167,32 @@ for i=ind_auswahl'%1:2:size(d_orgs,1)
     anaPhaseFrames = MATransition:numFrames;
 
     %% use chromatin distance as a criterion to determine the late ana phase
-    sisterDistance = sqrt(sum((squeeze(d_orgs(i, :, positionXIndex:positionYIndex)) - squeeze(d_orgs(i+1, :, positionXIndex:positionYIndex))).^2, 2));
-    bestMA = max(MATransition, min(find(sisterDistance >= parameter.gui.livecellminer.sisterDistanceThreshold)));  %MATransition + min(find(sisterDistance > parameter.gui.livecellminer.sisterDistanceThreshold)) - 1;
-    
-%     %% check if current sync point is early anaphase
-%     area11 = d_orgs(i, anaPhaseFrames(1), areaIndex);
-%     area12 = d_orgs(i, anaPhaseFrames(2), areaIndex);
-%     area21 = d_orgs(i+1, anaPhaseFrames(1), areaIndex);
-%     area22 = d_orgs(i+1, anaPhaseFrames(2), areaIndex);
-%     intensity11 = d_orgs(i, anaPhaseFrames(1), meanIntensityIndex);
-%     intensity12 = d_orgs(i, anaPhaseFrames(2), meanIntensityIndex);
-%     intensity21 = d_orgs(i+1, anaPhaseFrames(1), meanIntensityIndex);
-%     intensity22 = d_orgs(i+1, anaPhaseFrames(2), meanIntensityIndex);
-%     %% shift meta-ana transition time point by a frame if:
-%     %% 1. the area of both daughters is smaller in the next frame OR
-%     %% 2. the intensity of both daughters is higher in the next frame
-%     %% both cases indicate a stronger compaction of the chromatin and a
-%     %% void selecting early ana phase as the transition.
-%     if ((area11 > area12 || area21 > area22) || ...
-%         (intensity11 < intensity12 && intensity21 < intensity22))
-%         bestMA = bestMA + 1;
-%     end    
+    if (parameter.gui.livecellminer.sisterDistanceThreshold >= 0)
+        sisterDistance = sqrt(sum((squeeze(d_orgs(i, :, positionXIndex:positionYIndex)) - squeeze(d_orgs(i+1, :, positionXIndex:positionYIndex))).^2, 2));
+        bestMA = max(MATransition, min(find(sisterDistance >= parameter.gui.livecellminer.sisterDistanceThreshold))-1);
+    else
+        bestMA = MATransition;
+        
+        %% check if current sync point is early anaphase
+        area11 = d_orgs(i, anaPhaseFrames(1), areaIndex);
+        area12 = d_orgs(i, anaPhaseFrames(2), areaIndex);
+        area21 = d_orgs(i+1, anaPhaseFrames(1), areaIndex);
+        area22 = d_orgs(i+1, anaPhaseFrames(2), areaIndex);
+        intensity11 = d_orgs(i, anaPhaseFrames(1), meanIntensityIndex);
+        intensity12 = d_orgs(i, anaPhaseFrames(2), meanIntensityIndex);
+        intensity21 = d_orgs(i+1, anaPhaseFrames(1), meanIntensityIndex);
+        intensity22 = d_orgs(i+1, anaPhaseFrames(2), meanIntensityIndex);
+        
+        %% shift meta-ana transition time point by a frame if:
+        %% 1. the area of both daughters is smaller in the next frame OR
+        %% 2. the intensity of both daughters is higher in the next frame
+        %% both cases indicate a stronger compaction of the chromatin and a
+        %% void selecting early ana phase as the transition.
+        if ((area11 > area12 || area21 > area22) || ...
+            (intensity11 < intensity12 && intensity21 < intensity22))
+            bestMA = bestMA + 1;
+        end
+    end
 
     %% set the synchronization time points
     d_orgs(i:(i+1), 1:(bestIP-1), synchronizationIndex) = 1;
