@@ -41,7 +41,7 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     %[d_orgs_new] = PerformTracking(d_orgs, settings);
     [d_orgs] = callback_livecellminer_perform_backwards_tracking(d_orgs, parameters);
     
-    save([parameters.outputFolder 'trackingProject.prjz'], '-mat', 'd_orgs');
+    save([parameters.outputFolder 'trackingProject.prjz'], '-mat', 'd_orgs', '-v7.3');
 
     %% plot the tracking results
     %PlotTrackingResults(d_orgs, settings);

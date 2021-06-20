@@ -197,7 +197,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Show';
 elements(mc).tag = 'MI_LiveCellMiner_Show';
-elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -206,7 +206,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Heatmaps';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'visualizationMode = 1; callback_livecellminer_show_heatmaps;';
+elements(mc).callback = 'visualizationMode = 1; callback_livecellminer_show_heatmaps(parameter, d_orgs, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, visualizationMode);';
 elements(mc).tag = 'MI_LiveCellMiner_ShowHeatMaps';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
@@ -217,7 +217,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Line Plots';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'visualizationMode = 2; callback_livecellminer_show_heatmaps;';
+elements(mc).callback = 'visualizationMode = 2; callback_livecellminer_show_heatmaps(parameter, d_orgs, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, visualizationMode);';
 elements(mc).tag = 'MI_LiveCellMiner_ShowLinePlots';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
@@ -229,7 +229,8 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Comb. Line Plots';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'visualizationMode = 2; callback_livecellminer_show_combined_plots;';
+%elements(mc).callback = 'visualizationMode = 2; callback_livecellminer_show_combined_plots;';
+elements(mc).callback = 'visualizationMode = 2; callback_livecellminer_show_combined_plots(parameter, d_orgs, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, visualizationMode);';
 elements(mc).tag = 'MI_LiveCellMiner_ShowCombLinePlots';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
@@ -240,7 +241,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Comb. Box Plots';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'showHistogram = false; callback_livecellminer_show_combined_boxplots;';
+elements(mc).callback = 'showHistogram = false; callback_livecellminer_show_combined_boxplots(parameter, d_org, d_orgs, dorgbez, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, showHistogram);';
 elements(mc).tag = 'MI_LiveCellMiner_ShowCombBoxPlots';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
@@ -251,10 +252,23 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Comb. Histogram Plots';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'showHistogram = true; callback_livecellminer_show_combined_boxplots;';
+elements(mc).callback = 'showHistogram = true; callback_livecellminer_show_combined_boxplots(parameter, d_org, d_orgs, dorgbez, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, showHistogram);';
 elements(mc).tag = 'MI_LiveCellMiner_ShowCombHistogramPlots';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Auto-Generate Report';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_report_generator;';
+elements(mc).tag = 'MI_LiveCellMiner_GenerateReport';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;

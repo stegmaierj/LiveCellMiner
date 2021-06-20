@@ -24,38 +24,8 @@
 %
 %%
 
-%% create the current heat map
-if (alignPlots == false)
-    currentHeatMap = zeros(length(validIndices), length(timeRange));
-    for c=1:length(validIndices)
-        currentHeatMap(c, :) = squeeze(d_orgs(validIndices(c), timeRange, f));
-    end
-else
-    currentHeatMap = nan(length(validIndices), alignedLength);
-    for c=1:length(validIndices)
-        currentStageTransitions = squeeze(d_orgs(validIndices(c), timeRange, synchronizationIndex));
-        currentFeatureValues = squeeze(d_orgs(validIndices(c), timeRange, f));
-
-        indicesIP = find(currentStageTransitions == 1);
-        indicesPM = find(currentStageTransitions == 2);
-        indicesMA = find(currentStageTransitions == 3);
-
-        splitPoint = round(length(indicesPM) / 2);
-        indicesPM1 = indicesPM(1:splitPoint);
-        indicesPM2 = indicesPM((splitPoint+1):end);
-
-        %% fill the values in an aligned fashion
-        currentHeatMap(c, (IPTransition-length(indicesIP)+1):IPTransition) = currentFeatureValues(indicesIP);
-
-        currentHeatMap(c, (IPTransition+1):(IPTransition+length(indicesPM1))) = currentFeatureValues(indicesPM1);
-        currentHeatMap(c, (MATransition-length(indicesPM2)):(MATransition-1)) = currentFeatureValues(indicesPM2);
-
-        currentHeatMap(c, MATransition:(MATransition+length(indicesMA)-1)) = currentFeatureValues(indicesMA);
-    end
-
-    %% trim the heat map in case any line exceeded the maximum length
-    currentHeatMap = currentHeatMap(:, 1:alignedLength);
-end
+%% compute the aligned heat map
+currentHeatMap = callback_livecellminer_compute_aligned_heatmap(d_orgs, validIndices, synchronizationIndex, featureIndex, parameter);
 
 %% create a new subplot
 subplot(numRows, numColumns, currentSubPlot); hold on;
@@ -63,7 +33,7 @@ subplot(numRows, numColumns, currentSubPlot); hold on;
 %% visualize the current plate depending on the selected visualization mode
 if (visualizationMode == 1)
     imagesc(currentHeatMap);
-    ylabel(kill_lz(var_bez(f,:)));
+    ylabel(kill_lz(var_bez(featureIndex,:)));
 
     if (alignPlots == true)
         plot([IPTransition, IPTransition], [-10000, 10000], '--k', 'LineWidth', 2);
@@ -111,14 +81,14 @@ else
         if (darkMode == true)
             lineStyle = '--w';
         end
-        plot([IPTransition, IPTransition], [-10000, 10000], lineStyle, 'LineWidth', 2);
-        plot([MATransition, MATransition], [-10000, 10000], lineStyle, 'LineWidth', 2);
+        plot([IPTransition, IPTransition], [-1e10, 1e10], lineStyle, 'LineWidth', 2);
+        plot([MATransition, MATransition], [-1e10, 1e10], lineStyle, 'LineWidth', 2);
     end
 
     maxValue = max(maxValue, max(meanCurve + stdCurve));
     minValue = min(minValue, min(meanCurve - stdCurve));
 
-    ylabel(strrep(kill_lz(var_bez(f,:)), '_', '\_'));
+    ylabel(strrep(kill_lz(var_bez(featureIndex,:)), '_', '\_'));
     box off;
 end
 

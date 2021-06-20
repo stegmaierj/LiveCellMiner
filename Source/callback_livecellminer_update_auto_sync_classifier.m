@@ -93,8 +93,12 @@ end
 dirtyFlag = false;
 for i=validIndices'
         
-    %% check if the current cell was manually confirmed (otherwise it's not used as GT)
-    if (d_org(i, manuallyConfirmedIndex) == 0)
+    %% check if the current cell was manually confirmed (otherwise it's not used as GT) or if it was not synchronized
+    if (d_org(i, manuallyConfirmedIndex) == 0 || min(d_orgs(i,:,synchronizationIndex)) == 0)
+        if (min(d_orgs(i,:,synchronizationIndex)) == 0)
+            test = 1;
+        end
+        
         continue;
     end
     
@@ -135,6 +139,13 @@ end
 
 %% get the names of the classical features
 classicalFeatureNames = var_bez(featureRange, :);
+
+%% remove empty entries
+sequencesCNN = sequencesCNN(1:(currentSequence-1));
+sequencesClassical = sequencesClassical(1:(currentSequence-1));
+stateLabels = stateLabels(1:(currentSequence-1));
+checkSum = checkSum(1:(currentSequence-1));
+validityLabels = validityLabels(1:(currentSequence-1));
 
 %% save the updated training data
 validityLabels = categorical(validityLabels);

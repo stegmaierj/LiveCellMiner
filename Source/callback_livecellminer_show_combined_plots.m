@@ -24,6 +24,8 @@
 %
 %%
 
+function [] = callback_livecellminer_show_combined_plots(parameter, d_orgs, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, visualizationMode)
+
 %% get the parameters from the GUI
 IPTransition = parameter.gui.livecellminer.IPTransition;
 MATransition = parameter.gui.livecellminer.MATransition;
@@ -44,11 +46,7 @@ timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segm
 selectedCells = ind_auswahl;
 
 %% find the manual synchronization index
-oldSelection = parameter.gui.merkmale_und_klassen.ind_zr;
-set_textauswahl_listbox(gaitfindobj('CE_Auswahl_ZR'),{'manualSynchronization'});eval(gaitfindobj_callback('CE_Auswahl_ZR'));
-synchronizationIndex = parameter.gui.merkmale_und_klassen.ind_zr;
-set(gaitfindobj('CE_Auswahl_ZR'),'value', oldSelection);
-aktparawin;
+synchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
 
 %% identify the contained features, experiments and positions
 experimentId = callback_livecellminer_find_output_variable(bez_code, parameter.gui.livecellminer.summaryOutputVariable);
@@ -73,7 +71,7 @@ dataPoints = [];
 grouping = [];
 
 %% plot separate figures for each feature
-for f = generate_rowvector(selectedFeatures)
+for featureIndex = generate_rowvector(selectedFeatures)
     
     %% open new figure and initialize it with the selected color mode
     if (parameter.gui.livecellminer.darkMode == true)
@@ -140,7 +138,7 @@ for f = generate_rowvector(selectedFeatures)
             set(gca, 'YLim', [minValue, maxValue]);
             
             title(strrep(zgf_y_bez(experimentId,e).name, '_', '\_'));
-            ylabel(strrep(kill_lz(var_bez(f,:)), '_', '\_'));
+            ylabel(strrep(kill_lz(var_bez(featureIndex,:)), '_', '\_'));
             
             %% increment subplot counter
             currentSubPlot = currentSubPlot + 1;
@@ -185,7 +183,7 @@ for f = generate_rowvector(selectedFeatures)
         legend(currentLegend);
         set(gca, 'YLim', [minValue, maxValue]);
         title('Combined Experiments');
-        ylabel(strrep(kill_lz(var_bez(f,:)), '_', '\_'));
+        ylabel(strrep(kill_lz(var_bez(featureIndex,:)), '_', '\_'));
     end
    
     if (numSubPlots > 1)
@@ -197,3 +195,4 @@ for f = generate_rowvector(selectedFeatures)
 end
 
 colordef white;
+end

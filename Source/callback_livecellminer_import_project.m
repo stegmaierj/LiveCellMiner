@@ -52,26 +52,28 @@ function [] = callback_livecellminer_import_project(parameters)
     inputFiles = dir([inputFolder '*.tif']);
     numInputFiles = length(inputFiles);
     
-    parfor f=1:numInputFiles
-        
-        [~, ~, ext] = fileparts(inputFiles(f).name);        
-        currentOutputFile = [parameters.detectionFolder strrep(inputFiles(f).name, ext, parameters.detectionExtension)];
-        
-        if (isfile(currentOutputFile))
-            continue;
-        end
-        
-        %% specify the XPIWIT command
-        XPIWITCommand = ['./XPIWIT.sh --output "' outputFolderSeeds '" --input "0, ' inputFolder inputFiles(f).name ', 2, float" --xml "' parameters.XPIWITDetectionPipeline '" --seed 0 --lockfile off --subfolder "filterid, filtername" --outputformat "imagename, filtername" --end'];
+    %% parfor seems to skip files occasionally, thus perform two consistency runs to be sure all files are present.
+    for c=1:3
+        parfor f=1:numInputFiles
 
-        %% replace slashes by backslashes for windows systems
-        if (ispc == true)
-            XPIWITCommand = strrep(XPIWITCommand, './XPIWIT.sh', 'XPIWIT.exe');
-            XPIWITCommand = strrep(XPIWITCommand, '\', '/');
+            [~, ~, ext] = fileparts(inputFiles(f).name);        
+            currentOutputFile = [parameters.detectionFolder strrep(inputFiles(f).name, ext, parameters.detectionExtension)];
+
+            if (isfile(currentOutputFile))
+                continue;
+            end
+
+            %% specify the XPIWIT command
+            XPIWITCommand = ['./XPIWIT.sh --output "' outputFolderSeeds '" --input "0, ' inputFolder inputFiles(f).name ', 2, float" --xml "' parameters.XPIWITDetectionPipeline '" --seed 0 --lockfile off --subfolder "filterid, filtername" --outputformat "imagename, filtername" --end'];
+
+            %% replace slashes by backslashes for windows systems
+            if (ispc == true)
+                XPIWITCommand = strrep(XPIWITCommand, './XPIWIT.sh', 'XPIWIT.exe');
+                XPIWITCommand = strrep(XPIWITCommand, '\', '/');
+            end
+            system(XPIWITCommand);
         end
-        system(XPIWITCommand);
     end
-    
     cd(oldPath);
 
     %% perform cell pose segmentation (optional)
@@ -79,10 +81,11 @@ function [] = callback_livecellminer_import_project(parameters)
         parameters.outputFolderCellPose = [outputFolder 'Cellpose/'];
         outputDataExists = true;
         if (~isfolder(parameters.outputFolderCellPose))
-            mkdir(parameters.outputFolderCellPose); 
+            mkdir(parameters.outputFolderCellPose);
+            outputDataExists = false;
         else
             %% check if output images already exist
-            inputFiles = dir([inputFolder '*.tif']);
+            inputFiles = dir([inputFolder parameters.channelFilter parameters.channelFilter '*.tif']);
             outputFiles = dir([parameters.outputFolderCellPose '*_cp_masks.png']);
             numInputFiles = length(inputFiles);
             numOutputFiles = length(outputFiles);

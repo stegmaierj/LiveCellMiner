@@ -32,9 +32,6 @@ syncMethod = questdlg('Which synchronization method do you want to use?', 'Selec
 useClassicalSync = ~isempty(strfind(syncMethod, 'Classical'));
 useAutoRejection = ~isempty(strfind(syncMethod, 'Auto Rejection'));
 
-if (useAutoRejection == true)
-    
-end
 
 %% path to the pretrained model
 if (useAutoRejection == true)
