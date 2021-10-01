@@ -24,6 +24,9 @@
 %
 %%
 
+%% add haralick function for feature computation
+addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'haralick' filesep]);
+
 %% preload image patches if not available yet
 if (~exist('rawImagePatches', 'var') || isempty(rawImagePatches))
     callback_livecellminer_load_image_files;
@@ -32,7 +35,7 @@ end
 %% segmentation mode to be used (extend, shring, toroidal)
 dlgtitle = '2nd Channel Feature Extraction:';
 dims = [1 100];
-additionalUserSettings = inputdlg({'Segmentation Mode (0: Extend, 1: Shrink, 2: Toroidal)', 'Structuring Element (e.g., disk, square, diamond)', 'Structuring Element Radius'}, dlgtitle, dims, {'0', 'disk', '2'});
+additionalUserSettings = inputdlg({'Segmentation Mode (0: Extend, 1: Shrink, 2: Toroidal)', 'Structuring Element (e.g., disk, square, diamond)', 'Structuring Element Radius', 'Extract Advanced Features?'}, dlgtitle, dims, {'0', 'disk', '2', '0'});
 if (isempty(additionalUserSettings))
     disp('No feature extraction settings provided, stopping processing ...');
     return;
@@ -41,6 +44,7 @@ else
     extractionMode = str2double(additionalUserSettings{1});
     strelType = additionalUserSettings{2};
     strelRadius = str2double(additionalUserSettings{3});
+    extractAdvancedFeatures = str2double(additionalUserSettings{4}) > 0;
     structuringElement = strel(strelType, strelRadius);
     
     %% spefify feature name parts
@@ -62,12 +66,41 @@ numCells = size(d_orgs,1);
 numFrames = size(d_orgs,2);
 
 %% assemble the feature names
-numFeatures = 4;
 featureNames = cell(3,1);
 featureNames{1} = ['Ch2-MeanIntensity' extractionSuffix];
 featureNames{2} = ['Ch2-StdIntensity' extractionSuffix];
 featureNames{3} = ['Ch2-MaxIntensity' extractionSuffix];
 featureNames{4} = ['Ch1-Ch2-MI-Ratio' extractionSuffix];
+featureNames{5} = ['Ch2-Outer-Inner-Mean-Ratio' extractionSuffix];
+featureNames{6} = ['Ch2-Max-Int-Displacement' extractionSuffix];
+
+if (extractAdvancedFeatures == true)
+    extractionPrefix = 'Ch2-';
+    featureNames{7} = [extractionPrefix 'Area', extractionSuffix];
+    featureNames{8} = [extractionPrefix 'MajorAxisLength', extractionSuffix];
+    featureNames{9} = [extractionPrefix 'MinorAxisLength', extractionSuffix];
+    featureNames{10} = [extractionPrefix 'Orientation', extractionSuffix];
+    featureNames{11} = [extractionPrefix 'Circularity',  extractionSuffix];
+    featureNames{12} = [extractionPrefix 'MeanIntensity',  extractionSuffix];
+    featureNames{13} = [extractionPrefix 'StdIntensity', extractionSuffix];
+    featureNames{14} = [extractionPrefix 'StdIntensityGradMag' extractionSuffix];
+    featureNames{15} = [extractionPrefix 'AngularSecondMoment', extractionSuffix];
+    featureNames{16} = [extractionPrefix 'Contrast', extractionSuffix];
+    featureNames{17} = [extractionPrefix 'Correlation', extractionSuffix];
+    featureNames{18} = [extractionPrefix 'Variance', extractionSuffix];
+    featureNames{19} = [extractionPrefix 'InverseDifferenceMoment(Homogeneity)' extractionSuffix];
+    featureNames{20} = [extractionPrefix 'SumAverage', extractionSuffix];
+    featureNames{21} = [extractionPrefix 'SumVariance', extractionSuffix];
+    featureNames{22} = [extractionPrefix 'SumEntropy', extractionSuffix];
+    featureNames{23} = [extractionPrefix 'Entropy', extractionSuffix];
+    featureNames{24} = [extractionPrefix 'DifferenceVariance', extractionSuffix];
+    featureNames{25} = [extractionPrefix 'DifferenceEntropy ', extractionSuffix];
+    featureNames{26} = [extractionPrefix 'InformationMeasureofCorrelationI', extractionSuffix];
+    featureNames{27} = [extractionPrefix 'InformationMeasureofCorrelationII', extractionSuffix];
+    featureNames{28} = [extractionPrefix 'MaximalCorrelationCoefficient', extractionSuffix];
+end
+numFeatures = length(featureNames);
+
 additionalFeatures = zeros(numCells, numFrames, numFeatures);
 
 %% start timer
@@ -77,7 +110,7 @@ tic;
 threadResults = cell(numFrames, 1);
 
 %% process all frames
-for i=1:numFrames
+parfor i=1:numFrames
     
     %% initialize the current results
     currentResults = zeros(numCells, numFeatures);
@@ -92,15 +125,15 @@ for i=1:numFrames
         
         %% compute the mask
         if (extractionMode == 0)
-            maskImage = imdilate(maskImage, structuringElement);
+            maskImageCh2 = imdilate(maskImage, structuringElement);
         elseif (extractionMode == 1)
-            maskImage = imerode(maskImage, structuringElement);
+            maskImageCh2 = imerode(maskImage, structuringElement);
         else
-            maskImage = imdilate(maskImage, structuringElement) - maskImage;
+            maskImageCh2 = imdilate(maskImage, structuringElement) - maskImage;
         end
         
         %% compute the current feature
-        currentRegionProps = regionprops(maskImage, 'PixelIdxList');
+        currentRegionProps = regionprops(maskImageCh2, 'PixelIdxList', 'Centroid');
         if (isempty(currentRegionProps))
             continue;
         end
@@ -110,6 +143,27 @@ for i=1:numFrames
         currentResults(j,2) = std(rawImage2(currentRegionProps(1).PixelIdxList));
         currentResults(j,3) = max(rawImage2(currentRegionProps(1).PixelIdxList));
         currentResults(j,4) = mean(rawImage1(currentRegionProps(1).PixelIdxList)) / mean(rawImage2(currentRegionProps(1).PixelIdxList));
+        
+        %% characterize the maximum displacement
+        outerIntensities = rawImage2(maskImageCh2 > 0 & ~maskImage);
+        innerIntensities = rawImage2(maskImage > 0);
+        globalUpperQuantile = quantile(rawImage2(maskImageCh2>0), 0.75);
+        outerUpperQuantile = quantile(outerIntensities, 0.75);
+        innerUpperQuantile = quantile(innerIntensities, 0.75);
+        
+        globalUpperQuantileIndices = find((maskImageCh2 > 0 & rawImage2 > globalUpperQuantile));
+        globalUpperQuantileIntensities = rawImage2(globalUpperQuantileIndices);
+        globalUpperQuantileIntensities = globalUpperQuantileIntensities / sum(globalUpperQuantileIntensities);
+        [xpos, ypos] = ind2sub(size(maskImageCh2), globalUpperQuantileIndices);
+        upperQuantileCentroid = [sum(globalUpperQuantileIntensities .* xpos), sum(globalUpperQuantileIntensities .* ypos)];
+        
+        currentResults(j,5) = mean(outerIntensities(outerIntensities>outerUpperQuantile)) / mean(innerIntensities(innerIntensities>innerUpperQuantile));
+        currentResults(j,6) = norm(parameter.projekt.patchRescaleFactor * (upperQuantileCentroid - currentRegionProps(1).Centroid));
+        
+        if (extractAdvancedFeatures)
+            [~, featureVector] = callback_livecellminer_extract_nucleus_features(rawImage2, double(maskImageCh2));
+            currentResults(j,7:end) = featureVector;
+        end
     end
     
     %% pass results to the thread data collector

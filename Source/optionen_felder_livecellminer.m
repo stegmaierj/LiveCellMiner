@@ -104,6 +104,13 @@ felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
+felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_MultipleTestingMethod';
+felder(fc).visible(end).pos = [300 90];
+felder(fc).visible(end).bez_pos_rel = [-280 -3];
+
+
+%%%%%%%%%%%%%%%%%%
+% Element: Linke/Rechte Einzüge verwenden
 felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_ErrorStep';
 felder(fc).visible(end).pos = [300 150];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
@@ -163,6 +170,8 @@ felder(fc).visible(end).bez_pos_rel = [-280 -3];
 felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_SummaryOutputVariable';
 felder(fc).visible(end).pos = [300 420];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
+
+
 
 
 

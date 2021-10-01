@@ -32,7 +32,8 @@ if (orientationFeatureIndex <= 0 || syncFeatureIndex <= 0 || meanIntensityFeatur
    return; 
 end
 
-deltaT = 3;
+numFramesOrientation = 8; %% uses the last numFramesOrientation before MA to compute the sum of angles
+deltaT = 3; %% duration between two frames in minutes
 
 %% initialize a new feature and add a new specifier
 d_org(:,end+1) = 0;
@@ -42,14 +43,14 @@ d_org(:,end+1) = 0;
 
 %% add the specifier for the new single feature
 if (size(d_org,2) == 1)
-    dorgbez = char('IPToMALength_Frames', 'IPToMALength_Minutes', 'InterphaseMeanIntensity', 'AccumulatedOrientationDiffPMA');
+    dorgbez = char('IPToMALength_Frames', 'IPToMALength_Minutes', 'InterphaseMeanIntensity', 'MeanOrientationDiffPMA');
 else
-    dorgbez = char(dorgbez, 'IPToMALength_Frames', 'IPToMALength_Minutes', 'InterphaseMeanIntensity', 'AccumulatedOrientationDiffPMA');
+    dorgbez = char(dorgbez, 'IPToMALength_Frames', 'IPToMALength_Minutes', 'InterphaseMeanIntensity', 'MeanOrientationDiffPMA');
 end
 IPToMALengthFramesIndex = callback_livecellminer_find_single_feature(dorgbez, 'IPToMALength_Frames');
 IPToMALengthMinutesIndex = callback_livecellminer_find_single_feature(dorgbez, 'IPToMALength_Minutes');
 InterphaseMeanIntensityIndex = callback_livecellminer_find_single_feature(dorgbez, 'InterphaseMeanIntensity');
-AccumulatedOrientationDiffPMAIndex = callback_livecellminer_find_single_feature(dorgbez, 'AccumulatedOrientationDiffPMA');
+MeanOrientationDiffPMAIndex = callback_livecellminer_find_single_feature(dorgbez, 'MeanOrientationDiffPMA');
 
 %% compute the number of frames between the IP and MA transition
 for i=1:size(d_orgs,1)
@@ -57,10 +58,14 @@ for i=1:size(d_orgs,1)
     pmaIndices = find(d_orgs(i,:,syncFeatureIndex) == 2);
     atiIndices = find(d_orgs(i,:,syncFeatureIndex) == 3);
     
+    if (isempty(intIndices) || isempty(pmaIndices) || isempty(atiIndices))
+        continue;
+    end
+    
     d_org(i, IPToMALengthFramesIndex) = length(pmaIndices);
     d_org(i, IPToMALengthMinutesIndex) = d_org(i, IPToMALengthFramesIndex) * deltaT;
     d_org(i, InterphaseMeanIntensityIndex) = mean(d_orgs(i, intIndices, meanIntensityFeatureIndex));
-    d_org(i, AccumulatedOrientationDiffPMAIndex) = sum(abs(diff(d_orgs(i, pmaIndices, orientationFeatureIndex))));    
+    d_org(i, MeanOrientationDiffPMAIndex) = mean(abs(diff(d_orgs(i, pmaIndices, orientationFeatureIndex))));   
 end
 
 %% update the GUI for the new time series to show up

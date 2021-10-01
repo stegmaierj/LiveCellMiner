@@ -36,7 +36,8 @@ useAutoRejection = ~isempty(strfind(syncMethod, 'Auto Rejection'));
 %% path to the pretrained model
 if (useAutoRejection == true)
     
-    modelPath = uigetfile('*.cdc', 'Select LSTM classifier for the current data set!');
+    [modelFile, modelPath] = uigetfile('*.cdc', 'Select LSTM classifier for the current data set!');
+    modelPath = [modelPath modelFile];
     
     if (~exist('maskedImageCNNFeatures', 'var'))
         callback_livecellminer_load_image_files;
@@ -96,18 +97,24 @@ for i=ind_auswahl'%1:2:size(d_orgs,1)
     %% check if classifier exists
     if (exist('classificationLSTM', 'var') && useAutoRejection == true)
         currentFeaturesCNN = zeros(1000, numFrames);
+        validCNNFeatures = true;
         for j=1:numFrames
-            currentFeaturesCNN(:,j) = maskedImageCNNFeatures{i, j};
+            if (~isempty(maskedImageCNNFeatures{i, j}))
+                currentFeaturesCNN(:,j) = maskedImageCNNFeatures{i, j};
+            else
+                validCNNFeatures = false;
+                break;
+            end
         end 
         validTrajectoryProbability = predict(classificationLSTM, currentFeaturesCNN);
         
-        if (validTrajectoryProbability(1) > validTrajectoryProbability(2))
+        if (validTrajectoryProbability(1) > validTrajectoryProbability(2) || validCNNFeatures == false)
             %% set the synchronization time points
             d_orgs(i:(i+1), :, synchronizationIndex) = -1;
             invalidSynchronization = invalidSynchronization+2;
             continue;
         end
-        
+                
         %% if LSTM + HMM sync is selected, use the pretrained network for prediction
         if (useClassicalSync == false)
             autoSyncPrediction = predict(regressionLSTM, currentFeaturesCNN);
@@ -116,7 +123,7 @@ for i=ind_auswahl'%1:2:size(d_orgs,1)
             autoSyncPrediction(autoSyncPrediction > 3) = 3;
             autoSyncPredictionHMMCorrected = callback_livecellminer_perform_HMM_prediction(autoSyncPrediction);
             
-            if (length(unique(autoSyncPredictionHMMCorrected)) < 3 || sum(autoSyncPredictionHMMCorrected <= 0) > 0)
+            if (length(unique(autoSyncPredictionHMMCorrected)) < 3 || sum(autoSyncPredictionHMMCorrected <= 0) > 0 || sum(autoSyncPredictionHMMCorrected==1) > parameter.gui.livecellminer.IPTransition)
                 d_orgs(i:(i+1), :, synchronizationIndex) = -1;
                 invalidSynchronization = invalidSynchronization+2;
                 continue;

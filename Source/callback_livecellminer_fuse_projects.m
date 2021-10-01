@@ -35,7 +35,13 @@ end
 [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolders);
 
 %% initialize the SciXMiner variables
-numFrames = 90;
+prompt = {'Enter frames of the project:'};
+dlgtitle = 'Specify number of frames that were extracted for the project (default: 90)';
+dims = [1 35];
+definput = {'90'};
+answer = inputdlg(prompt,dlgtitle,dims,definput);
+numFrames = round(str2double(answer{1}));
+
 numFeatures = 28;
 d_orgs_new = zeros(0, numFrames, numFeatures);
 code_alle_new = zeros(0, 5);

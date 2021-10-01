@@ -24,7 +24,10 @@
 %
 %%
 
-function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_orgs, dorgbez, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, showHistogram)
+function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_orgs, dorgbez, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, showHistogram, showViolinPlots, createNewFigure, yrange)
+
+    %% add toolbox for the simple mixed anova
+    addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'violinplot' filesep]);
 
     %% get the parameters from the GUI
     IPTransition = parameter.gui.livecellminer.IPTransition;
@@ -33,11 +36,25 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
     alignPlots = parameter.gui.livecellminer.alignPlots;
     errorStep = parameter.gui.livecellminer.errorStep;
     showErrorBars = parameter.gui.livecellminer.showErrorBars;
-
+    
     if (~exist('showHistogram', 'var'))
        showHistogram = false;
     end
-
+    
+    if (~exist('showViolinPlots', 'var'))
+       showViolinPlots = false;
+    end
+    
+    %% check if new figure needs to be created (disabled if auto plotting is used)
+    if (~exist('createNewFigure', 'var'))
+        createNewFigure = true;
+    end
+    
+    %% check if new figure needs to be created (disabled if auto plotting is used)
+    if (~exist('yrange', 'var'))
+        yrange = [];
+    end
+    
     darkMode = parameter.gui.livecellminer.darkMode;
     summarizeSelectedExperiments = parameter.gui.livecellminer.summarizeSelectedExperiments;
 
@@ -86,7 +103,11 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
             markerColor = 'k';
             colordef white;
         end
-        fh = figure; clf; hold on;
+        if (createNewFigure == true)
+            fh = figure; clf; hold on;
+        else
+            fh = gcf; hold on; 
+        end
         if (parameter.gui.livecellminer.darkMode == true)
             set(fh, 'color', 'black');
         else
@@ -108,8 +129,10 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
             for e=generate_rowvector(selectedExperiments)
 
                 %% select subplot
-                subplot(numRows, numColumns, currentSubPlot); hold on;
-
+                if (createNewFigure == true)
+                    subplot(numRows, numColumns, currentSubPlot); hold on;
+                end
+                
                 %% reset data points
                 dataPoints = [];
                 grouping = [];    
@@ -128,7 +151,7 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
 
                     %% get stage transitions
                     if (synchronizationIndex > 0 && alignPlots == true)
-                        stageTransitions = squeeze(d_orgs(ind_auswahl, 1, synchronizationIndex)) >= 0;
+                        stageTransitions = squeeze(d_orgs(ind_auswahl, 1, synchronizationIndex)) > 0;
                     end
 
                     %% get the valid cells for the current combination of experiment and position
@@ -167,7 +190,12 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
 
                     currentCodeValue = currentCodeValue + 1;
                 end
-
+                
+                %% remove invalid indices
+                invalidIndices = isnan(dataPoints) | isinf(dataPoints);
+                dataPoints(invalidIndices) = [];
+                grouping(invalidIndices) = [];
+            
                 %% plot the data in box plot format
                 numGroups = length(unique(grouping));
                 groupColors = colorMap(1:numGroups, :);
@@ -179,18 +207,44 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
                 maxValue = max(maxValue, max(dataPoints(:)));
 
                 if (showHistogram == false)
-                    boxplot(dataPoints, grouping, 'notch', 'on', 'BoxStyle', 'outline', 'Labels', currentLegend, 'ColorGroup', groupColors, 'PlotStyle', 'compact', 'Jitter', 0.2);
-                    box off;
+                    
+                    if (showViolinPlots == false)
+                        
+                        boxplot(dataPoints, grouping, 'notch', 'on', 'BoxStyle', 'outline', 'Labels', currentLegend, 'ColorGroup', groupColors, 'PlotStyle', 'compact', 'Jitter', 0.2);
+                        box off;
 
-                    %% adjust the boxplot colors depending on the color mode
-                    upperWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Upper Whisker');
-                    lowerWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Lower Whisker');
-                    upperAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Upper Adjacent Value');
-                    lowerAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Lower Adjacent Value');
-                    set(upperWhiskers, 'Color', markerColor);
-                    set(lowerWhiskers, 'Color', markerColor);
-                    set(upperAdjacentValue, 'Color', markerColor);
-                    set(lowerAdjacentValue, 'Color', markerColor);
+                        %% adjust the boxplot colors depending on the color mode
+                        upperWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Upper Whisker');
+                        lowerWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Lower Whisker');
+                        upperAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Upper Adjacent Value');
+                        lowerAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Lower Adjacent Value');
+                        set(upperWhiskers, 'Color', markerColor);
+                        set(lowerWhiskers, 'Color', markerColor);
+                        set(upperAdjacentValue, 'Color', markerColor);
+                        set(lowerAdjacentValue, 'Color', markerColor);
+
+                    else
+                        plotObject = violinplot(dataPoints, grouping);
+                        
+                        if (~isempty(yrange))
+                           set(gca, 'YLim', yrange); 
+                        end
+                        
+                        labelCell = cell(size(currentLegend,1),1);
+                        for l=1:size(currentLegend,1)
+                           labelCell{l} = kill_lz(currentLegend(l,:));
+                           plotObject(l).ViolinColor = colorMap(l,:);
+
+                           groupMedian = median(dataPoints(grouping == l));
+                           yrange = get(gca, 'YLim'); 
+                           ypos = yrange(2) - 0.01 * (yrange(2) - yrange(1));
+                           text(l, ypos, sprintf('%.2f', groupMedian), 'HorizontalAlignment', 'center');
+                        end
+                        
+                        set(gca, 'XTick', unique(grouping), 'XTickLabels', labelCell);
+                        xlabel('');
+                    end
+
                     %xtickangle(15);        
 %                     
 %                     hold on;
@@ -232,7 +286,7 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
 
                 %% get stage transitions
                 if (synchronizationIndex > 0 && alignPlots == true)
-                    stageTransitions = squeeze(d_orgs(ind_auswahl, 1, synchronizationIndex)) >= 0;
+                    stageTransitions = squeeze(d_orgs(ind_auswahl, 1, synchronizationIndex)) > 0;
                 end
 
                 %% get the valid cells for the current combination of experiment and position
@@ -272,6 +326,11 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
                 %% increment subplot counter
                 currentCodeValue = currentCodeValue + 1;
             end
+            
+            %% remove invalid indices
+            invalidIndices = isnan(dataPoints) | isinf(dataPoints);
+            dataPoints(invalidIndices) = [];
+            grouping(invalidIndices) = [];
 
             %% add legends to the figures
             %% plot the data in box plot format
@@ -289,20 +348,48 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
 %                 scatter(grouping + 0.1*randn(length(grouping), 1), dataPoints, 10, 0.8*[ones(length(dataPoints),1), ones(length(dataPoints),1), ones(length(dataPoints),1)], 'filled');
 %                 hold on;
                 
-                boxplot(dataPoints, grouping, 'notch', 'on', 'BoxStyle', 'outline', 'Labels', currentLegend, 'ColorGroup', groupColors, 'PlotStyle', 'compact', 'Jitter', 0.2);
-                box off;
+                if (showViolinPlots == false)
+                    boxplot(dataPoints, grouping, 'notch', 'on', 'BoxStyle', 'outline', 'Labels', currentLegend, 'ColorGroup', groupColors, 'PlotStyle', 'compact', 'Jitter', 0.2);
+                    box off;
 
-                %% adjust the boxplot colors depending on the color mode
-                upperWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Upper Whisker');
-                lowerWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Lower Whisker');
-                upperAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Upper Adjacent Value');
-                lowerAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Lower Adjacent Value');
-                set(upperWhiskers, 'Color', markerColor);
-                set(lowerWhiskers, 'Color', markerColor);
-                set(upperAdjacentValue, 'Color', markerColor);
-                set(lowerAdjacentValue, 'Color', markerColor);
-               
+                    %% adjust the boxplot colors depending on the color mode
+                    upperWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Upper Whisker');
+                    lowerWhiskers = findobj(gcf, 'type', 'line', 'Tag', 'Lower Whisker');
+                    upperAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Upper Adjacent Value');
+                    lowerAdjacentValue = findobj(gcf, 'type', 'line', 'Tag', 'Lower Adjacent Value');
+                    set(upperWhiskers, 'Color', markerColor);
+                    set(lowerWhiskers, 'Color', markerColor);
+                    set(upperAdjacentValue, 'Color', markerColor);
+                    set(lowerAdjacentValue, 'Color', markerColor);
+                else
+                    plotObject = violinplot(dataPoints, grouping);
+                    
+                    if (~isempty(yrange))
+                       set(gca, 'YLim', yrange); 
+                    end
+                        
+                    labelCell = cell(size(currentLegend,1),1);
+                    for l=1:size(currentLegend,1)
+                       labelCell{l} = kill_lz(currentLegend(l,:));
+                       plotObject(l).ViolinColor = colorMap(l,:);
+                       plotObject(l).EdgeColor = [0.5,0.5,0.5];
+                       plotObject(l).BoxColor = [0.1,0.1,0.1];
+                       plotObject(l).ScatterPlot.MarkerFaceAlpha = 0.1;
+                       plotObject(l).BoxWidth = 0.02;
+                       plotObject(l).WhiskerPlot.LineWidth = 1;
+                       plotObject(l).ScatterPlot.SizeData = 10;
+                       
+                       groupMedian = median(dataPoints(grouping == l));
+                       yrange = get(gca, 'YLim'); 
+                       ypos = yrange(2) - 0.01 * (yrange(2) - yrange(1));
+                       text(l, ypos, sprintf('%.2f', groupMedian), 'HorizontalAlignment', 'center');
+                    end
+
+                    set(gca, 'XTick', unique(grouping), 'XTickLabels', labelCell);
+                    xlabel('');
+                end
                 
+                xlabel('');
                 ylabel(strrep(kill_lz(dorgbez(f,:)), '_', '\_'));
             else
                 histgramRange = globalMinValue:intensityHistogramStep:globalMaxValue;

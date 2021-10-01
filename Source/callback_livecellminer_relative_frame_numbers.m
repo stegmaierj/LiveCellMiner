@@ -24,6 +24,9 @@
 %
 %%
 
+IPTransition = parameter.gui.livecellminer.IPTransition;
+MATransition = parameter.gui.livecellminer.MATransition;
+alignedLength = parameter.gui.livecellminer.alignedLength;
 stepWidth = parameter.gui.livecellminer.frameStepWidth;
 relativeXTick = 0:stepWidth:alignedLength;
 relativeXTickLabels = cell(1,length(relativeXTick));

@@ -64,7 +64,7 @@ elements(mc).tag = 'MI_LiveCellMiner';
 %name in the menu
 elements(mc).name = 'LiveCellMiner';
 %list of the functions in the menu, -1 is a separator
-elements(mc).menu_items = {'MI_LiveCellMiner_Import', 'MI_LiveCellMiner_Align', 'MI_LiveCellMiner_Show', 'MI_LiveCellMiner_Process'};
+elements(mc).menu_items = {'MI_LiveCellMiner_Import', 'MI_LiveCellMiner_Align', 'MI_LiveCellMiner_Show', 'MI_LiveCellMiner_Process', 'MI_LiveCellMiner_Analyze'};
 %is always enabled if a project exists
 %further useful option: elements(mc).freischalt = {'1'}; %is always enabled
 elements(mc).freischalt = {'1'}; 
@@ -197,7 +197,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Show';
 elements(mc).tag = 'MI_LiveCellMiner_Show';
-elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,6 +243,17 @@ elements(mc).name = 'Comb. Box Plots';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'showHistogram = false; callback_livecellminer_show_combined_boxplots(parameter, d_org, d_orgs, dorgbez, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, showHistogram);';
 elements(mc).tag = 'MI_LiveCellMiner_ShowCombBoxPlots';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Comb. Violin Plots';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'showHistogram = false; showViolinPlots = true; callback_livecellminer_show_combined_boxplots(parameter, d_org, d_orgs, dorgbez, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, showHistogram, showViolinPlots);';
+elements(mc).tag = 'MI_LiveCellMiner_ShowCombViolinPlots';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
@@ -300,7 +311,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Process';
 elements(mc).tag = 'MI_LiveCellMiner_Process';
-elements(mc).menu_items = {'MI_LiveCellMiner_ComputeSecondaryChannelFeatures', 'MI_LiveCellMiner_ComputeAdditionalSingleFeatures', 'MI_LiveCellMiner_ComputeLinearRegressionSlope', 'MI_LiveCellMiner_ComputeRelativeRecoveryTimeSeries', -1, 'MI_LiveCellMiner_AddOligoIDOutputVariable', 'MI_LiveCellMiner_AddRepeatsOutputVariable', 'MI_LiveCellMiner_SelSingleFeatureRange', -1, 'MI_LiveCellMiner_PerformFeatureNormalization', 'MI_LiveCellMiner_SmoothFeatures'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ComputeSecondaryChannelFeatures', 'MI_LiveCellMiner_ComputeAdditionalSingleFeatures', 'MI_LiveCellMiner_ComputeStageDependentMeanFeatures', 'MI_LiveCellMiner_ComputeLinearRegressionSlope', 'MI_LiveCellMiner_ComputeInterphaseRecoveryFeature', 'MI_LiveCellMiner_ComputeRelativeRecoveryTimeSeries', 'MI_LiveCellMiner_ComputeSisterDistance', 'MI_LiveCellMiner_ComputeSingleFeatureAfterMA', 'MI_LiveCellMiner_ComputeTimeSeriesRatio', -1, 'MI_LiveCellMiner_AddOligoIDOutputVariable', 'MI_LiveCellMiner_AddRepeatsOutputVariable', 'MI_LiveCellMiner_SelSingleFeatureRange', -1, 'MI_LiveCellMiner_PerformFeatureNormalization', 'MI_LiveCellMiner_SmoothFeatures'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -330,9 +341,20 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
+elements(mc).name = 'Compute Interphase Recovery Feature';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_compute_recovery_feature;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeInterphaseRecoveryFeature';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
 elements(mc).name = 'Compute Rel. Recovery Time Series';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_livecellminer_compute_relative_recovery_time_series;';
+elements(mc).callback = ' ;';
 elements(mc).tag = 'MI_LiveCellMiner_ComputeRelativeRecoveryTimeSeries';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
@@ -345,6 +367,50 @@ elements(mc).name = 'Compute Additional Single Features';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_livecellminer_compute_additional_single_features;';
 elements(mc).tag = 'MI_LiveCellMiner_ComputeAdditionalSingleFeatures'; 
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Compute Stage-Dependent Mean Features';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_compute_stage_dependent_mean_features;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeStageDependentMeanFeatures'; 
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Compute Time Series Ratio';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_compute_time_series_ratio;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeTimeSeriesRatio'; 
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Compute Sister Distance';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_compute_sister_distance;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeSisterDistance'; 
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Compute Single Feature After MA';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_compute_single_feature_after_MA;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeSingleFeatureAfterMA'; 
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
@@ -403,3 +469,91 @@ elements(mc).tag = 'MI_LiveCellMiner_SmoothFeatures';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
+%%%%%%% PROCESS %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Analyze';
+elements(mc).tag = 'MI_LiveCellMiner_Analyze';
+elements(mc).menu_items = {'MI_LiveCellMiner_TestForNormality', 'MI_LiveCellMiner_ComputeTTestSingleFeatures', 'MI_LiveCellMiner_ComputeANOVASingleFeatures', 'MI_LiveCellMiner_ComputeWilcoxonTestSingleFeatures', 'MI_LiveCellMiner_ComputeKruskalWallisSingleFeatures', 'MI_LiveCellMiner_ComputeMADSingleFeatures', 'MI_LiveCellMiner_ComputeTwoWayAnovaTimeSeries'};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Test for Normal Distribution (SF)';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_normtest(d_org(ind_auswahl,:),dorgbez,code(ind_auswahl),zgf_y_bez,bez_code,par,parameter,uihd);';
+elements(mc).tag = 'MI_LiveCellMiner_TestForNormality';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Apply Two-Sample t-Test (parametric, SF)';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'statisticalTestMethod=''ttest2''; callback_livecellminer_compute_statistical_test_single_features;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeTTestSingleFeatures';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Apply ANOVA (parametric, SF)';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'statisticalTestMethod=''anova''; callback_livecellminer_compute_statistical_test_single_features;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeANOVASingleFeatures';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Apply Wilcoxon Rank Sum Test (non-parametric, SF)';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'statisticalTestMethod=''wilcoxon''; callback_livecellminer_compute_statistical_test_single_features;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeWilcoxonTestSingleFeatures';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Apply Kruskal-Wallis (non-parametric, SF)';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'statisticalTestMethod=''kruskalwallis''; callback_livecellminer_compute_statistical_test_single_features;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeKruskalWallisSingleFeatures';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Compute Median Absolute Deviation (MAD, SF)';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_compute_mad_single_features;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeMADSingleFeatures';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Apply Two-Way Anova (TS)';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_compute_two_way_anova_time_series;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeTwoWayAnovaTimeSeries';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};

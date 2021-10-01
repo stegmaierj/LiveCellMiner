@@ -37,8 +37,13 @@ if (~isfolder(inputRootFolder{1}))
     inputRootFolder{1} = uigetdir();
 end
 inputRootFolder{1} = [inputRootFolder{1} filesep];
-[inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolder);
-
+try
+    [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolder);
+catch
+    inputRootFolder{1} = uigetdir();
+    inputRootFolder{1} = [inputRootFolder{1} filesep];
+    [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolder);
+end
 %% initialize the SciXMiner variables
 numTotalCells = size(d_orgs, 1);
 numFrames = size(d_orgs,2);

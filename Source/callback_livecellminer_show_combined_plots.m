@@ -24,7 +24,7 @@
 %
 %%
 
-function [] = callback_livecellminer_show_combined_plots(parameter, d_orgs, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, visualizationMode)
+function [] = callback_livecellminer_show_combined_plots(parameter, d_orgs, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, visualizationMode, createNewFigure)
 
 %% get the parameters from the GUI
 IPTransition = parameter.gui.livecellminer.IPTransition;
@@ -35,6 +35,11 @@ errorStep = parameter.gui.livecellminer.errorStep;
 showErrorBars = parameter.gui.livecellminer.showErrorBars;
 darkMode = parameter.gui.livecellminer.darkMode;
 summarizeSelectedExperiments = parameter.gui.livecellminer.summarizeSelectedExperiments;
+
+%% set visualization mode
+if (~exist('createNewFigure', 'var'))
+    createNewFigure = true;
+end
 
 %% set visualization mode
 if (~exist('visualizationMode', 'var'))
@@ -64,7 +69,7 @@ end
 
 %% specify the color map and the line styles
 colorMap = lines(length(selectedPositionsOrOligos));
-lineStyles = {'-', '--', ':', '-.'};
+lineStyles = {'-', '-', '-', '-', '--', ':', '-.'};
 
 %% box plots
 dataPoints = [];
@@ -73,7 +78,6 @@ grouping = [];
 %% plot separate figures for each feature
 for featureIndex = generate_rowvector(selectedFeatures)
     
-    %% open new figure and initialize it with the selected color mode
     if (parameter.gui.livecellminer.darkMode == true)
         colordef black;
         markerColor = 'w';
@@ -81,13 +85,19 @@ for featureIndex = generate_rowvector(selectedFeatures)
         markerColor = 'k';
         colordef white;
     end
-    fh = figure; clf; hold on;
+    
+    %% open new figure and initialize it with the selected color mode
+    if (createNewFigure == true)
+        fh = figure; clf; hold on;
+    else
+        fh = gcf;
+    end
+    
     if (parameter.gui.livecellminer.darkMode == true)
         set(fh, 'color', 'black');
     else
         set(fh, 'color', 'white');
     end
-   
     %% summarize the results of each position either as a heat map, box plots or line plots
     minValue = inf;
     maxValue = -inf;
@@ -98,8 +108,10 @@ for featureIndex = generate_rowvector(selectedFeatures)
     if (summarizeSelectedExperiments == false)
         for e=generate_rowvector(selectedExperiments)
             
-            subplot(numRows, numColumns, currentSubPlot); hold on;
-                
+            if (createNewFigure == true)
+                subplot(numRows, numColumns, currentSubPlot); hold on;
+            end
+            
             %% plot dummy lines for the proper visualization of the legend
             for i=1:length(selectedPositionsOrOligos)
                 if (visualizationMode == 1)
@@ -186,10 +198,12 @@ for featureIndex = generate_rowvector(selectedFeatures)
         ylabel(strrep(kill_lz(var_bez(featureIndex,:)), '_', '\_'));
     end
    
-    if (numSubPlots > 1)
-        for i=1:numSubPlots
-            subplot(numRows, numColumns, i); hold on;
-            set(gca, 'YLim', [minValue, maxValue]);
+    if (createNewFigure == true)
+        if (numSubPlots > 1)
+            for i=1:numSubPlots
+                subplot(numRows, numColumns, i); hold on;
+                set(gca, 'YLim', [minValue, maxValue]);
+            end
         end
     end
 end
