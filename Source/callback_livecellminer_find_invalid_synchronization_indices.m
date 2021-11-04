@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ for i=1:2:size(d_orgs,1)
        ~ismember(3, currentStates)) || ...
        sum(d_orgs(i,:, syncFeature) ~= d_orgs(i+1,:, syncFeature)) > 0 || ...
        (~isempty(interPhaseFrames) && max(interPhaseFrames) >= parameter.gui.livecellminer.IPTransition))
-       invalidIndices = [invalidIndices; i; i+1];
+       invalidIndices = [invalidIndices; i; i+1]; %#ok<AGROW> 
    end
 end
 

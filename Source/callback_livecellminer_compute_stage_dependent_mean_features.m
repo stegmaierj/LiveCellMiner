@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -37,9 +37,9 @@ selectedFeatures = parameter.gui.merkmale_und_klassen.ind_zr;
 for f=selectedFeatures'
 
     %% initialize a new feature and add a new specifier
-    d_org(:,end+1) = 0;
-    d_org(:,end+1) = 0;
-    d_org(:,end+1) = 0;
+    d_org(:,end+1) = 0; %#ok<SAGROW> 
+    d_org(:,end+1) = 0; %#ok<SAGROW> 
+    d_org(:,end+1) = 0; %#ok<SAGROW> 
 
     %% add the specifier for the new single feature
     newFeatureName1 = [kill_lz(var_bez(f,:)) '-intMean'];

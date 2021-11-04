@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@ positionIndices = [3,4];
 positionIndices(1) = callback_livecellminer_find_time_series(var_bez, 'xpos');
 positionIndices(2) = callback_livecellminer_find_time_series(var_bez, 'ypos');
 
+%% get the recovery measure mode
+recoveryMeasureMode = parameter.gui.livecellminer.recoveryMeasureMode;
+
 %% find the selected features
 selectedFeatures = parameter.gui.merkmale_und_klassen.ind_zr;
 numFeatures = length(selectedFeatures);
@@ -39,7 +42,6 @@ if (numFeatures <= 0)
     disp('No valid features selected!');
     return;
 end
-
 
 %% compute the Sister cell distance
 d_orgs(:,:,end+1) = 0;
@@ -68,9 +70,42 @@ for i=1:size(d_orgs,1)
     recoveryFeature = zeros(1, size(d_orgs,2));
     for j=selectedFeatures
         targetValue = mean(mean(d_orgs(i,intIndices, j)));
-        recoveryFeature = recoveryFeature + featureWeight * (100*(abs(targetValue - d_orgs(i,:, j)) / targetValue));
+        
+        if (recoveryMeasureMode == 1)
+            recoveryFeature = recoveryFeature + featureWeight * (100*(d_orgs(i,:, j) / targetValue));
+        elseif (recoveryMeasureMode == 2)
+            
+            featureValues = d_orgs(i,:,j);
+            smallerIndices = find(featureValues <= targetValue);
+            largerIndices = find(featureValues > targetValue);
+            
+            featureValues(smallerIndices) = featureValues(smallerIndices) ./ targetValue;
+            featureValues(largerIndices) = targetValue ./ featureValues(largerIndices);
+                        
+            recoveryFeature = recoveryFeature + featureWeight * (100*featureValues);
+        elseif (recoveryMeasureMode == 3)
+            recoveryFeature = recoveryFeature + featureWeight * (100*((d_orgs(i,:, j) - targetValue) / targetValue));   
+        elseif (recoveryMeasureMode == 4)
+            recoveryFeature = recoveryFeature + featureWeight * (100*(abs(d_orgs(i,:, j)- targetValue) / targetValue));        
+        end
     end
-    recoveryFeature = 100 - recoveryFeature;
+    %recoveryFeature = 100 - recoveryFeature;
+    
+%             %% compute the recovery as ratio or percentage depending on the selected mode
+%         if (mode == 1)
+%             normalizedFeatureValues = d_orgs(i, :, f) / referenceFeatureValue;
+%         elseif (mode == 2)
+%             normalizedFeatureValues = d_orgs(i, :, f);
+%             smallerIndices = find(normalizedFeatureValues <= referenceFeatureValue);
+%             largerIndices = find(normalizedFeatureValues > referenceFeatureValue);
+%             
+%             normalizedFeatureValues(smallerIndices) = normalizedFeatureValues(smallerIndices) ./ referenceFeatureValue;
+%             normalizedFeatureValues(largerIndices) = referenceFeatureValue ./ normalizedFeatureValues(largerIndices);
+%         elseif (mode == 3)
+%             normalizedFeatureValues = 100 * (d_orgs(i, :, f) - referenceFeatureValue) / referenceFeatureValue;
+%         elseif (mode == 4)
+%             normalizedFeatureValues = 100 * abs(d_orgs(i, :, f) - referenceFeatureValue) / referenceFeatureValue;
+%         end   
            
     %% set the Sister distance feature
     d_orgs(i, :, recoveryFeatureIndex) = recoveryFeature;

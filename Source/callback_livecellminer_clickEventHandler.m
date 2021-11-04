@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@
 %%
 
 function callback_livecellminer_clickEventHandler(~, ~)
-    global parameters;
-    global d_orgs;
+    global parameters; %#ok<GVMIS> 
+    global d_orgs; %#ok<GVMIS> 
 
     %% get the modifier keys
     modifiers = get(gcf,'currentModifier');        %(Use an actual figure number if known)
-    shiftPressed = ismember('shift',modifiers);
-    ctrlPressed = ismember('control',modifiers);
-    altPressed = ismember('alt',modifiers);
+    shiftPressed = ismember('shift',modifiers); %#ok<NASGU> 
+    ctrlPressed = ismember('control',modifiers); %#ok<NASGU> 
+    altPressed = ismember('alt',modifiers); %#ok<NASGU> 
 
     %% identify the click position and the button
     buttonPressed = get(gcf, 'SelectionType');
@@ -71,7 +71,7 @@ function callback_livecellminer_clickEventHandler(~, ~)
            d_orgs(cellPair, 1:frameNumber, parameters.manualStageIndex) = 1;
            d_orgs(cellPair, (frameNumber+1):end, parameters.manualStageIndex) = 0;
         elseif (maxIndex == 1)
-            alreadyLabeledIndices = find(squeeze(d_orgs(cellId, :, parameters.manualStageIndex) == 1));
+            alreadyLabeledIndices = find(squeeze(d_orgs(cellId, :, parameters.manualStageIndex) == 1)); %#ok<MXFND> 
             nextIndex = max(alreadyLabeledIndices)+1;
             d_orgs(cellPair, nextIndex:frameNumber, parameters.manualStageIndex) = 2;
             d_orgs(cellPair, (frameNumber+1):end, parameters.manualStageIndex) = 3;

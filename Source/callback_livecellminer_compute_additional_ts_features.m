@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -29,9 +29,11 @@ if (~exist('rawImagePatches', 'var') || isempty(rawImagePatches))
    callback_livecellminer_load_image_files; 
 end
 
+%% get the number of cells and frames
 numCells = size(d_orgs,1);
 numFrames = size(d_orgs,2);
 
+%% initialize the new feature arrays
 circularityFeature = zeros(numCells, numFrames);
 eccentricityFeature = zeros(numCells, numFrames);
 solidityFeature = zeros(numCells, numFrames);
@@ -39,8 +41,10 @@ convexAreaFeature = zeros(numCells, numFrames);
 equivDiameterFeature = zeros(numCells, numFrames);
 extentFeature = zeros(numCells, numFrames);
 
-f = waitbar(0, ['Computing additional time series features for all cells ...']);
+%% initialize waitbar
+f = waitbar(0, 'Computing additional time series features for all cells ...');
 
+%% extract the new features
 for i=1:size(d_orgs,1)
     parfor j=1:size(d_orgs,2)
         currentMask = maskImagePatches{i,j};
@@ -55,11 +59,14 @@ for i=1:size(d_orgs,1)
         extentFeature(i,j) = currentRegionProps(1).Extent;
     end
     
-    waitbar((i / numCells), f, ['Computing additional time series features for all cells ...']);
+    %% show progress
+    waitbar((i / numCells), f, 'Computing additional time series features for all cells ...');
 end
 
+%% close the waitbar
 close(f);
 
+%% add features to the general feature variable d_orgs
 d_orgs(:,:,end+1) = circularityFeature;
 d_orgs(:,:,end+1) = eccentricityFeature;
 d_orgs(:,:,end+1) = solidityFeature;
@@ -67,6 +74,7 @@ d_orgs(:,:,end+1) = convexAreaFeature;
 d_orgs(:,:,end+1) = equivDiameterFeature;
 d_orgs(:,:,end+1) = extentFeature;
 
+%% update specifiers
 if (strcmp(kill_lz(var_bez(end,:)), 'y') == 1)
     var_bez = var_bez(1:end-1, :);
 end

@@ -1,3 +1,0 @@
-function cellCycleStage = callback_livecellminer_estimate_cell_cycle_stage(rawImage, maskImage, synchronizationClasses)
-
-end

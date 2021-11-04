@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -24,15 +24,23 @@
 %
 %%
 
-global parameter;
-global parameters;
-global d_orgs;
-global rawImagePatches;
-global rawImagePatches2;
-global maskImagePatches;
+global parameter; %#ok<GVMIS> 
+global parameters; %#ok<GVMIS> 
+global d_org; %#ok<GVMIS> 
+global d_orgs; %#ok<GVMIS> 
+global zgf_y_bez; %#ok<GVMIS> 
+global bez_code; %#ok<GVMIS> 
+global rawImagePatches; %#ok<GVMIS> 
+global rawImagePatches2; %#ok<GVMIS> 
+global maskImagePatches; %#ok<GVMIS> 
 
 %% get the current time range
 parameters.timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
+
+%% get the output variables
+experimentIdIndex = callback_livecellminer_find_output_variable(bez_code, 'Experiment');
+positionIdIndex = callback_livecellminer_find_output_variable(bez_code, 'Position');
+oligoIdIndex = callback_livecellminer_find_output_variable(bez_code, 'OligoID');
 
 %% only update if anything changed
 if (parameters.dirtyFlag == true)
@@ -142,6 +150,7 @@ currentCell = 1;
 for i=generate_rowvector(parameters.currentCells)
     
     %% determine state transitions
+    manualLabelStatus = d_org(i, parameters.manuallyConfirmedFeature);
     currentStates = squeeze(d_orgs(i, parameters.timeRange, parameters.manualStageIndex));
     invalidIndices = find(currentStates < 0);
     unlabeledIndices = find(currentStates == 0);
@@ -156,6 +165,20 @@ for i=generate_rowvector(parameters.currentCells)
     if (~isempty(beforeMA)); rectangle('Position', [(beforeMA(1)-1)*parameter.projekt.patchWidth+1, (currentCell-1)*parameter.projekt.patchWidth+1, parameter.projekt.patchWidth*length(beforeMA), (parameter.projekt.patchWidth-1)], 'EdgeColor','m'); end
     if (~isempty(afterMA)); rectangle('Position', [(afterMA(1)-1)*parameter.projekt.patchWidth+1, (currentCell-1)*parameter.projekt.patchWidth+1, parameter.projekt.patchWidth*length(afterMA), (parameter.projekt.patchWidth-1)], 'EdgeColor','c'); end
     
+    %% plot if the track was manually aligned
+    if (manualLabelStatus > 0)
+        rectangle('Position', [0, (currentCell-1)*parameter.projekt.patchWidth+1, 0.25*parameter.projekt.patchWidth, 0.25*parameter.projekt.patchWidth], 'FaceColor','g');
+    else
+        rectangle('Position', [0, (currentCell-1)*parameter.projekt.patchWidth+1, 0.25*parameter.projekt.patchWidth, 0.25*parameter.projekt.patchWidth], 'FaceColor','r');
+    end
+
+    %% plot text label showing the experiment, position and plate
+    if (parameters.showInfo)
+        positionName = zgf_y_bez(positionIdIndex, code_alle(i, positionIdIndex)).name;
+        oligoName = zgf_y_bez(oligoIdIndex, code_alle(i, oligoIdIndex)).name;
+        text(0.3*parameter.projekt.patchWidth, (currentCell-1)*parameter.projekt.patchWidth+0.25*parameter.projekt.patchWidth, strrep(['Exp. ' num2str(code_alle(i, experimentIdIndex)) ', ' positionName '(' oligoName ')'], '_', '-'), 'Color','white', 'BackgroundColor', [0,0,0,0.5]);
+    end
+
     currentCell = currentCell + 1;
 end
 

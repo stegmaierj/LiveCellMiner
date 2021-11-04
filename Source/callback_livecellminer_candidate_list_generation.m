@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -97,9 +97,9 @@ function [motherList, daughterList, motherDaughterList] = callback_livecellminer
                     currentMother(2:3) = [currentMother(3)-timeWindowMother+1, currentMother(3)];
                     currentDaughter1(2:3) = [currentDaughter1(2), currentDaughter1(2) + timeWindowDaughter - 1];
                     currentDaughter2(2:3) = [currentDaughter2(2), currentDaughter2(2) + timeWindowDaughter - 1];                    
-                    motherList = [motherList; currentMother];
-                    daughterList = [daughterList; currentDaughter1; currentDaughter2];
-                    motherDaughterList = [motherDaughterList; motherIndex, daughter1Index, daughter2Index];
+                    motherList = [motherList; currentMother]; %#ok<AGROW> 
+                    daughterList = [daughterList; currentDaughter1; currentDaughter2]; %#ok<AGROW> 
+                    motherDaughterList = [motherDaughterList; motherIndex, daughter1Index, daughter2Index]; %#ok<AGROW> 
                 end
             end
         end

@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@
 %%
 
 %% declare global variables for the image patches
-global maskImagePatches;
-global rawImagePatches;
-global rawImagePatches2;
-global maskedImageCNNFeatures;
+global maskImagePatches; %#ok<GVMIS> 
+global rawImagePatches; %#ok<GVMIS> 
+global rawImagePatches2; %#ok<GVMIS> 
+global maskedImageCNNFeatures; %#ok<GVMIS> 
 
 %% get the root directory of the projects to import
 inputRootFolder = cell(1,1);
@@ -83,6 +83,22 @@ for i=1:length(inputFolders)
     load([currentInputFolder experimentName '_' positionName '_RawImagePatches2.mat'], '-mat');
     load([currentInputFolder experimentName '_' positionName '_MaskImagePatches.mat'], '-mat');
     
+    %% perform consistency check
+    currentIndices = find(code_alle(:,3) == experimentId & code_alle(:,4) == positionId);
+    
+    numCells = 0;
+    for k=1:size(finalRawImagePatches, 1)
+        if (~isempty(finalRawImagePatches{k, 1}))
+            numCells = numCells+1;
+        else
+            test = 1;
+        end
+    end
+    
+    if (numCells ~= length(currentIndices))
+        disp(['Mismatch in number of image patches vs. number of cells detected for ' experimentName '_' positionName ', ' num2str(numCells) ' vs. ' num2str(length(currentIndices)) ' !!']);
+    end
+
     %% identify the number of cells
     numCells = size(finalRawImagePatches, 1);
     patchWidth = size(finalRawImagePatches{1,1}, 1);

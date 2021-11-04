@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -26,8 +26,11 @@
 
 %% initialize the global settings variable
 clear parameters;
-global parameters;
-global d_org;
+global parameters; %#ok<GVMIS> 
+global zgf_y_bez; %#ok<NUSED,GVMIS> 
+global bez_code; %#ok<NUSED,GVMIS> 
+global code_alle; %#ok<NUSED,GVMIS> 
+global d_org; %#ok<GVMIS> 
 
 %% preload image files if not done yet
 if (~exist('rawImagePatches', 'var') || isempty(rawImagePatches))
@@ -85,6 +88,7 @@ parameters.colormapStrings = {'gray';'jet';'parula'};
 parameters.showInfo = false;
 parameters.dirtyFlag = true;
 parameters.numStages = 2;
+parameters.showInfo = false;
 
 %% open the main figure
 parameters.mainFigure = figure;

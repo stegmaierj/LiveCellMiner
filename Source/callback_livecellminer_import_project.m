@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ function [] = callback_livecellminer_import_project(parameters)
         parfor f=1:numInputFiles
 
             [~, ~, ext] = fileparts(inputFiles(f).name);        
-            currentOutputFile = [parameters.detectionFolder strrep(inputFiles(f).name, ext, parameters.detectionExtension)];
+            currentOutputFile = [parameters.detectionFolder strrep(inputFiles(f).name, ext, parameters.detectionExtension)]; %#ok<PFBNS> 
 
             if (isfile(currentOutputFile))
                 continue;

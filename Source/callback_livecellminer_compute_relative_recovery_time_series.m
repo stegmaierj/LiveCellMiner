@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ end
 for f=generate_rowvector(selectedFeatures)
 
     %% initialize a new feature and add a new specifier
-    d_orgs(:,:,end+1) = 0;
+    d_orgs(:,:,end+1) = 0; %#ok<SAGROW> 
     var_bez = char(var_bez(1:size(d_orgs,3)-1, :), [kill_lz(var_bez(f, :)) featureSuffix]);
 
     %% process all data points and use the frame after the synchronization time point for normalization.
@@ -76,14 +76,14 @@ for f=generate_rowvector(selectedFeatures)
 
         %% compute the recovery as ratio or percentage depending on the selected mode
         if (mode == 1)
-            normalizedFeatureValues = d_orgs(i, :, f) / referenceFeatureValue;
+            normalizedFeatureValues = 100 * d_orgs(i, :, f) / referenceFeatureValue;
         elseif (mode == 2)
             normalizedFeatureValues = d_orgs(i, :, f);
             smallerIndices = find(normalizedFeatureValues <= referenceFeatureValue);
             largerIndices = find(normalizedFeatureValues > referenceFeatureValue);
             
             normalizedFeatureValues(smallerIndices) = normalizedFeatureValues(smallerIndices) ./ referenceFeatureValue;
-            normalizedFeatureValues(largerIndices) = referenceFeatureValue ./ normalizedFeatureValues(largerIndices);
+            normalizedFeatureValues(largerIndices) = 100 * referenceFeatureValue ./ normalizedFeatureValues(largerIndices);
         elseif (mode == 3)
             normalizedFeatureValues = 100 * (d_orgs(i, :, f) - referenceFeatureValue) / referenceFeatureValue;
         elseif (mode == 4)

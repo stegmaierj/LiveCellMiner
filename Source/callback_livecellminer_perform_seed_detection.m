@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
        
         if (parameters.seedBasedDetection == true)
             try
-                currentSeeds = dlmread([parameters.detectionFolder detectionFiles(i).name], ';', 1, 0);
+                currentSeeds = dlmread([parameters.detectionFolder detectionFiles(i).name], ';', 1, 0); %#ok<DLMRD> 
             catch
                 currentSeeds = [];
             end
@@ -61,7 +61,7 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
                    end
                    
                    %% load the next seed file
-                   currentSeeds = dlmread([parameters.detectionFolder detectionFiles(i+j).name], ';', 1, 0);
+                   currentSeeds = dlmread([parameters.detectionFolder detectionFiles(i+j).name], ';', 1, 0); %#ok<DLMRD> 
                    
                    %% break the loop if seeds are found
                    if (size(currentSeeds, 1) > 0)

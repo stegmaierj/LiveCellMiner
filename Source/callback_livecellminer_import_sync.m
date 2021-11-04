@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -63,8 +63,8 @@ for mOld=unique(code_alle_old(:,microscopeIndexOld))'
                             newIndices = find(code_alle(:,microscopeIndexNew) == mNew & code_alle(:,experimentIndexNew) == eNew & code_alle(:,positionIndexNew) == pNew);
 
                             if (length(newIndices) == length(oldIndices))
-                                d_orgs(newIndices, :, syncIndex) = d_orgs_old(oldIndices, :);
-                                d_org(newIndices, manuallyCheckedIndex) = d_org_old(oldIndices, :);
+                                d_orgs(newIndices, :, syncIndex) = d_orgs_old(oldIndices, :); %#ok<SAGROW> 
+                                d_org(newIndices, manuallyCheckedIndex) = d_org_old(oldIndices, :); %#ok<SAGROW> 
                                 successFlag = true;
                                 disp(['Successfully copied synchronization for ' newMicroscope ' / ' newExperiment ' / ' newPosition]);
                             else

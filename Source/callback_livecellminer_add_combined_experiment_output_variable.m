@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -72,9 +72,9 @@ for i=unique(code_alle_new)'
         definput = {zgf_y_bez(experimentId, associatedExperiments(1)).name};
         combinedName = inputdlg(prompt,dlgtitle,[1 100],definput);
         
-        zgf_y_bez(outputVariableId, i).name = combinedName{1};
+        zgf_y_bez(outputVariableId, i).name = combinedName{1}; %#ok<SAGROW> 
     else
-        zgf_y_bez(outputVariableId, i).name = zgf_y_bez(experimentId, associatedExperiments).name;
+        zgf_y_bez(outputVariableId, i).name = zgf_y_bez(experimentId, associatedExperiments).name; %#ok<SAGROW> 
     end
 end
 

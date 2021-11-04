@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 %
 %%
 
-function [d_orgs] = RefineDetectedSeeds(d_orgs, parameters)
+function [d_orgs] = callback_livecellminer_refine_detected_seeds(d_orgs, parameters)
 
     %% return if no refinement is required
     if (parameters.numRefinementSteps <= 0)

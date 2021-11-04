@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@
 
 %% the key event handler
 function callback_livecellminer_keyReleaseEventHandler(~,evt)
-    global parameters;
-    global d_org;
+    global parameters; %#ok<GVMIS> 
+    global d_org; %#ok<GVMIS> 
 
     parameters.xLim = get(gca, 'XLim');
     parameters.yLim = get(gca, 'YLim');
@@ -96,6 +96,11 @@ function callback_livecellminer_keyReleaseEventHandler(~,evt)
     elseif (strcmp(evt.Character, 'a'))
         parameters.axesEqual = ~parameters.axesEqual;
         callback_livecellminer_update_visualization;
+
+    %% toggle info text
+    elseif (strcmp(evt.Character, 'i'))
+        parameters.showInfo = ~parameters.showInfo;
+        callback_livecellminer_update_visualization;
     
 	%% set current cells as manually checked
 	elseif (strcmp(evt.Key, 'uparrow'))
@@ -110,6 +115,7 @@ function callback_livecellminer_keyReleaseEventHandler(~,evt)
         
     elseif (strcmp(evt.Key, 'downarrow'))
         d_org(parameters.currentCells, parameters.manuallyConfirmedFeature) = 0;
+        callback_livecellminer_update_visualization;
         disp('Labeled current set of cells as unsuitable for manual training!');
     end
 end

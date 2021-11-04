@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -26,11 +26,12 @@
 
 %% enable/disable debug figures
 debugFigures = false;
+maxMAShift = 3;
 
 %% load the previous data
 syncMethod = questdlg('Which synchronization method do you want to use?', 'Select Synchronization Mode', 'Classical', 'Classical + Auto Rejection', 'LSTM + HMM + Auto Rejection', 'Classical + Auto Rejection');
-useClassicalSync = ~isempty(strfind(syncMethod, 'Classical'));
-useAutoRejection = ~isempty(strfind(syncMethod, 'Auto Rejection'));
+useClassicalSync = ~isempty(strfind(syncMethod, 'Classical')); %#ok<STREMP> 
+useAutoRejection = ~isempty(strfind(syncMethod, 'Auto Rejection')); %#ok<STREMP> 
 
 
 %% path to the pretrained model
@@ -80,9 +81,9 @@ numFrames = size(d_orgs, 2);
 
 %% process all cells contained in d_orgs (step size of 2 to ensure consistent synchronization for siblings)
 f = waitbar(0, ['Performing auto-sync with the ' syncMethod ' method ...']);
-for i=ind_auswahl'%1:2:size(d_orgs,1)
+for i=1:2:size(d_orgs,1)
     
-    waitbar((find(ind_auswahl == i) / length(ind_auswahl)), f, ['Performing auto-sync with the ' syncMethod ' method ...']);
+    waitbar((i / size(d_orgs,1)), f, ['Performing auto-sync with the ' syncMethod ' method ...']);
     
     %% always process both daughters together as differing synchronization does not make sense
     if (mod(i, 2) == 0)
@@ -123,7 +124,12 @@ for i=ind_auswahl'%1:2:size(d_orgs,1)
             autoSyncPrediction(autoSyncPrediction > 3) = 3;
             autoSyncPredictionHMMCorrected = callback_livecellminer_perform_HMM_prediction(autoSyncPrediction);
             
-            if (length(unique(autoSyncPredictionHMMCorrected)) < 3 || sum(autoSyncPredictionHMMCorrected <= 0) > 0 || sum(autoSyncPredictionHMMCorrected==1) > parameter.gui.livecellminer.IPTransition)
+            bestMA = min(find(autoSyncPredictionHMMCorrected == 3)); %#ok<MXFND> 
+            
+            if (length(unique(autoSyncPredictionHMMCorrected)) < 3 || ...
+                sum(autoSyncPredictionHMMCorrected <= 0) > 0 || ...
+                sum(autoSyncPredictionHMMCorrected==1) > parameter.gui.livecellminer.IPTransition || ...
+                abs(bestMA - MATransition) > maxMAShift)
                 d_orgs(i:(i+1), :, synchronizationIndex) = -1;
                 invalidSynchronization = invalidSynchronization+2;
                 continue;
@@ -173,7 +179,7 @@ for i=ind_auswahl'%1:2:size(d_orgs,1)
     %% use chromatin distance as a criterion to determine the late ana phase
     if (parameter.gui.livecellminer.sisterDistanceThreshold >= 0)
         sisterDistance = sqrt(sum((squeeze(d_orgs(i, :, positionXIndex:positionYIndex)) - squeeze(d_orgs(i+1, :, positionXIndex:positionYIndex))).^2, 2));
-        bestMA = max(MATransition, min(find(sisterDistance >= parameter.gui.livecellminer.sisterDistanceThreshold))-1);
+        bestMA = max(MATransition, min(find(sisterDistance >= parameter.gui.livecellminer.sisterDistanceThreshold))-1); %#ok<MXFND> 
     else
         bestMA = MATransition;
         
@@ -198,10 +204,18 @@ for i=ind_auswahl'%1:2:size(d_orgs,1)
         end
     end
 
-    %% set the synchronization time points
-    d_orgs(i:(i+1), 1:(bestIP-1), synchronizationIndex) = 1;
-    d_orgs(i:(i+1), bestIP:bestMA, synchronizationIndex) = 2;
-    d_orgs(i:(i+1), (bestMA+1):end, synchronizationIndex) = 3;
+    %% avoid unrealistically large MA transition shifts
+    if (abs(bestMA - MATransition) > maxMAShift)
+        d_orgs(i:(i+1), :, synchronizationIndex) = -1;
+        invalidSynchronization = invalidSynchronization+2;
+        continue;
+    else
+    
+        %% set the synchronization time points
+        d_orgs(i:(i+1), 1:(bestIP-1), synchronizationIndex) = 1;
+        d_orgs(i:(i+1), bestIP:bestMA, synchronizationIndex) = 2;
+        d_orgs(i:(i+1), (bestMA+1):end, synchronizationIndex) = 3;
+    end
 
     %% show debug figures if enabled
     if (debugFigures == true)

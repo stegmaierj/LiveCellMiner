@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
     addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'violinplot' filesep]);
 
     %% get the parameters from the GUI
-    IPTransition = parameter.gui.livecellminer.IPTransition;
-    MATransition = parameter.gui.livecellminer.MATransition;
-    alignedLength = parameter.gui.livecellminer.alignedLength;
+    IPTransition = parameter.gui.livecellminer.IPTransition; %#ok<NASGU> 
+    MATransition = parameter.gui.livecellminer.MATransition; %#ok<NASGU> 
+    alignedLength = parameter.gui.livecellminer.alignedLength; %#ok<NASGU> 
     alignPlots = parameter.gui.livecellminer.alignPlots;
-    errorStep = parameter.gui.livecellminer.errorStep;
-    showErrorBars = parameter.gui.livecellminer.showErrorBars;
+    errorStep = parameter.gui.livecellminer.errorStep; %#ok<NASGU> 
+    showErrorBars = parameter.gui.livecellminer.showErrorBars; %#ok<NASGU> 
     
     if (~exist('showHistogram', 'var'))
        showHistogram = false;
@@ -55,14 +55,14 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
         yrange = [];
     end
     
-    darkMode = parameter.gui.livecellminer.darkMode;
+    darkMode = parameter.gui.livecellminer.darkMode; %#ok<NASGU> 
     summarizeSelectedExperiments = parameter.gui.livecellminer.summarizeSelectedExperiments;
 
     %% set visualization mode
     if (~exist('visualizationMode', 'var'))
         visualizationMode = 2;
     end
-    timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
+    timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende; %#ok<NASGU> 
 
     %% get the selected cells
     selectedCells = ind_auswahl;
@@ -97,11 +97,11 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
 
         %% open new figure and initialize it with the selected color mode
         if (parameter.gui.livecellminer.darkMode == true)
-            colordef black;
+            colordef black; %#ok<COLORDEF> 
             markerColor = 'w';
         else
             markerColor = 'k';
-            colordef white;
+            colordef white; %#ok<COLORDEF> 
         end
         if (createNewFigure == true)
             fh = figure; clf; hold on;
@@ -156,9 +156,9 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
 
                     %% get the valid cells for the current combination of experiment and position
                     if (synchronizationIndex == 0 || alignPlots == false)
-                        validIndices = ind_auswahl(find(code_alle(ind_auswahl, experimentId) == e & code_alle(ind_auswahl, selectedOutputVariable) == p));
+                        validIndices = ind_auswahl(find(code_alle(ind_auswahl, experimentId) == e & code_alle(ind_auswahl, selectedOutputVariable) == p)); %#ok<FNDSB> 
                     else
-                        validIndices = ind_auswahl(find(code_alle(ind_auswahl, experimentId) == e & code_alle(ind_auswahl, selectedOutputVariable) == p & stageTransitions));
+                        validIndices = ind_auswahl(find(code_alle(ind_auswahl, experimentId) == e & code_alle(ind_auswahl, selectedOutputVariable) == p & stageTransitions)); %#ok<FNDSB> 
                     end
 
                     %% continue if no valid cells are present in this combination
@@ -167,8 +167,8 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
                     end
 
                     %% fill heat map values to an array and remember the group association
-                    dataPoints = [dataPoints; d_org(validIndices, f)];
-                    grouping = [grouping; ones(size(validIndices)) * currentCodeValue];
+                    dataPoints = [dataPoints; d_org(validIndices, f)]; %#ok<AGROW> 
+                    grouping = [grouping; ones(size(validIndices)) * currentCodeValue]; %#ok<AGROW> 
 
                     %% assemble the name for the current plot entity
                     plotName = [zgf_y_bez(selectedOutputVariable,p).name];
@@ -193,8 +193,8 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
                 
                 %% remove invalid indices
                 invalidIndices = isnan(dataPoints) | isinf(dataPoints);
-                dataPoints(invalidIndices) = [];
-                grouping(invalidIndices) = [];
+                dataPoints(invalidIndices) = []; %#ok<AGROW> 
+                grouping(invalidIndices) = []; %#ok<AGROW> 
             
                 %% plot the data in box plot format
                 numGroups = length(unique(grouping));
@@ -256,7 +256,7 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
                     if (length(unique(grouping)) > 1)
                         hist3([dataPoints, grouping], 'Ctrs', {globalMinValue:intensityHistogramStep:globalMaxValue unique(grouping)'}, 'CDataMode','auto','FaceColor','interp');
                     else
-                        hist(dataPoints, globalMinValue:intensityHistogramStep:globalMaxValue);
+                        hist(dataPoints, globalMinValue:intensityHistogramStep:globalMaxValue); %#ok<HIST> 
                     end
                     set(gca, 'YTick', unique(grouping), 'YTickLabels', currentLegend);
                     xlabel(strrep(kill_lz(dorgbez(f,:)), '_', '\_'));
@@ -291,9 +291,9 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
 
                 %% get the valid cells for the current combination of experiment and position
                 if (synchronizationIndex == 0 || alignPlots == false)
-                    validIndices = ind_auswahl(find(code_alle(ind_auswahl, selectedOutputVariable) == p));
+                    validIndices = ind_auswahl(find(code_alle(ind_auswahl, selectedOutputVariable) == p)); %#ok<FNDSB> 
                 else
-                    validIndices = ind_auswahl(find(code_alle(ind_auswahl, selectedOutputVariable) == p & stageTransitions));
+                    validIndices = ind_auswahl(find(code_alle(ind_auswahl, selectedOutputVariable) == p & stageTransitions)); %#ok<FNDSB> 
                 end
 
                 %% continue if no valid cells are present in this combination
@@ -302,8 +302,8 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
                 end
 
                 %% fill heat map values to an array and remember the group association
-                dataPoints = [dataPoints; d_org(validIndices, f)];
-                grouping = [grouping; ones(size(validIndices)) * currentCodeValue];
+                dataPoints = [dataPoints; d_org(validIndices, f)]; %#ok<AGROW> 
+                grouping = [grouping; ones(size(validIndices)) * currentCodeValue]; %#ok<AGROW> 
 
                 %% assemble the name for the current plot entity
                 plotName = [zgf_y_bez(selectedOutputVariable,p).name];
@@ -329,8 +329,8 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
             
             %% remove invalid indices
             invalidIndices = isnan(dataPoints) | isinf(dataPoints);
-            dataPoints(invalidIndices) = [];
-            grouping(invalidIndices) = [];
+            dataPoints(invalidIndices) = []; %#ok<AGROW> 
+            grouping(invalidIndices) = []; %#ok<AGROW> 
 
             %% add legends to the figures
             %% plot the data in box plot format
@@ -341,7 +341,7 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
             end
 
             minValue = min(minValue, min(dataPoints(:)));
-            maxValue = max(minValue, max(dataPoints(:)));
+            maxValue = max(minValue, max(dataPoints(:))); %#ok<NASGU> 
 
             if (showHistogram == false)
                 
@@ -396,15 +396,15 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
                 
                 if (length(unique(grouping)) > 1)
                     if (~isempty(histgramRange))
-                        hist3([dataPoints, grouping], 'Ctrs', {globalMinValue:intensityHistogramStep:globalMaxValue [unique(grouping)']}, 'CDataMode','auto','FaceColor','interp');
+                        hist3([dataPoints, grouping], 'Ctrs', {globalMinValue:intensityHistogramStep:globalMaxValue unique(grouping)'}, 'CDataMode','auto','FaceColor','interp');
                     else
                         hist3([dataPoints, grouping], 'CDataMode','auto','FaceColor','interp');
                     end
                 else
                     if (~isempty(histgramRange))
-                        hist(dataPoints, globalMinValue:intensityHistogramStep:globalMaxValue);
+                        hist(dataPoints, globalMinValue:intensityHistogramStep:globalMaxValue); %#ok<HIST> 
                     else
-                        hist(dataPoints);
+                        hist(dataPoints); %#ok<HIST> 
                     end
                 end
                 set(gca, 'YTick', unique(grouping), 'YTickLabels', currentLegend);
@@ -418,6 +418,6 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
         end
     end
 
-    colordef white;
+    colordef white; %#ok<COLORDEF> 
 
 end

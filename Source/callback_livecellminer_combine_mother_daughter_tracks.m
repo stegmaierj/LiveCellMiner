@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImageP
        end
        
        %% save the original Ids to retrieve the correct snippets later on
-       originalIds = [originalIds; motherIndex, daughter1Index; motherIndex, daughter2Index];
+       originalIds = [originalIds; motherIndex, daughter1Index; motherIndex, daughter2Index]; %#ok<AGROW> 
        
        %% increment counter by 2 as two lines are added (mother+daughter1 and mother+daughter2)
        currentIndex = currentIndex + 2;

@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ end
 for f=selectedFeatures
 
     %% compute the Sister cell distance
-    d_org(:,end+1) = 0;
+    d_org(:,end+1) = 0; %#ok<SAGROW> 
     newFeatureIndex = size(d_org, 2);
 
     if (strcmp(kill_lz(dorgbez(end,:)), 'y'))
@@ -67,7 +67,7 @@ for f=selectedFeatures
         currentMATransition = find(d_orgs(i, :, syncFeatureIndex) == 3, 1, 'first');
 
         if (isempty(currentMATransition) || (currentMATransition+numFrames) > size(d_orgs,2))
-            d_orgs(i, :, syncFeatureIndex) = -1;
+            d_orgs(i, :, syncFeatureIndex) = -1; %#ok<SAGROW> 
             continue;
         end
 

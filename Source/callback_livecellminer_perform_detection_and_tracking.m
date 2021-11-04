@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -129,11 +129,11 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     %% create the output file names for the current project
     outputNames = callback_livecellminer_generate_output_paths(parameters);
     save(outputNames.project, '-mat', 'd_orgs', 'code', 'var_bez', 'code_alle', 'projekt');
-    save(outputNames.rawImagePatches, '-mat', 'finalRawImagePatches');
-    save(outputNames.maskImagePatches, '-mat', 'finalMaskImagePatches');
-    save(outputNames.maskedImageCNNFeatures, '-mat', 'finalMaskedImageCNNFeatures');
+    save(outputNames.rawImagePatches, '-mat', 'finalRawImagePatches', '-v7.3');
+    save(outputNames.maskImagePatches, '-mat', 'finalMaskImagePatches', '-v7.3');
+    save(outputNames.maskedImageCNNFeatures, '-mat', 'finalMaskedImageCNNFeatures', '-v7.3');
     if (~isempty(finalRawImagePatches2))
-        save(outputNames.rawImagePatches2, '-mat', 'finalRawImagePatches2');
+        save(outputNames.rawImagePatches2, '-mat', 'finalRawImagePatches2', '-v7.3');
     end
     
     %% display success message

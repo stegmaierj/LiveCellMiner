@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ for f=generate_rowvector(selectedFeatures)
     end
     
     %% add the smoothed feature values to d_orgs and add a new specifier
-    d_orgs(:,:,end+1) = smoothedFeatureValues;
+    d_orgs(:,:,end+1) = smoothedFeatureValues; %#ok<SAGROW> 
     var_bez = char(var_bez, [kill_lz(var_bez(f,:)) '_smoothed']);
 end
 

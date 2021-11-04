@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 % TBA
 %
 %%
-
 
 %% get the selected single features
 selectedFeatures = parameter.gui.merkmale_und_klassen.ind_zr;
@@ -49,7 +48,7 @@ if (isempty(answer))
    disp('No time points selected, aborting ANOVA computations...');
    return;
 end
-timePoints = str2num(answer{1});
+timePoints = str2num(answer{1}); %#ok<ST2NM>
 
 %% retrieve the parameters and convert them to numbers
 significanceLevel = parameter.gui.statistikoptionen.p_krit;
@@ -79,6 +78,12 @@ numOutputClasses = length(selectedOutputClasses);
 %% perform selected test to all selected features independently for each of the output variables
 for f=selectedFeatures
         
+    %% create an output file
+    outputFileName1 = ['TwoWayANOVA_' zgf_y_bez(2,1).name '_' kill_lz(var_bez(f,:)) '_TestResults.csv'];
+    fileHandle1 = fopen([parameter.projekt.pfad filesep outputFileName1], 'wb');
+    
+    fprintf(fileHandle1, 'Figure;Feature;Microscope;Time Point;Group1;Group2;P-Value;Sign. (alpha = %.2f);Method;Multiple Testing Correction;Notes\n', parameter.gui.statistikoptionen.p_krit);
+    
     %% get the aligned heat map for the current time series
     [resultHeatMap] = callback_livecellminer_compute_aligned_heatmap(d_orgs, ind_auswahl, synchronizationIndex, f, parameter);
 
@@ -96,15 +101,31 @@ for f=selectedFeatures
         validIndices = find(~isnan(currentValues) & ~isinf(currentValues) & confirmedTrack);
         
         %% stack responses of the different time points to a single variable
-        responseVariable = [responseVariable; currentValues(validIndices);];
+        responseVariable = [responseVariable; currentValues(validIndices);]; %#ok<AGROW>
         
         %% assemble the group names based on the time points and the selected output classes
+        clear currentGroupNames;
         timeString = sprintf('TP%04d', i);
         for j=1:length(validIndices)
-           timeFeature{currentIndex} = timeString;
-           groupNames{currentIndex} = zgf_y_bez(selectedOutputVariable, code(ind_auswahl(validIndices(j)))).name;
+           timeFeature{currentIndex} = timeString; %#ok<SAGROW>
+           groupNames{currentIndex} = zgf_y_bez(selectedOutputVariable, code(ind_auswahl(validIndices(j)))).name; %#ok<SAGROW>
+           currentGroupNames{j} = zgf_y_bez(selectedOutputVariable, code(ind_auswahl(validIndices(j)))).name; %#ok<SAGROW>
            currentIndex = currentIndex+1;
         end
+        
+        %% perform anova for individual time points
+        [~,ANOVATAB,STATS] = anova1(currentValues(validIndices)', currentGroupNames);
+        
+        figure;
+        [c,~,~,gnames] = multcompare(STATS, 'CType', multipleTestingMethod);
+        
+        for j=1:size(c,1)
+            c(j,end)
+            fprintf(fileHandle1, '%i;%s;%s;%i;%s;%s;%.2e;%i;One-Way ANOVA;%s;Comparing individual time points;\n', 1, kill_lz(var_bez(f,:)), zgf_y_bez(2,1).name, i, gnames{c(j,1)}, gnames{c(j,2)}, c(j,end), c(j,end) < parameter.gui.statistikoptionen.p_krit, multipleTestingMethod);
+        end
+        
+        %% Window,  Close figures 
+        eval(gaitfindobj_callback('MI_Schliessen'));
     end
     
     %% compute the two-way anova with the selected time series as responses and the selected output classes and frames as the independent variables
@@ -112,5 +133,15 @@ for f=selectedFeatures
     
     %% display the comparison of the computed confidence intervals
     figure;
-    multcompare(stats, 'CType', multipleTestingMethod);
+    [c,m,h,gnames] = multcompare(stats, 'CType', multipleTestingMethod);
+    
+    for j=1:size(c,1)
+        fprintf(fileHandle1, '%i;%s;%s;%s;%s;%s;%.2e;%i;Two-Way ANOVA;%s; Interaction model comparing all selected time points\n', 1,kill_lz(var_bez(f,:)), zgf_y_bez(2,1).name, num2str(timePoints), gnames{c(j,1)}, gnames{c(j,2)}, c(j,end), c(j,end) < parameter.gui.statistikoptionen.p_krit, multipleTestingMethod);
+    end
+    
+    %% Window,  Close figures 
+    eval(gaitfindobj_callback('MI_Schliessen'));
+    
+    %% close the file
+    fclose(fileHandle1);
 end

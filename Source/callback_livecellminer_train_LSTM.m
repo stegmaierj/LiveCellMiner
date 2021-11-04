@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -155,8 +155,8 @@ if (performValidation == true)
     for i=1:length(trainPred)
         rmsd = sqrt(mean(abs(labelsRegressionTrain{i} - round(trainPred{i})).^2));
         rmsdHMM = sqrt(mean(abs(labelsRegressionTrain{i} - round(trainPredHMM{i})).^2));
-        errorsTrain = [errorsTrain; rmsd];
-        errorsHMMTrain = [errorsHMMTrain; rmsdHMM];
+        errorsTrain = [errorsTrain; rmsd]; %#ok<AGROW> 
+        errorsHMMTrain = [errorsHMMTrain; rmsdHMM]; %#ok<AGROW> 
     end
 
     %% compute the errors on the validation set
@@ -165,8 +165,8 @@ if (performValidation == true)
     for i=1:length(validationPred)
         rmsd = sqrt(mean(abs(labelsRegressionValidation{i} - round(validationPred{i})).^2));
         rmsdHMM = sqrt(mean(abs(labelsRegressionValidation{i} - round(validationPredHMM{i})).^2));
-        errorsValidation = [errorsValidation; rmsd];
-        errorsValidationHMM = [errorsValidationHMM; rmsdHMM];
+        errorsValidation = [errorsValidation; rmsd]; %#ok<AGROW> 
+        errorsValidationHMM = [errorsValidationHMM; rmsdHMM]; %#ok<AGROW> 
         
         figure(2); clf; hold on;
         plot(labelsRegressionValidation{i}, '.-g')

@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -125,7 +125,7 @@ for f=1:numTimeSeries
         
         %% add to exclusion list if no valid sync information is present
         if (min(squeeze(d_orgs(currentCell, :, syncIndex))) <= 0 || sum(isnan(d_orgs(currentCell, :, currentFeature))) > 0 || sum(isinf(d_orgs(currentCell, :, currentFeature))) > 0)
-            deletionIndices(i) = 1; %#ok<AGROW>
+            deletionIndices(i) = 1;
             continue;
         end
         
@@ -167,7 +167,7 @@ for f=1:numTimeSeries
         end
         
         if (sum(isnan(currentStatistics(i,:))) > 0 || sum(isinf(currentStatistics(i,:))) > 0)
-            deletionIndices(i) = 1; %#ok<AGROW>
+            deletionIndices(i) = 1;
             continue;
         end
     end
@@ -229,7 +229,7 @@ sortFeature = 7;
 if (numClasses > 1)
     sortFeature = sortFeature + numClasses;
 end
-[featureStatisticsSorted, sortIndices] = sortrows(abs(tsStatistics), -(sortFeature));
+[~, sortIndices] = sortrows(abs(tsStatistics), -(sortFeature));
 featureStatisticsSorted = tsStatistics(sortIndices, :);
 featureNamesSorted = timeSeriesNames(sortIndices, :);
 

@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -84,13 +84,13 @@ function [inputFolders, microscopeList, experimentList, positionList] = callback
             %% perform regexp search for a valid plate idenfier
             expression = 'P00[0123456789]+';
             splitString = strsplit(currentSubDir, '/');
-            startIndex = regexp(splitString{end}, expression);
+            startIndex = regexp(splitString{end}, expression); %#ok<RGXP1> 
 
             %% only add path if the regular expression was found
             if (~isempty(startIndex))
 
                 %% set the input folder
-                inputFolders{currentFolderIndex} = currentSubDir;
+                inputFolders{currentFolderIndex} = currentSubDir; %#ok<AGROW> 
 
                 %% extract the microscope, experiment and position from the file name
                 currentMicroscope = splitString{end-2};
@@ -139,7 +139,7 @@ function [inputFolders, microscopeList, experimentList, positionList] = callback
 
                 %% add file separator at the end of each folder
                 if (inputFolders{currentFolderIndex}(end) ~= '/')
-                    inputFolders{currentFolderIndex} = [inputFolders{currentFolderIndex} '/'];
+                    inputFolders{currentFolderIndex} = [inputFolders{currentFolderIndex} '/']; %#ok<AGROW> 
                 end
 
                 %% display status and increment index for the next folder

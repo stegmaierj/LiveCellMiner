@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2020 D. Moreno-Andres, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ for i=unique(code_alle(:,experimentId))'
 
 	%% open the text file and process each line
     fileID = fopen(oligoIdTextFile);
-    currentLine = fgetl(fileID); %% skip the specifiers
+    fgetl(fileID); %% skip the specifiers
     currentLine = fgetl(fileID);
 
 	%% process all lines
@@ -101,7 +101,7 @@ for i=unique(code_alle(:,experimentId))'
         if (existingID == 0)
             existingID = length(oligoIDs)+1;
             oligoIDs{existingID} = currentOligoID;
-            zgf_y_bez(newOutputVariable,existingID).name = currentOligoID;
+            zgf_y_bez(newOutputVariable,existingID).name = currentOligoID; %#ok<SAGROW> 
         end
         
         %% find positionId in the output variable
