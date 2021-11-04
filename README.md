@@ -1,4 +1,5 @@
-# LiveCellMiner Extension for SciXMiner
+# LiveCellMiner Extension for SciXMiner 
+[![DOI](https://zenodo.org/badge/269630703.svg)](https://zenodo.org/badge/latestdoi/269630703)
 
 This repository contains the SciXMiner extension LiveCellMiner that is targeted to provide tools for a qualitative and quantitaitve analysis of cells undergoing mitosis. On the basis of time series of 2D microscopy images with a nuclear marker, cells are detected, tracked and analyzed. For valid division cycles, image patches of each frame are extracted and segmented to obtain quantitative features for each time point. Cells can then be temporally aligned using a set of manual and automatic tools, and various possibilities to visualize the data allow comparisons between different treatments.
 
