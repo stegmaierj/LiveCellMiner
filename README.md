@@ -11,8 +11,24 @@ After having installed these requirements, download the *LiveCellMiner* toolbox 
 
 To be able to use the external tools XPIWIT and Cellpose from within the toolbox (required to import new projects), the SciXMiner has to be provided with the paths to the third party software that should be used for processing. The paths can be set using the menu entry *LiveCellMiner -> Import -> Set External Dependencies*. In particular, these are the path to the executable of *XPIWIT* (e.g., *D:/XPIWIT/Bin/*) and the path to the Cellpose root folder (e.g., *I:/Software/Cellpose/*). Make sure to create a Python environment that is setup using the Cellpose environment.yml (e.g, using miniconda), activate the environment and start the MATLAB session from the Anaconda prompt to allow MATLAB calling the correct python environment when processing the data with Cellpose. Make sure to install an mx_net version that supports GPU processing, if you have a CUDA-capable GPU installed. This can tremendously decrease processing times.
 
+## Example Data
+Once you've successfully installed SciXMiner as well as the LiveCellMiner extension, you can already have a look at the example project provided in `Data/LiveCellMiner_ExampleData.zip`. Download the archive to your computer and extract it's contents. You can now load the project file (`*.prjz` file in the root folder of the archive). The data set has already been synchronized and you can directly jump to the analysis functionality described in the *Data Selection and LiveCellMiner Settings* below. This example contains the data from *Figure 4 (last column)* and a good exercise would be trying to recreate the plots you see there.
 
-## Importing Projects
+- Navigate to the time series selection using the dropdown menu the main window of SciXMiner by selecting the entry *Time series: General options*.
+- Select the time series you want to display (e.g., *Area* or *MeanIntensity* as in Figure 4A,B).
+- Select the output variable using the dropdown menu *Selection of output variable* and set it to *6-OligoID*. This will display different lines for each of the oligos.
+- Now you can start plotting the selected time series, e.g., as line plots using *LiveCellMiner -> Show -> Comb. Line Plots* from the menu.
+
+Note that rows C - G contain additional features that have to be precomputed first. 
+- Figure 4C: This should display a normalized version of the mean intensity. Select the original time series *MeanIntensity* and then call *LiveCellMiner -> Process -> Perform Feature Normalization* from the menu and select *Interphase Mean*. You should now see a new time series called *MeanIntensity-NormalizedIntMean*. Select this one and plot it as before to generate the same plot as shown in Figure 4C.
+
+- Figure 4D: This feature is a ratio of two other time series. In this case, the ratio of the minor and the major axis. Select the two time series called *MinorAxisLength* and *MajorAxisLength*, which should result in *8,9* showing up in the edit field on the right. Make sure to swap the order, i.e., modify the edit field entry to *9,8* as the order determines which time series is used as the numerator and the denominator, respectively. Finally, call *LiveCellMiner -> Process -> Compute Time Series Ratio* and visualize the new time series called *Ratio-MinorAxisLength-vs-MajorAxisLength* as before to reproduce Figure 4D.
+
+- Figure 4F,G: These panels visualize single features, i.e., first navigate to the single features selection view using the dropdown menu the main window of SciXMiner by selecting the entry *Single features*. You'll notice that there is only one single feature present so far. To precompute some additional features, call *LiveCellMiner -> Process -> Compute Additional Single Features*. You can now select the feature *IPToMALength_Minutes* or *MeanOrientationDiffPMA* for visualization. Single features can be visualized either as box plots, violin plots or as histograms. Simply choose the visualization you like from the menu, e.g., *LiveCellMiner -> Show -> Violin Plots* to reproduce Figure 4F,G.
+
+The example data set also contains the raw image snippets and their segmentation of all extracted cells, so you can also have a look at the current synchronization results using the manual synchronization gui that can be started using *LiveCellMiner -> Show -> Synchronization GUI*.
+
+## Importing New Projects
 
 The first required step is to extract the cell trajectories of single mitotic cells from the raw images. There are three steps involved in this process: 
 1. detecting potential cell centroids in all frames separately [2], 
