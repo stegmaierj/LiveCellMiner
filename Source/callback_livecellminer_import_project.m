@@ -20,7 +20,7 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% TBA 
 %
 %%
 
@@ -90,7 +90,7 @@ function [] = callback_livecellminer_import_project(parameters)
             numInputFiles = length(inputFiles);
             numOutputFiles = length(outputFiles);
             
-            if (numInputFiles > numOutputFiles)
+            if (numInputFiles > numOutputFiles || numOutputFiles == 0 || numInputFiles == 0)
                 outputDataExists = false;
             else
                 for i=1:length(inputFiles)

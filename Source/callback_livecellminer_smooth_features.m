@@ -20,7 +20,7 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% TBA 
 %
 %%
 
@@ -28,7 +28,9 @@
 selectedFeatures = parameter.gui.merkmale_und_klassen.ind_zr;
 
 %% remove dummy 'y' specifier
-var_bez = var_bez(1:end-1,:);
+if (strcmp(kill_lz(var_bez(end,1)), 'y'))
+    var_bez = var_bez(1:end-1,:);
+end
 
 %% process all selected time series
 for f=generate_rowvector(selectedFeatures)
@@ -39,6 +41,10 @@ for f=generate_rowvector(selectedFeatures)
     %% smooth the selected time series
     smoothedFeatureValues = zeros(size(rawFeatureValues));
     parfor j=1:size(d_orgs,1)
+        if (any(isnan(rawFeatureValues(j,:))))
+            continue;
+        end
+        
         smoothedFeatureValues(j,:) = smooth(rawFeatureValues(j,:), parameter.gui.livecellminer.SmoothingWindow, parameter.gui.livecellminer.SmoothingMethod);
     end
     
