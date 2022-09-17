@@ -3,6 +3,21 @@
 
 This repository contains the SciXMiner extension LiveCellMiner that is targeted to provide tools for a qualitative and quantitaitve analysis of cells undergoing mitosis. On the basis of time series of 2D microscopy images with a nuclear marker, cells are detected, tracked and analyzed. For valid division cycles, image patches of each frame are extracted and segmented to obtain quantitative features for each time point. Cells can then be temporally aligned using a set of manual and automatic tools, and various possibilities to visualize the data allow comparisons between different treatments.
 
+## Citation
+If you find this work useful, please make sure to cite the following [paper](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0270923): 
+
+    @article{moreno2022livecellminer,
+             title={LiveCellMiner: A New Tool to Analyze Mitotic Progression},
+             author={Moreno-Andr{\'e}s, D. and Bhattacharyya, A. and Scheufen, A. and Stegmaier, J.},
+             journal={PLOS ONE},
+             volume={17},
+             number={7},
+             pages={e0270923},
+             year={2022},
+             publisher={Public Library of Science San Francisco, CA USA}
+             }
+
+
 ## Prerequisites
 
 The *LiveCellMiner* toolbox is an extension of the MATLAB toolbox SciXMiner [1] and assumes SciXMiner is properly installed on your system. Moreover, *LiveCellMiner* uses the third party tools XPIWIT [2] and Cellpose [3] that also have to be installed prior to using the software.
@@ -232,6 +247,8 @@ The following functions are included:
 Note that all above-mentioned statistical tests make use of the general *SciXMiner* selection, *i.e.*, you can use the *Edit -> Select -> Data Points using Classes ...* menu entry to perform the desired selection of cells to be used for the statistical analysis. Moreover, make sure to specify the correct output variable (dropdown menu entitled *Selection of output variable* that you can find in the *Single features* and *Time series: General options* dialog). 
 
 ## References:
+0. Moreno-Andrés, D., Bhattacharyya, A., Scheufen, A., & Stegmaier, J. (2022). LiveCellMiner: A New Tool to Analyze Mitotic Progression. PLOS ONE, 17(7), e0270923.
+
 1. Mikut, R., Bartschat, A., Doneit, W., Ordiano, J. Á. G., Schott, B., Stegmaier, J., ... & Reischl, M. (2017). The MATLAB Toolbox SciXMiner: User's Manual and Programmer's Guide. arXiv preprint arXiv:1704.03298.
 
 2. Bartschat, A., Hübner, E., Reischl, M., Mikut, R., & Stegmaier, J. (2016). XPIWIT—an XML Pipeline Wrapper for the Insight Toolkit. Bioinformatics, 32(2), 315-317.
