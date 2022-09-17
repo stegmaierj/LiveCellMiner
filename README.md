@@ -91,6 +91,15 @@ Use these listboxes to select the subset of the data that you want to analyze in
 
 ![SciXMiner Project Overview](Documentation/Screenshots/SciXMinerProjectOverview.png "The current data selection is summarized in the project overview dialog.")
 
+As SciXMiner is a general purpose data mining tool, the specifiers depicted in this overview might appear cryptic to some non-data scientists. The following bullet points explain the individual depicted values:
+- *Time series* are time resolved features extracted for each cell. For instance, measuring the mean intensity over all tracked frames would be a time series. The number *29* specifies the number of available time series and below, the number of selected time series is depicted. The number of available measurements is reflected by *90 sample points*, i.e., for each time series feature, there are *90* measurements available.
+
+- *Single Features* are features of tracked cell that are not time-resolved. For instance, this could be average values, feature values at a particular point in time or measures like the number of frames from the IP to MA transition. In the example, there is only one single feature and this one is also selected.
+
+- *Output Variables* are intended to group the cells. In this case, the groups *All*, *Microscope*, *Experiment* and *Position* exist. These could be used, e.g., to select cells that were acquired with a particular microscopy platform or only cells or a specific experiment.
+
+- *Data Points* correspont to the number of tracked cells in the case of LiveCellMiner. In this example, there are *1606* cells present and out of these a subset of *67* cells is currently selected, e.g., to just visualize a subset of the data.
+
 In addition to selecting data points (i.e., cells), it is possible to select which of the feature time series should be visualized. This can be performed in the dialog *Time series: General options*:
 
 ![SciXMiner Time Series Overview](Documentation/Screenshots/SciXMinerTimeSeries.png "The overview of the available time series, the selected time window.")
