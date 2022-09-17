@@ -85,7 +85,7 @@ Due to the different durations of pro-, prometa- and metaphase, the *LiveCellMin
 
 An important aspect to analyze a particular subset of the data is data selection. This can be accomplished using the standard SciXMiner data selection procedures and most useful in this aspect is the class-based selection using *Edit -> Select -> Data points using classes ...* This opens up the dialog depicted in the following screenshot:
 
-![Data selection dialog](Documentation/Screenshots/Dataselection.jpg "Data selection dialog that allows to select cells based on their output variable (assiciation to microscope, experiment, position, oligoID).")
+![Data selection dialog](Documentation/Screenshots/Dataselection.png "Data selection dialog that allows to select cells based on their output variable (assiciation to microscope, experiment, position, oligoID).")
 
 Use these listboxes to select the subset of the data that you want to analyze in more detail. For instance, select experiments that were acquired with a particular microscope, a subset of OligoIDs, a specific experiment or individual plates. Also any combinations of these output variables can be used. It is also possible to manually add additional output variables using the standard procedure for SciXMiner using the variables `code_alle`, `zgf_y_bez` and `bez_code` (see official documentation [1]). After selection, the selected cell indices are summarized in the selection variable `ind_auswahl` and subsequent visualizations or manual corrections are only performed on the selected cells. Note that additional features are automatically computed for all cells to avoid missing feature values. The SciXMiner project overview shows the current selection as depicted in the following screenshot:
 
