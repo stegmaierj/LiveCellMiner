@@ -79,7 +79,7 @@ Due to the different durations of pro-, prometa- and metaphase, the *LiveCellMin
 
 - *LiveCellMiner -> Align -> Update LSTM Classifier:* Function to update the training database as well as the LSTM classifiers used for rejecting incorrect tracks and to perform the automatic synchronization. All cells that were manually checked via *Perform Manual Synchronization* and verified by confirming via the *Up Arrow*. If cells visualized in the *Perform Manual Synchronization* window should not contribute to the training data set, simply hit the *Down Arrow*. By default, visualized cells are not part of the training set, i.e., you have to explicitly mark them as being suitable as ground truth. This information is stored in the single feature `manuallyConfirmed` that determines if cells were manually verified (value 1) or not (value 0).  The classifier and regression LSTMs are then retrained on the updated list and saved in the SciXMiner toolbox folder (`autoSyncData.mat` and `autoSyncLSTMModel.mat`). The software will always ask for a name of the classifier when retraining and when being applied to the image data. So make sure to store separate classifiers, e.g., for different magnifications or microscope settings. Hint: to only annotate a selected set of cells, you can preselect the desired cells using *Edit -> Select -> Data points using classes...*.
 
-![alt text](Documentation/Screenshots/ManualAnnotationGUI.jpg "Manual Annotation GUI. Stages are color-coded into interphase (green), pro, prometa, meta and early anaphase (magenta), late ana, telo, interphase (cyan) and invalid trajectories (red).")
+![alt text](Documentation/Screenshots/ManualAnnotationGUI.png "Manual Annotation GUI. Stages are color-coded into interphase (green), pro, prometa, meta and early anaphase (magenta), late ana, telo, interphase (cyan) and invalid trajectories (red).")
 
 ## Data Selection and LiveCellMiner Settings
 
@@ -89,17 +89,17 @@ An important aspect to analyze a particular subset of the data is data selection
 
 Use these listboxes to select the subset of the data that you want to analyze in more detail. For instance, select experiments that were acquired with a particular microscope, a subset of OligoIDs, a specific experiment or individual plates. Also any combinations of these output variables can be used. It is also possible to manually add additional output variables using the standard procedure for SciXMiner using the variables `code_alle`, `zgf_y_bez` and `bez_code` (see official documentation [1]). After selection, the selected cell indices are summarized in the selection variable `ind_auswahl` and subsequent visualizations or manual corrections are only performed on the selected cells. Note that additional features are automatically computed for all cells to avoid missing feature values. The SciXMiner project overview shows the current selection as depicted in the following screenshot:
 
-![SciXMiner Project Overview](Documentation/Screenshots/SciXMinerProjectOverview.jpg "The current data selection is summarized in the project overview dialog.")
+![SciXMiner Project Overview](Documentation/Screenshots/SciXMinerProjectOverview.png "The current data selection is summarized in the project overview dialog.")
 
 In addition to selecting data points (i.e., cells), it is possible to select which of the feature time series should be visualized. This can be performed in the dialog *Time series: General options*:
 
-![SciXMiner Time Series Overview](Documentation/Screenshots/SciXMinerTimeSeries.jpg "The overview of the available time series, the selected time window.")
+![SciXMiner Time Series Overview](Documentation/Screenshots/SciXMinerTimeSeries.png "The overview of the available time series, the selected time window.")
 
 The listbox enumerates all available time series allows to select a time series for visualization, analysis or to compute additional features. It is also possible to select multiple time series by pressing the CTRL key while selecting. Each time series is then visualized separately.
 
 The output variable *Selection of output variable* controls how the data are split for the visualization and uses the same classes as for the class-based data point selection, e.g., to group data points according to the same microscope, experiment, cell Id or oligoID. For instance, if *All* is selected, all cells are plotted in a single plot. If *Experiment* is selected, all cells corresponding to a single experiment are plotted in the same plot, with subplots for each of the experiments. Also useful is e.g., *OligoID* that allows to summarize the results of the same treatment. These selections affect all available visualizations. The two edit fields *Time series segment from* can be used to constrain the time window, e.g., to only focus on the first 40 time points for the manual synchronization. If you want to visualize the entire time series again, hit the *Complete time series* button.
 
-![LiveCellMiner Parameters](Documentation/Screenshots/LiveCellMinerDialog.jpg "The overview of the parameters used by the LiveCellMiner toolbox.")
+![LiveCellMiner Parameters](Documentation/Screenshots/LiveCellMinerDialog.png "The overview of the parameters used by the LiveCellMiner toolbox.")
 
 - *Summary Output Variable*: Allows to specify which output variable should be used for grouping. This can be useful to summarize repeats of the same experiment but not the oligos of all experiments. Use *LiveCellMiner -> Process -> Add Repeats Output Variable* to specify the related repeats.
 - *Recovery Measure Mode*: See documentation of the menu entry *LiveCellMiner -> Process -> Compute Rel. Recovery Time Series*.
