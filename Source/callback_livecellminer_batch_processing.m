@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 %
 %     http://www.apache.org/licenses/LICENSE-2.0
 %
-% Unless required by applicable law or agreed to in writing, software
+% Unless required by applicable law or agreed to in writing, software   
 % distributed under the License is distributed on an "AS IS" BASIS,
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
@@ -20,7 +20,8 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
@@ -33,8 +34,7 @@ if (exist(settingsFile, 'file'))
     currentLine = fgets(fileHandle);
     splitString = strsplit(currentLine, ';');
     XPIWITPath = splitString{1};
-    CELLPOSEPath = splitString{2};
-    CELLPOSEEnvironment = splitString{3};
+    CELLPOSEEnvironment = splitString{2};
     fclose(fileHandle);
 else
     callback_livecellminer_set_external_dependencies;
@@ -71,17 +71,20 @@ else
     outputRoot = [outputRoot filesep];
 end
 
+%% open log file for saving the performance
+performanceLog = fopen([outputRoot 'performanceLog.csv'], 'wb');
+
 %% prepare question dialog to ask for the physical spacing of the experiments
 dlgtitle = 'Additional settings:';
 dims = [1 100];
-additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?', 'Time Window Before Mitosis (min)', 'Time Window After Mitosis (min)'}, dlgtitle, dims, {'', '', '0', '0', '150', '180'});
+additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?', 'Time Window Before Mitosis (min)', 'Time Window After Mitosis (min)', 'Diameter (Cellpose)'}, dlgtitle, dims, {'', '', '0', '0', '150', '180', '30'});
 if (isempty(additionalUserSettings))
     disp('No additional settings provided, stopping processing ...');
     return;
 end
 
 %% prepare question dialog to ask for the physical spacing of the experiments
-dlgtitle = 'Specify the frame interval for each project in minutes.';
+dlgtitle = 'Specify the frame interval for each project in minutes (e.g., 3 for 3 minutes).';
 dims = [1 100];
 frameInterval = inputdlg(experimentList, dlgtitle, dims);
 if (isempty(frameInterval))
@@ -90,7 +93,7 @@ if (isempty(frameInterval))
 end
 
 %% prepare question dialog to ask for the physical spacing of the experiments
-dlgtitle = 'Specify the physical spacing in mu for each project.';
+dlgtitle = 'Specify the physical spacing in mu for each project (e.g., 0.415).';
 dims = [1 100];
 micronsPerPixel = inputdlg(experimentList, dlgtitle, dims);
 if (isempty(micronsPerPixel))
@@ -99,14 +102,14 @@ if (isempty(micronsPerPixel))
 end
 
 %% prepare question dialog to ask for the channel suffix the experiments
-dlgtitle = 'Specify suffix to select the chromatin channel (e.g., *_c0001) or leave empty.';
+dlgtitle = 'Specify suffix to select the chromatin channel (e.g., _c0001) or leave empty.';
 dims = [1 100];
 channelFilter = inputdlg(experimentList, dlgtitle, dims);
 if (isempty(channelFilter))
     disp('No channel filter provided, stopping processing ...');
     return;
 else
-    dlgtitle = 'Specify suffix to select an additional channel (e.g., *_c0002) or leave empty.';
+    dlgtitle = 'Specify suffix to select an additional channel (e.g., _c0002) or leave empty.';
     dims = [1 100];
     channelFilter2 = inputdlg(experimentList, dlgtitle, dims);
 end
@@ -167,6 +170,7 @@ for i=1:length(inputFolders)
     parameters.patchWidth = 96;                   %% patch width used for extracting the image snippets
     parameters.patchRescaleFactor = 0.415;        %% use spacing of confocal images as reference, i.e., they remain unscaled whereas widefield images are enlarged to ideally have a single cell in the center
     parameters.maxRadius = 15;                    %% maximum radius to search for neighboring cells during tracking
+    parameters.diameterCellpose = str2double(additionalUserSettings{7});  %% diameter parameter used for the cellpose segmentation
     parameters.clusterRadiusIndex = 9;            %% index to the cluster radius feature
     parameters.trackingIdIndex = 10;              %% index to the tracking id
     parameters.predecessorIdIndex = 11;           %% index to the predecessor
@@ -189,9 +193,7 @@ for i=1:length(inputFolders)
         disp(['ERROR: Couldn''t find processing pipeline ' parameters.XPIWITDetectionPipeline ' . Make sure the file exists or create a pipeline for the selected physical spacing!']);
     end
 
-    parameters.CELLPOSEPath = CELLPOSEPath;
     parameters.CELLPOSEEnvironment = CELLPOSEEnvironment; %'/work/scratch/stegmaier/Software/Environments/cellpose/bin/python';
-    parameters.CELLPOSEModelDir = [parameters.CELLPOSEPath 'models/'];
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %% skip processing if the project already exists
@@ -202,9 +204,19 @@ for i=1:length(inputFolders)
         ~filesExist.maskedImageCNNFeatures || ...
         parameters.reprocessExistingProjects)
     
+        %% reset the timer
+        tic;
+
         %% process current files if the project didn't exist
         callback_livecellminer_import_project(parameters);
+
+        %% write elapsed time to the performance log
+        elapsedTime = toc;
+        fprintf(performanceLog, '%s;%f;\n', parameters.inputFolder, elapsedTime);
     else
         disp(['Project file for ' parameters.inputFolder ' already exists, skipping processing (To reprocess, manually delete the *.prjz and *.mat files in the project directory).' ]);
     end
 end
+
+%% close the performance log file
+fclose(performanceLog);

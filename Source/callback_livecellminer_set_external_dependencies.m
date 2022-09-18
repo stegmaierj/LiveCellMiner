@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 %
 %     http://www.apache.org/licenses/LICENSE-2.0
 %
-% Unless required by applicable law or agreed to in writing, software
+% Unless required by applicable law or agreed to in writing, software   
 % distributed under the License is distributed on an "AS IS" BASIS,
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
@@ -20,7 +20,8 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
@@ -36,8 +37,7 @@ if (exist(settingsFile, 'file'))
     if (currentLine > 0)
         splitString = strsplit(currentLine, ';');
         XPIWITPath = splitString{1};
-        CELLPOSEPath = splitString{2};
-        CELLPOSEEnvironment = splitString{3};
+        CELLPOSEEnvironment = splitString{2};
         fclose(fileHandle);
         previousPathsLoaded = true;
     end
@@ -46,30 +46,26 @@ end
 %% show some example paths if no previous paths exist
 if (previousPathsLoaded == false)
     XPIWITPath = 'D:/Programming/XPIWIT/Release/2019/XPIWIT_Windows_x64/Bin/';
-    CELLPOSEPath = 'I:/Software/Cellpose/';
     CELLPOSEEnvironment = 'C:/Environments/cellpose/python.exe';
 end
 
 %% open input dialog for setting the paths
-prompt = {'XPIWIT Path:', 'Cellpose Path:', 'Cellpose Environment:'};
+prompt = {'XPIWIT Path:', 'Cellpose Environment:'};
 dlgtitle = 'Paths to External Dependencies';
 dims = [1 100];
-definput = {XPIWITPath, CELLPOSEPath, CELLPOSEEnvironment};
+definput = {XPIWITPath, CELLPOSEEnvironment};
 answer = inputdlg(prompt,dlgtitle,dims,definput);
 
 %% write the new path to disk
-if (~isempty(answer) && isfolder(answer{1}) && isfolder(answer{2}) && isfile(answer{3}))
+if (~isempty(answer) && isfolder(answer{1}) && isfile(answer{2}))
     
     XPIWITPath = strrep(answer{1}, '\', '/');
     if (XPIWITPath(end) ~= '/'); XPIWITPath = [XPIWITPath '/']; end
-    
-    CELLPOSEPath = strrep(answer{2}, '\', '/');
-    if (CELLPOSEPath(end) ~= '/'); CELLPOSEPath = [CELLPOSEPath '/']; end
-    
-    CELLPOSEEnvironment = answer{3};
+        
+    CELLPOSEEnvironment = answer{2};
     
     fileHandle = fopen(settingsFile, 'wb');
-    fprintf(fileHandle, '%s;%s;%s', XPIWITPath, CELLPOSEPath, CELLPOSEEnvironment);
+    fprintf(fileHandle, '%s;%s;%s', XPIWITPath, CELLPOSEEnvironment);
     fclose(fileHandle);
 else
     disp('Wrong information provided - please try again and specify folders for the XPIWIT and Cellpose paths and the path to the python.exe of the Cellpose environment.');

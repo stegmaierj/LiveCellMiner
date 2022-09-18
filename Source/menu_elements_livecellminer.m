@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
@@ -130,7 +131,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Align';
 elements(mc).tag = 'MI_LiveCellMiner_Align';
-elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_UpdateLSTMClassifier', -1, 'MI_LiveCellMiner_ExportSync', 'MI_LiveCellMiner_ImportSync'};
+elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_SaveTrainingData', 'MI_LiveCellMiner_TrainLSTMClassifier', -1, 'MI_LiveCellMiner_ExportSync', 'MI_LiveCellMiner_ImportSync'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -160,12 +161,24 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
-elements(mc).name = 'Update LSTM Classifier';
+elements(mc).name = 'Save Training Data';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_livecellminer_update_auto_sync_classifier;';
-elements(mc).tag = 'MI_LiveCellMiner_UpdateLSTMClassifier';
+elements(mc).callback = 'callback_livecellminer_save_training_data;';
+elements(mc).tag = 'MI_LiveCellMiner_SaveTrainingData';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Train LSTM Classifier';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_train_LSTM;';
+elements(mc).tag = 'MI_LiveCellMiner_TrainLSTMClassifier';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;
@@ -197,7 +210,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Show';
 elements(mc).tag = 'MI_LiveCellMiner_Show';
-elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_ExportAlignedGallery', 'MI_LiveCellMiner_PerformManualSynchronization'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -291,6 +304,19 @@ elements(mc).callback = 'callback_livecellminer_show_auto_sync_overview;';
 elements(mc).tag = 'MI_LiveCellMiner_ShowAutoSyncOverview';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Export Gallery for Selected Cells';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_export_aligned_gallery;';
+elements(mc).tag = 'MI_LiveCellMiner_ExportAlignedGallery';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;
