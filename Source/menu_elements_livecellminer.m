@@ -65,7 +65,7 @@ elements(mc).tag = 'MI_LiveCellMiner';
 %name in the menu
 elements(mc).name = 'LiveCellMiner';
 %list of the functions in the menu, -1 is a separator
-elements(mc).menu_items = {'MI_LiveCellMiner_Import', 'MI_LiveCellMiner_Align', 'MI_LiveCellMiner_Show', 'MI_LiveCellMiner_Process', 'MI_LiveCellMiner_Analyze'};
+elements(mc).menu_items = {'MI_LiveCellMiner_Import', 'MI_LiveCellMiner_Align', 'MI_LiveCellMiner_Show', 'MI_LiveCellMiner_Process', 'MI_LiveCellMiner_Export', 'MI_LiveCellMiner_Analyze'};
 %is always enabled if a project exists
 %further useful option: elements(mc).freischalt = {'1'}; %is always enabled
 elements(mc).freischalt = {'1'}; 
@@ -210,7 +210,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Show';
 elements(mc).tag = 'MI_LiveCellMiner_Show';
-elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_ExportAlignedGallery', 'MI_LiveCellMiner_PerformManualSynchronization'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -286,34 +286,10 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
-elements(mc).name = 'Auto-Generate Report';
-elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_livecellminer_report_generator;';
-elements(mc).tag = 'MI_LiveCellMiner_GenerateReport';
-%is enabled if at least one single feature exist
-elements(mc).freischalt = {};
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%
-mc = mc+1;
-elements(mc).uihd_code = [newcolumn mc];
-elements(mc).handle = [];
 elements(mc).name = 'Auto-Sync Overview';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_livecellminer_show_auto_sync_overview;';
 elements(mc).tag = 'MI_LiveCellMiner_ShowAutoSyncOverview';
-%is enabled if at least one single feature exist
-elements(mc).freischalt = {};
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%
-mc = mc+1;
-elements(mc).uihd_code = [newcolumn mc];
-elements(mc).handle = [];
-elements(mc).name = 'Export Gallery for Selected Cells';
-elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_livecellminer_export_aligned_gallery;';
-elements(mc).tag = 'MI_LiveCellMiner_ExportAlignedGallery';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
@@ -583,3 +559,49 @@ elements(mc).callback = 'callback_livecellminer_compute_two_way_anova_time_serie
 elements(mc).tag = 'MI_LiveCellMiner_ComputeTwoWayAnovaTimeSeries';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
+
+
+%%%%%%% EXPORT %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Export';
+elements(mc).tag = 'MI_LiveCellMiner_Export';
+elements(mc).menu_items = {'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ExportAlignedGallery', 'MI_LiveCellMiner_ExportCSV'};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Auto-Generate Report';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_report_generator;';
+elements(mc).tag = 'MI_LiveCellMiner_GenerateReport';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Export Gallery for Selected Cells';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_export_aligned_gallery;';
+elements(mc).tag = 'MI_LiveCellMiner_ExportAlignedGallery';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Export Selected Cells as CSV';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_export_csv;';
+elements(mc).tag = 'MI_LiveCellMiner_ExportCSV';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+

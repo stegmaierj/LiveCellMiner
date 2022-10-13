@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -20,19 +20,21 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
-global parameter; %#ok<GVMIS> 
-global parameters; %#ok<GVMIS> 
-global d_org; %#ok<GVMIS> 
-global d_orgs; %#ok<GVMIS> 
-global zgf_y_bez; %#ok<GVMIS> 
-global bez_code; %#ok<GVMIS> 
-global rawImagePatches; %#ok<GVMIS> 
-global rawImagePatches2; %#ok<GVMIS> 
-global maskImagePatches; %#ok<GVMIS> 
+global parameter;
+global parameters;
+global d_org;
+global d_orgs;
+global zgf_y_bez;
+global bez_code;
+global code_alle;
+global rawImagePatches;
+global rawImagePatches2;
+global maskImagePatches;
 
 %% get the current time range
 parameters.timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
@@ -76,10 +78,23 @@ if (parameters.dirtyFlag == true)
                 if (isempty(rawImagePatches{i, j}) || isempty(maskImagePatches{i, j}))
                     continue;
                 end
-
+                
+                %% normalize the intensities
+                if (parameters.visualizationMode ~= 2)
+                    minValue1 = min(double(rawImagePatches{i, j}(:)));
+                    maxValue1 = max(double(rawImagePatches{i, j}(:)));
+                    normalizedPatch1 = (double(rawImagePatches{i, j}) - minValue1) / (maxValue1 - minValue1);
+                end
+                
+                if (~isempty(rawImagePatches2{i,j}) && parameters.visualizationMode >= 4)
+                    minValue2 = min(double(rawImagePatches2{i, j}(:)));
+                    maxValue2 = max(double(rawImagePatches2{i, j}(:)));
+                    normalizedPatch2 = (double(rawImagePatches2{i, j}) - minValue2) / (maxValue2 - minValue2);
+                end
+                
                 %% set visualized image patches depending on current visualization mode
                 if (parameters.visualizationMode == 1)
-                    parameters.montageImage(rangeY, rangeX) = double(rawImagePatches{i, j}) / max(max(double(rawImagePatches{i, j})));
+                    parameters.montageImage(rangeY, rangeX) = normalizedPatch1;
                     
                 %% mask image mode
                 elseif (parameters.visualizationMode == 2)
@@ -87,21 +102,21 @@ if (parameters.dirtyFlag == true)
                     
                 %% masked raw image mode
                 elseif (parameters.visualizationMode == 3)
-                   parameters.montageImage(rangeY, rangeX) = double(rawImagePatches{i, j}) / max(max(double(rawImagePatches{i, j}))) .* double(maskImagePatches{i, j});
+                    parameters.montageImage(rangeY, rangeX) = normalizedPatch1 .* double(maskImagePatches{i, j});
                    
                 %% secondary channel image
                 elseif (parameters.visualizationMode == 4)
                     if (~isempty(rawImagePatches2{i,j}))
-                        parameters.montageImage(rangeY, rangeX) = rawImagePatches2{i, j};
+                        parameters.montageImage(rangeY, rangeX) = normalizedPatch2;
                     else
                         disp('Error: no secondary channel information available to display!');
                     end
                     
                 %% superimposed first and second channel
                 else
-                    if (~isempty(rawImagePatches2{i,j}))
-                        parameters.montageImage(rangeY, rangeX, 1) = double(rawImagePatches{i, j}) / double(max(rawImagePatches{i, j}(:)));
-                        parameters.montageImage(rangeY, rangeX, 2) = double(rawImagePatches2{i, j}) / double(max(rawImagePatches2{i, j}(:)));
+                    if (~isempty(rawImagePatches2{i,j}))                       
+                        parameters.montageImage(rangeY, rangeX, 1) = normalizedPatch1;
+                        parameters.montageImage(rangeY, rangeX, 2) = normalizedPatch2;
                         parameters.montageImage(rangeY, rangeX, 3) = 0;
                     else
                         disp('Error: no secondary channel information available to display!');
@@ -143,7 +158,9 @@ axis tight;
 axis off;
 
 %% set the figure title
-set(parameters.mainFigure, 'Name', sprintf('Finished %i / %i cells', min(parameters.currentCells), size(d_orgs,1)));
+currentCellIndex = find(parameters.currentCells(1) == parameters.selectedCells);
+totalNumberOfCells = length(parameters.selectedCells);
+set(parameters.mainFigure, 'Name', sprintf('Finished %i / %i cells', currentCellIndex, totalNumberOfCells));
 
 %% draw the currently annotated states
 currentCell = 1;
@@ -178,7 +195,7 @@ for i=generate_rowvector(parameters.currentCells)
         oligoName = zgf_y_bez(oligoIdIndex, code_alle(i, oligoIdIndex)).name;
         text(0.3*parameter.projekt.patchWidth, (currentCell-1)*parameter.projekt.patchWidth+0.25*parameter.projekt.patchWidth, strrep(['Exp. ' num2str(code_alle(i, experimentIdIndex)) ', ' positionName '(' oligoName ')'], '_', '-'), 'Color','white', 'BackgroundColor', [0,0,0,0.5]);
     end
-
+    
     currentCell = currentCell + 1;
 end
 

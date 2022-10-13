@@ -189,6 +189,22 @@ for i=1:length(inputFolders)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     parameters.XPIWITPath = XPIWITPath;
     parameters.XPIWITDetectionPipeline = [strrep(parameter.allgemein.pfad_gaitcad, '\', '/') '/application_specials/livecellminer/toolbox/XPIWITPipelines/CellDetection_micronsPerVoxel=' micronsPerPixel{experimentIndex} '.xml'];
+    
+    if (~exist(parameters.XPIWITDetectionPipeline, 'file'))
+        fileIDTemplate = fopen([strrep(parameter.allgemein.pfad_gaitcad, '\', '/') '/application_specials/livecellminer/toolbox/XPIWITPipelines/CellDetection_Template.xml'], 'rb');
+        fileID = fopen(parameters.XPIWITDetectionPipeline, 'wb');
+
+        while ~feof(fileIDTemplate)
+            currentLine = fgetl(fileIDTemplate);
+            currentLine = strrep(currentLine, '%IMAGE_SPACING%', micronsPerPixel{experimentIndex});
+
+            fprintf(fileID, '%s\n', currentLine);
+        end
+
+        fclose(fileIDTemplate);
+        fclose(fileID);
+    end
+    
     if (~exist(parameters.XPIWITDetectionPipeline, 'file'))
         disp(['ERROR: Couldn''t find processing pipeline ' parameters.XPIWITDetectionPipeline ' . Make sure the file exists or create a pipeline for the selected physical spacing!']);
     end

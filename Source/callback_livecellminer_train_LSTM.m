@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -20,13 +20,19 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
 %% specify the input paths for the training data and the lstm model
 if (~exist(dataPath, 'file'))
     dataPath = uigetfile('*.cdd', 'Select training data to train an LSTM classifier for the currently selected cells!', [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'classifiers' filesep]);
+
+    if (~isa(dataPath, 'string'))
+        disp('No valid output file selected for storing the training data. Please repeat and select a valid output file.');
+        return;
+    end
 end
 modelPath = strrep(dataPath, '.cdd', '.cdc');
     

@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 %
 %     http://www.apache.org/licenses/LICENSE-2.0
 %
-% Unless required by applicable law or agreed to in writing, software
+% Unless required by applicable law or agreed to in writing, software   
 % distributed under the License is distributed on an "AS IS" BASIS,
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
@@ -20,7 +20,8 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
@@ -28,6 +29,13 @@
 selectedFeatures = parameter.gui.merkmale_und_klassen.ind_zr;
 selectedOutputVariable = parameter.gui.merkmale_und_klassen.ausgangsgroesse;
 synchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
+
+numGroups = length(unique(code_alle(:,selectedOutputVariable)));
+
+if (numGroups <= 1)
+    disp('Error: The selected output variable contains only one group, i.e., there is nothing to compare. Please select a different output variable and repeat.');
+    return;
+end
 
 %% get stage transitions
 if (synchronizationIndex > 0)
@@ -37,18 +45,38 @@ else
 end
 
 %% ask user which test to perform
-prompt = {sprintf('Absolute Time Points (Comma Separated, 1-%i):', parameter.gui.livecellminer.alignedLength)};
-dlgtitle = 'Select Time Points to Compare';
-dims = [1 35];
-definput = {'20, 60, 100'};
+% prompt = {sprintf('Absolute Time Points (Comma Separated, 1-%i):', parameter.gui.livecellminer.alignedLength)};
+% dlgtitle = 'Select Time Points to Compare';
+% dims = [1 35];
+% definput = {'20, 60, 100'};
+% answer = inputdlg(prompt,dlgtitle,dims,definput);
+
+prompt = {'Frames Before IP (e.g., -10, -5 for IP - 10 and IP - 5, leave empty to ignore):', ...
+          'Frames After IP (e.g., 10 for IP + 10, leave empty to ignore):', ...
+          'Frames Before MA (e.g., 10 for MA - 10, leave empty to ignore):', ...
+          'Frames After MA (e.g., 10 for MA + 10, leave empty to ignore):'};
+dlgtitle = sprintf('Select Time Points to Compare (IP Frame: %i, MA Frame: %i, Aligned Length: %i)', parameter.gui.livecellminer.IPTransition, parameter.gui.livecellminer.MATransition, parameter.gui.livecellminer.alignedLength);
+dims = [1 100];
+definput = {'-10, -5', '', '', '5, 10'};
 answer = inputdlg(prompt,dlgtitle,dims,definput);
 
+timePointsBeforeIP = parameter.gui.livecellminer.IPTransition + str2num(answer{1});
+timePointsAfterIP = parameter.gui.livecellminer.IPTransition + str2num(answer{2});
+timePointsBeforeMA = parameter.gui.livecellminer.MATransition + str2num(answer{3});
+timePointsAfterMA = parameter.gui.livecellminer.MATransition + str2num(answer{4});
+
+timePoints = [timePointsBeforeIP, timePointsAfterIP, timePointsBeforeMA, timePointsAfterMA];
+
+if (min(timePoints) < 1 || max(timePoints) > parameter.gui.livecellminer.alignedLength)
+    fprintf('Your time point selection is invalid (%s)! Make sure that the minimum time point is larger than 1 and that the maximum time point is smaller than %i.\n', num2str(timePoints), parameter.gui.livecellminer.alignedLength);
+    return;
+end
+
 %% cancel processing if no time points were seleted
-if (isempty(answer))
+if (isempty(timePoints))
    disp('No time points selected, aborting ANOVA computations...');
    return;
 end
-timePoints = str2num(answer{1}); %#ok<ST2NM>
 
 %% retrieve the parameters and convert them to numbers
 significanceLevel = parameter.gui.statistikoptionen.p_krit;
