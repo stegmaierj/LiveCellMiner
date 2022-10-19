@@ -36,15 +36,27 @@ function [] = callback_livecellminer_import_project(parameters)
     parameters.imageFilter2 = ['*' parameters.channelFilter2 '*.tif'];        %% image filter to select only the image files
     parameters.detectionFilter = ['*' parameters.channelFilter '*.csv'];    %% detection filter to select only the CSV files corresponding to the detections
     parameters.maskFilter = ['*' parameters.channelFilter '*.png'];         %% mask filter to select only the files corresponding to the masks
+    
+    parameters.imageFilter = strrep(parameters.imageFilter, '**', '*');
+    parameters.imageFilter2 = strrep(parameters.imageFilter2, '**', '*');
+    parameters.detectionFilter = strrep(parameters.detectionFilter, '**', '*');
+    parameters.maskFilter = strrep(parameters.maskFilter, '**', '*');
 
     %% output directories for seeds and segmentation
     outputFolderSeeds = [outputFolder 'Detections/'];
     if (~isfolder(outputFolderSeeds)); mkdir(outputFolderSeeds); end
     
     %% result folders
+    parameters.twangFolder = [outputFolderSeeds 'item_0006_TwangSegmentation/'];
     parameters.detectionFolder = [outputFolderSeeds 'item_0005_ExtractSeedBasedIntensityWindowFilter/'];
     parameters.detectionExtension = '_ExtractSeedBasedIntensityWindowFilter_.csv';
-    parameters.maskFolder = '';
+    
+    %% setup output folders
+    %parameters.maskFolder = [parameters.outputFolder 'Masks/'];
+    %if (~isfolder(parameters.maskFolder)); mkdir(parameters.maskFolder); end
+
+    parameters.augmentedMaskFolder = [parameters.outputFolder 'AugmentedMasks/'];
+    if (~isfolder(parameters.augmentedMaskFolder)); mkdir(parameters.augmentedMaskFolder); end
 
     %% perform seed detection
     oldPath = pwd;
@@ -86,7 +98,11 @@ function [] = callback_livecellminer_import_project(parameters)
             outputDataExists = false;
         else
             %% check if output images already exist
-            inputFiles = dir([inputFolder '*' parameters.channelFilter '*.tif']);
+            if (~isempty(parameters.channelFilter))
+                inputFiles = dir([inputFolder '*' parameters.channelFilter '*.tif']);
+            else
+                inputFiles = dir([inputFolder '*.tif']);
+            end
             outputFiles = dir([parameters.outputFolderCellPose '*_cp_masks.png']);
             numInputFiles = length(inputFiles);
             numOutputFiles = length(outputFiles);

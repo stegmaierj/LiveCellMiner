@@ -43,8 +43,8 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
     end
 
     maskImageFiles = [];
-    if (~isempty(parameters.maskFolder))
-        maskImageFiles = dir([parameters.maskFolder parameters.maskFilter]);
+    if (~isempty(parameters.outputFolderCellPose))
+        maskImageFiles = dir([parameters.outputFolderCellPose parameters.maskFilter]);
     end
 
     patchWidth = parameters.patchWidth;
@@ -80,8 +80,8 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
 
         %% load the mask image if available
         maskImage = [];
-        if (~isempty(parameters.maskFolder) && ~isempty(maskImageFiles) && isfile([parameters.maskFolder maskImageFiles(i).name]))
-            maskImage = imread([parameters.maskFolder maskImageFiles(i).name]);
+        if (~isempty(parameters.outputFolderCellPose) && ~isempty(maskImageFiles) && isfile([parameters.outputFolderCellPose maskImageFiles(i).name]))
+            maskImage = imread([parameters.outputFolderCellPose maskImageFiles(i).name]);
         end
 
         %% extract centroids, pixel indices and bounding boxes from the labeled regions
@@ -90,7 +90,9 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
         %% loop through all cells and extract the occurrence in the current frame
         currentDOrgs = squeeze(d_orgs(:, i, :));
         threadedResults = cell(maxCellID,1);
-        parfor j=1:length(cellIDs)
+        
+        %parfor j=1:length(cellIDs) %% ENABLE AGAIN AFTER DEBUGGING !!! 
+        for j=1:length(cellIDs)
 
             size(rawImage);
             size(maskImage);
@@ -153,7 +155,7 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
                         end
 
                         %% Segment the nuclues of cell
-                        if (isempty(parameters.maskFolder))
+                        if (isempty(parameters.outputFolderCellPose))
                             croppedMask = uint16(callback_livecellminer_segment_center_nucleus(croppedImage, singleCenterCC));
                         else
                             croppedMask = uint16(maskImage(rangeX, rangeY));

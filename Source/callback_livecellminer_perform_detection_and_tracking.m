@@ -27,12 +27,6 @@
 
 function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
 
-    %% setup output folders
-    parameters.outputRawFolder = [parameters.outputFolder 'Raw'];
-    parameters.outputMaskFolder = [parameters.outputFolder 'Masks'];
-    if (~isfolder(parameters.outputRawFolder)); mkdir(parameters.outputRawFolder); end
-    if (~isfolder(parameters.outputMaskFolder)); mkdir(parameters.outputMaskFolder); end
-
     %% TODO: maybe replace seed detection with LoG again...
     [d_orgs, ~] = callback_livecellminer_perform_seed_detection(parameters);
 
@@ -40,7 +34,13 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     [d_orgs] = callback_livecellminer_refine_detected_seeds(d_orgs, parameters);
 
     %[d_orgs_new] = PerformTracking(d_orgs, settings);
-    [d_orgs] = callback_livecellminer_perform_backwards_tracking(d_orgs, parameters);
+    
+    if (parameters.performSegmentationPropagationTracking == true)
+        d_orgs = callback_livecellminer_perform_segmentation_based_tracking(parameters);
+    else
+        [d_orgs] = callback_livecellminer_perform_backwards_tracking(d_orgs, parameters);
+    end
+      
     
     save([parameters.outputFolder 'trackingProject.prjz'], '-mat', 'd_orgs', '-v7.3');
 

@@ -51,7 +51,7 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
                 %currentClusterCutoff = min(0.33 * mean(distances), parameters.maxRadius);
                 currentClusterCutoff = 0.5 * mean(distances);
             else
-                currentClusterCutoff = clusterCutoff;
+                currentClusterCutoff = parameters.clusterCutoff;
             end
         else
             currentClusterCutoff = mean(validPositions(:, parameters.clusterRadiusIndex));
@@ -109,6 +109,25 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
                 currentTrackId = currentTrackId + 1;
             end
         end
+
+        figure(2); clf; hold on; axis tight; colormap gray;
+        inputDir = '/Users/jstegmaier/Downloads/InputFolder/016/P0001/';
+        inputFiles = dir([inputDir '*.tif']);
+
+        imagesc(imadjust(imread([inputDir inputFiles(i).name])));
+        plot(d_orgs_new(:, i, 3), d_orgs_new(:, i, 4), '*g');
+        plot(d_orgs(:, i, 3), d_orgs(:, i, 4), '.r');
+
+        colorMap = lines(1000);
+
+        for mytrack = 1:(currentTrackId-1)
+            validIndices = find(d_orgs_new(mytrack, :, 1) > 0);
+
+            plot(d_orgs_new(mytrack, validIndices, 3), d_orgs_new(mytrack, validIndices, 4), '-r', 'LineWidth', 2, 'Color', colorMap(mytrack,:));
+
+            text(d_orgs_new(mytrack, i, 3), d_orgs_new(mytrack, i, 4), sprintf('Label %i', mytrack));
+        end
+        
 
         %% propagate tracked seeds backwards in time using optical flow
         if (i > 1)

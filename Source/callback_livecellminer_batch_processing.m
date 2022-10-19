@@ -77,7 +77,7 @@ performanceLog = fopen([outputRoot 'performanceLog.csv'], 'wb');
 %% prepare question dialog to ask for the physical spacing of the experiments
 dlgtitle = 'Additional settings:';
 dims = [1 100];
-additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?', 'Time Window Before Mitosis (min)', 'Time Window After Mitosis (min)', 'Diameter (Cellpose)'}, dlgtitle, dims, {'', '', '0', '0', '150', '180', '30'});
+additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?', 'Time Window Before Mitosis (min)', 'Time Window After Mitosis (min)', 'Diameter (Cellpose)', 'Tracking Method (0: Seed Clustering, 1: Segmentation Propagation)'}, dlgtitle, dims, {'', '', '0', '0', '150', '180', '30', '0'});
 if (isempty(additionalUserSettings))
     disp('No additional settings provided, stopping processing ...');
     return;
@@ -124,7 +124,9 @@ for i=1:length(inputFolders)
     parameters.useCellpose = str2double(additionalUserSettings{3}) > 0; %% if enabled, the cellpose algorithm will be used for segmentation instead of the threshold/watershed default algorithm
     parameters.reprocessExistingProjects = str2double(additionalUserSettings{4}) > 0;
     parameters.seedBasedDetection = true;             %% if enabled, LoGSSMP seeds will be used. Otherwise, cell pose segmentation results will be used.
+    parameters.useTWANG = true;                       %% if enabled, TWANG segmentation is used as a backup for cellpose (only during tracking!!)
     parameters.writeImagePatches = false;             %% if enabled, small image patches will be written separately to disk
+    parameters.performSegmentationPropagationTracking = str2double(additionalUserSettings{8}) > 0;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -34,6 +34,10 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
     if (parameters.useCellpose == true)
         cellposeFiles = dir([parameters.outputFolderCellPose '*.png']);
     end
+
+    if (parameters.useTWANG == true)
+        twangFiles = dir([parameters.twangFolder '*.tif']);
+    end
         
     numFrames = min(length(detectionFiles), parameters.numFrames);
         
@@ -78,7 +82,7 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
             
             if (parameters.useCellpose == true)
                 cellposeSegmentation = imread([parameters.outputFolderCellPose cellposeFiles(i).name]);
-                regionProps = regionprops(cellposeSegmentation, 'Centroid', 'Area', 'EquivDiameter');
+                regionProps = regionprops(cellposeSegmentation, 'Centroid', 'Area', 'EquivDiameter', 'PixelIdxList');
                 
                 %% eliminate possible rounding errors
                 currentSeeds(:,3) = max(1, min(size(cellposeSegmentation, 2), currentSeeds(:,3)));
@@ -94,19 +98,55 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
                 finalSeeds = zeros(sum(keepIndices)+length(regionProps), numFeatures);
                 finalSeeds(1:sum(keepIndices),:) = [currentSeeds(keepIndices,1:5), currentSeeds(keepIndices,3:5), sqrt(2) * currentSeeds(keepIndices,2) / parameters.micronsPerPixel, zeros(sum(keepIndices),2)];
                 
+                currentSegmentation = zeros(size(cellposeSegmentation));
+
+
+                if (parameters.useTWANG == true)
+                    twangSegmentation = imread([parameters.twangFolder twangFiles(i).name]);
+                    regionPropsTWANG = regionprops(twangSegmentation, 'Centroid', 'Area', 'EquivDiameter', 'PixelIdxList');
+
+                    for j=1:sum(keepIndices)
+                        currentLabel = twangSegmentation(round(finalSeeds(j, 4)), round(finalSeeds(j, 3)));
+
+                        if (currentLabel > 0)
+                            currentSegmentation(regionPropsTWANG(currentLabel).PixelIdxList) = j;
+                        end
+                    end
+                end
+
+                %% 
                 currentSeedId = sum(keepIndices) + 1;
                 for j=1:length(regionProps)
                     finalSeeds(currentSeedId, :) = [currentSeedId, regionProps(j).Area, ...
                                                     round(regionProps(j).Centroid(1)), round(regionProps(j).Centroid(2)), 0, ...
                                                     round(regionProps(j).Centroid(1)), round(regionProps(j).Centroid(2)), 0, ...
                                                     0.5*regionProps(j).EquivDiameter, 0, 0];
+
+                    currentSegmentation(regionProps(j).PixelIdxList) = currentSeedId;
                     currentSeedId = currentSeedId + 1;
                 end
                 
                 d_orgs(1:size(finalSeeds,1), i, :) = finalSeeds;
             else
                 d_orgs(1:size(currentSeeds,1), i, :) = [currentSeeds(:,1:5), currentSeeds(:,3:5), sqrt(2) * currentSeeds(:,2) / parameters.micronsPerPixel, zeros(size(currentSeeds,1),2)];
-            end           
+
+                currentSegmentation = zeros(size(cellposeSegmentation));
+
+                if (parameters.useTWANG == true)
+                    twangSegmentation = imread([parameters.outputFolderCellPose cellposeFiles(i).name]);
+                    regionPropsTWANG = regionprops(cellposeSegmentation, 'Centroid', 'Area', 'EquivDiameter', 'PixelIdxList');
+
+                    for j=1:size(finalSeeds, 1)
+                        currentLabel = twangSegmentation(finalSeeds(j, 4), finalSeeds(j, 3));
+
+                        if (currentLabel > 0)
+                            currentSegmentation(regionPropsTWANG(j).PixelIdxList) = j;
+                        end
+                    end
+                end
+            end
+
+            imwrite(uint16(currentSegmentation), [parameters.augmentedMaskFolder strrep(detectionFiles(i).name, '.csv', '.png')]);
         else
             maskImage = imread([parameters.detectionFolder detectionFiles(i).name]);
             regionProps = regionprops(maskImage, 'Centroid', 'Area', 'EquivDiameter');

@@ -29,8 +29,8 @@
 function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImagePatches, finalRawImagePatches2] = callback_livecellminer_combine_mother_daughter_tracks(featureMatrix, motherList, daughterList, motherDaughterList, deletionIndices, ...
                                                                          rawImagePatches, maskImagePatches, rawImagePatches2, parameters)
     %% create output directories if they don't exist yet
-    outputRawFolder = parameters.outputRawFolder;
-    outputMaskFolder = parameters.outputMaskFolder;
+    %outputRawFolder = parameters.outputRawFolder;
+    %outputMaskFolder = parameters.outputMaskFolder;
     timeWindowMother = parameters.timeWindowMother;
     timeWindowDaughter = parameters.timeWindowDaughter;
     patchWidth = parameters.patchWidth;
@@ -116,21 +116,21 @@ function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImageP
             end
        end
        
-	   %% write image snippets to disk if enabled
-       if (parameters.writeImagePatches == true)
-           clear options;
-           options.overwrite = true;
-           options.compress = 'lzw';
-           filename1 = strcat(outputRawFolder, '/', sprintf('cell_id_%04d.tif', currentIndex));
-           filename2 = strcat(outputRawFolder, '/', sprintf('cell_id_%04d.tif', currentIndex+1));
-           saveastiff(uint16(outputImageRaw1), filename1, options);
-           saveastiff(uint16(outputImageRaw2), filename2, options);
-
-           filename1 = strcat(outputMaskFolder, '/', sprintf('mask_cell_id_%04d.tif', currentIndex));
-           filename2 = strcat(outputMaskFolder, '/', sprintf('mask_cell_id_%04d.tif', currentIndex+1));
-           saveastiff(uint16(outputImageMask1), filename1, options);
-           saveastiff(uint16(outputImageMask2), filename2, options);
-       end
+% 	   %% write image snippets to disk if enabled
+%        if (parameters.writeImagePatches == true)
+%            clear options;
+%            options.overwrite = true;
+%            options.compress = 'lzw';
+%            filename1 = strcat(outputRawFolder, '/', sprintf('cell_id_%04d.tif', currentIndex));
+%            filename2 = strcat(outputRawFolder, '/', sprintf('cell_id_%04d.tif', currentIndex+1));
+%            saveastiff(uint16(outputImageRaw1), filename1, options);
+%            saveastiff(uint16(outputImageRaw2), filename2, options);
+% 
+%            filename1 = strcat(outputMaskFolder, '/', sprintf('mask_cell_id_%04d.tif', currentIndex));
+%            filename2 = strcat(outputMaskFolder, '/', sprintf('mask_cell_id_%04d.tif', currentIndex+1));
+%            saveastiff(uint16(outputImageMask1), filename1, options);
+%            saveastiff(uint16(outputImageMask2), filename2, options);
+%        end
        
        %% save the original Ids to retrieve the correct snippets later on
        originalIds = [originalIds; motherIndex, daughter1Index; motherIndex, daughter2Index]; %#ok<AGROW> 
