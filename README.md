@@ -58,6 +58,7 @@ The import of a single folder as well as a batch job that processes all subfolde
 ### Notes
 - Make sure to have a consistent folder structure. The software assumes the following arrangement of your data: *Microscope / Experiment / Position / ImageFiles*. This information will be used to group the extracted data, e.g., to allow selecting only a subset of experiments, data that was acquired with a specific microscope or a particular position.
 - Depending on the number of images per position, the processing can take a while and usually requires about 1-2 hours for one position depending on the hardware available.
+- There are two tracking methods available in the import dialog. Option "0" uses a nearest-neighbor based linking based on centroid positions. Option "1" is based on the spatio-temporal overlap of the cell segmentations and requires that the temporal resolution is high enough to guarantee spatial overlaps of neighboring frames.
 - The pre-segmentation based on the external tool Cellpose, the writing of separate image snippets and potential image file selection filters can be enabled/disabled in the settings dialog that opens upon calling the script `callback_livecellminer_batch_processing.m`.
 
 
