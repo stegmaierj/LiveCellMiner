@@ -59,6 +59,11 @@ else
     inputRootFolders = uipickfiles();
 end
 
+if (inputRootFolders == 0)
+    disp('No input folder selected. Aborting ...');
+    return;
+end
+
 %% recursively find the valid input paths
 [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolders);
 
