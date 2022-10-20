@@ -130,17 +130,19 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
             else
                 d_orgs(1:size(currentSeeds,1), i, :) = [currentSeeds(:,1:5), currentSeeds(:,3:5), sqrt(2) * currentSeeds(:,2) / parameters.micronsPerPixel, zeros(size(currentSeeds,1),2)];
 
-                currentSegmentation = zeros(size(cellposeSegmentation));
-
                 if (parameters.useTWANG == true)
-                    twangSegmentation = imread([parameters.outputFolderCellPose cellposeFiles(i).name]);
-                    regionPropsTWANG = regionprops(cellposeSegmentation, 'Centroid', 'Area', 'EquivDiameter', 'PixelIdxList');
+                    twangSegmentation = imread([parameters.twangFolder twangFiles(i).name]);
+                    currentSegmentation = zeros(size(twangSegmentation));
+                    regionPropsTWANG = regionprops(twangSegmentation, 'Centroid', 'Area', 'EquivDiameter', 'PixelIdxList');
 
-                    for j=1:size(finalSeeds, 1)
-                        currentLabel = twangSegmentation(finalSeeds(j, 4), finalSeeds(j, 3));
+                    for j=1:size(currentSeeds, 1)
+                        currentPosition = [round(currentSeeds(j, 4)), round(currentSeeds(j, 3))];
+                        currentPosition(1) = max(1, min(currentPosition(1), size(twangSegmentation,1)));
+                        currentPosition(2) = max(1, min(currentPosition(2), size(twangSegmentation,2)));
+                        currentLabel = twangSegmentation(currentPosition(1), currentPosition(2));
 
                         if (currentLabel > 0)
-                            currentSegmentation(regionPropsTWANG(j).PixelIdxList) = j;
+                            currentSegmentation(regionPropsTWANG(currentLabel).PixelIdxList) = j;
                         end
                     end
                 end
