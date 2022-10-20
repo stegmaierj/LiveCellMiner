@@ -1,8 +1,0 @@
---output /Users/jstegmaier/Downloads/Processing/
---input 0, /Users/jstegmaier/Downloads/InputFolder/016/P0001/P0001_XY1_T07_C1.tif, 2, float
---xml /Users/jstegmaier/Programming/SciXMiner/application_specials/livecellminer/toolbox/XPIWITPipelines/CellDetection_Template.xml
---seed 0
---lockfile off
---subfolder filterid, filtername
---outputformat imagename, filtername
---end
