@@ -59,7 +59,7 @@ else
     inputRootFolders = uipickfiles();
 end
 
-if (inputRootFolders == 0)
+if (~iscell(inputRootFolders) && inputRootFolders == 0)
     disp('No input folder selected. Aborting ...');
     return;
 end

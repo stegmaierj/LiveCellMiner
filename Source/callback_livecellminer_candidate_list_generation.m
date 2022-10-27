@@ -91,7 +91,7 @@ function [motherList, daughterList, motherDaughterList] = callback_livecellminer
                 daughter2Length = trackingData(daughter2Index, 3) - trackingData(daughter2Index, 2);
                                 
                 %% if daughter lengths are sufficiently large, add the cell candidate
-                if (motherLength >= timeWindowMother && min([daughter1Length, daughter2Length]) >= timeWindowDaughter)
+                if (~isempty(motherLength) && motherLength >= timeWindowMother && min([daughter1Length, daughter2Length]) >= timeWindowDaughter)
                     currentMother = trackingData(motherIndex,:);
                     currentDaughter1 = trackingData(daughter1Index,:);
                     currentDaughter2 = trackingData(daughter2Index,:);
