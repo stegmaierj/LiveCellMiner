@@ -29,7 +29,7 @@
 [filename, pathname] = uiputfile('*.cdd', 'Select a file name to save the training data to!', [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'classifiers' filesep]);
 dataPath = [pathname filename];
 
-if (~isa(dataPath, 'string'))
+if (length(filename) == 1)
     disp('No valid output file selected for storing the training data. Please repeat and select a valid output file.');
     return;
 end

@@ -26,10 +26,11 @@
 %%
 
 %% specify the input paths for the training data and the lstm model
-if (~exist(dataPath, 'file'))
-    dataPath = uigetfile('*.cdd', 'Select training data to train an LSTM classifier for the currently selected cells!', [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'classifiers' filesep]);
-
-    if (~isa(dataPath, 'string'))
+if (~exist('dataPath', 'var') || ~exist(dataPath, 'file'))
+    [filename, pathname] = uigetfile('*.cdd', 'Select training data to train an LSTM classifier for the currently selected cells!', [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'chromatindec' filesep 'classifiers' filesep]);
+    dataPath = [pathname filename];
+    
+    if (length(filename) == 1 || ~exist(dataPath, 'file') )
         disp('No valid output file selected for storing the training data. Please repeat and select a valid output file.');
         return;
     end
