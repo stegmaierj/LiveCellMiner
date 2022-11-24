@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
@@ -64,7 +65,7 @@ elements(mc).tag = 'MI_LiveCellMiner';
 %name in the menu
 elements(mc).name = 'LiveCellMiner';
 %list of the functions in the menu, -1 is a separator
-elements(mc).menu_items = {'MI_LiveCellMiner_Import', 'MI_LiveCellMiner_Align', 'MI_LiveCellMiner_Show', 'MI_LiveCellMiner_Process', 'MI_LiveCellMiner_Analyze'};
+elements(mc).menu_items = {'MI_LiveCellMiner_Import', 'MI_LiveCellMiner_Align', 'MI_LiveCellMiner_Show', 'MI_LiveCellMiner_Process', 'MI_LiveCellMiner_Export', 'MI_LiveCellMiner_Analyze'};
 %is always enabled if a project exists
 %further useful option: elements(mc).freischalt = {'1'}; %is always enabled
 elements(mc).freischalt = {'1'}; 
@@ -130,7 +131,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Align';
 elements(mc).tag = 'MI_LiveCellMiner_Align';
-elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_UpdateLSTMClassifier', -1, 'MI_LiveCellMiner_ExportSync', 'MI_LiveCellMiner_ImportSync'};
+elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_SaveTrainingData', 'MI_LiveCellMiner_TrainLSTMClassifier', -1, 'MI_LiveCellMiner_ExportSync', 'MI_LiveCellMiner_ImportSync'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -160,12 +161,24 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
-elements(mc).name = 'Update LSTM Classifier';
+elements(mc).name = 'Save Training Data';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_livecellminer_update_auto_sync_classifier;';
-elements(mc).tag = 'MI_LiveCellMiner_UpdateLSTMClassifier';
+elements(mc).callback = 'callback_livecellminer_save_training_data;';
+elements(mc).tag = 'MI_LiveCellMiner_SaveTrainingData';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Train LSTM Classifier';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_train_LSTM;';
+elements(mc).tag = 'MI_LiveCellMiner_TrainLSTMClassifier';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;
@@ -197,7 +210,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Show';
 elements(mc).tag = 'MI_LiveCellMiner_Show';
-elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -273,24 +286,13 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
-elements(mc).name = 'Auto-Generate Report';
-elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_livecellminer_report_generator;';
-elements(mc).tag = 'MI_LiveCellMiner_GenerateReport';
-%is enabled if at least one single feature exist
-elements(mc).freischalt = {};
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%
-mc = mc+1;
-elements(mc).uihd_code = [newcolumn mc];
-elements(mc).handle = [];
 elements(mc).name = 'Auto-Sync Overview';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_livecellminer_show_auto_sync_overview;';
 elements(mc).tag = 'MI_LiveCellMiner_ShowAutoSyncOverview';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;
@@ -311,7 +313,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Process';
 elements(mc).tag = 'MI_LiveCellMiner_Process';
-elements(mc).menu_items = {'MI_LiveCellMiner_ComputeSecondaryChannelFeatures', 'MI_LiveCellMiner_ComputeAdditionalSingleFeatures', 'MI_LiveCellMiner_ComputeStageDependentMeanFeatures', 'MI_LiveCellMiner_ComputeLinearRegressionSlope', 'MI_LiveCellMiner_ComputeInterphaseRecoveryFeature', 'MI_LiveCellMiner_ComputeRelativeRecoveryTimeSeries', 'MI_LiveCellMiner_ComputeSisterDistance', 'MI_LiveCellMiner_ComputeSingleFeatureAfterMA', 'MI_LiveCellMiner_ComputeTimeSeriesRatio', -1, 'MI_LiveCellMiner_AddOligoIDOutputVariable', 'MI_LiveCellMiner_AddRepeatsOutputVariable', 'MI_LiveCellMiner_SelSingleFeatureRange', -1, 'MI_LiveCellMiner_PerformFeatureNormalization', 'MI_LiveCellMiner_SmoothFeatures'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ComputeSecondaryChannelFeatures', 'MI_LiveCellMiner_ComputeAdditionalSingleFeatures', 'MI_LiveCellMiner_ComputeStageDependentMeanFeatures', 'MI_LiveCellMiner_ComputeLinearRegressionSlope', 'MI_LiveCellMiner_ComputeInterphaseRecoveryFeature', 'MI_LiveCellMiner_ComputeRelativeRecoveryTimeSeries', 'MI_LiveCellMiner_ComputeSisterDistance', 'MI_LiveCellMiner_ComputeSingleFeatureBeforeIP', 'MI_LiveCellMiner_ComputeSingleFeatureAfterMA', 'MI_LiveCellMiner_ComputeTimeSeriesRatio', -1, 'MI_LiveCellMiner_AddOligoIDOutputVariable', 'MI_LiveCellMiner_AddRepeatsOutputVariable', 'MI_LiveCellMiner_SelSingleFeatureRange', -1, 'MI_LiveCellMiner_PerformFeatureNormalization', 'MI_LiveCellMiner_SmoothFeatures'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -400,6 +402,17 @@ elements(mc).name = 'Compute Sister Distance';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_livecellminer_compute_sister_distance;';
 elements(mc).tag = 'MI_LiveCellMiner_ComputeSisterDistance'; 
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Compute Single Feature Before IP';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_compute_single_feature_before_IP;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeSingleFeatureBeforeIP'; 
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
@@ -557,3 +570,49 @@ elements(mc).callback = 'callback_livecellminer_compute_two_way_anova_time_serie
 elements(mc).tag = 'MI_LiveCellMiner_ComputeTwoWayAnovaTimeSeries';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
+
+
+%%%%%%% EXPORT %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Export';
+elements(mc).tag = 'MI_LiveCellMiner_Export';
+elements(mc).menu_items = {'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ExportAlignedGallery', 'MI_LiveCellMiner_ExportCSV'};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Auto-Generate Report';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_report_generator;';
+elements(mc).tag = 'MI_LiveCellMiner_GenerateReport';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Export Gallery for Selected Cells';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_export_aligned_gallery;';
+elements(mc).tag = 'MI_LiveCellMiner_ExportAlignedGallery';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Export Selected Cells as CSV';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_export_csv;';
+elements(mc).tag = 'MI_LiveCellMiner_ExportCSV';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
