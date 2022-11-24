@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 %
 %     http://www.apache.org/licenses/LICENSE-2.0
 %
-% Unless required by applicable law or agreed to in writing, software
+% Unless required by applicable law or agreed to in writing, software   
 % distributed under the License is distributed on an "AS IS" BASIS,
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
@@ -20,7 +20,8 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
@@ -28,8 +29,8 @@
 function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImagePatches, finalRawImagePatches2] = callback_livecellminer_combine_mother_daughter_tracks(featureMatrix, motherList, daughterList, motherDaughterList, deletionIndices, ...
                                                                          rawImagePatches, maskImagePatches, rawImagePatches2, parameters)
     %% create output directories if they don't exist yet
-    outputRawFolder = parameters.outputRawFolder;
-    outputMaskFolder = parameters.outputMaskFolder;
+    %outputRawFolder = parameters.outputRawFolder;
+    %outputMaskFolder = parameters.outputMaskFolder;
     timeWindowMother = parameters.timeWindowMother;
     timeWindowDaughter = parameters.timeWindowDaughter;
     patchWidth = parameters.patchWidth;
@@ -115,21 +116,21 @@ function [finalFeatureMatrix, originalIds, finalRawImagePatches, finalMaskImageP
             end
        end
        
-	   %% write image snippets to disk if enabled
-       if (parameters.writeImagePatches == true)
-           clear options;
-           options.overwrite = true;
-           options.compress = 'lzw';
-           filename1 = strcat(outputRawFolder, '/', sprintf('cell_id_%04d.tif', currentIndex));
-           filename2 = strcat(outputRawFolder, '/', sprintf('cell_id_%04d.tif', currentIndex+1));
-           saveastiff(uint16(outputImageRaw1), filename1, options);
-           saveastiff(uint16(outputImageRaw2), filename2, options);
-
-           filename1 = strcat(outputMaskFolder, '/', sprintf('mask_cell_id_%04d.tif', currentIndex));
-           filename2 = strcat(outputMaskFolder, '/', sprintf('mask_cell_id_%04d.tif', currentIndex+1));
-           saveastiff(uint16(outputImageMask1), filename1, options);
-           saveastiff(uint16(outputImageMask2), filename2, options);
-       end
+% 	   %% write image snippets to disk if enabled
+%        if (parameters.writeImagePatches == true)
+%            clear options;
+%            options.overwrite = true;
+%            options.compress = 'lzw';
+%            filename1 = strcat(outputRawFolder, '/', sprintf('cell_id_%04d.tif', currentIndex));
+%            filename2 = strcat(outputRawFolder, '/', sprintf('cell_id_%04d.tif', currentIndex+1));
+%            saveastiff(uint16(outputImageRaw1), filename1, options);
+%            saveastiff(uint16(outputImageRaw2), filename2, options);
+% 
+%            filename1 = strcat(outputMaskFolder, '/', sprintf('mask_cell_id_%04d.tif', currentIndex));
+%            filename2 = strcat(outputMaskFolder, '/', sprintf('mask_cell_id_%04d.tif', currentIndex+1));
+%            saveastiff(uint16(outputImageMask1), filename1, options);
+%            saveastiff(uint16(outputImageMask2), filename2, options);
+%        end
        
        %% save the original Ids to retrieve the correct snippets later on
        originalIds = [originalIds; motherIndex, daughter1Index; motherIndex, daughter2Index]; %#ok<AGROW> 

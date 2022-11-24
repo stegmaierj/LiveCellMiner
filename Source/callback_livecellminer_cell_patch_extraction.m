@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 %
 %     http://www.apache.org/licenses/LICENSE-2.0
 %
-% Unless required by applicable law or agreed to in writing, software
+% Unless required by applicable law or agreed to in writing, software   
 % distributed under the License is distributed on an "AS IS" BASIS,
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
@@ -20,7 +20,8 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
@@ -42,8 +43,8 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
     end
 
     maskImageFiles = [];
-    if (~isempty(parameters.maskFolder))
-        maskImageFiles = dir([parameters.maskFolder parameters.maskFilter]);
+    if (isfield(parameters, 'outputFolderCellPose') && ~isempty(parameters.outputFolderCellPose))
+        maskImageFiles = dir([parameters.outputFolderCellPose parameters.maskFilter]);
     end
 
     patchWidth = parameters.patchWidth;
@@ -79,8 +80,8 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
 
         %% load the mask image if available
         maskImage = [];
-        if (~isempty(parameters.maskFolder) && ~isempty(maskImageFiles) && isfile([parameters.maskFolder maskImageFiles(i).name]))
-            maskImage = imread([parameters.maskFolder maskImageFiles(i).name]);
+        if (isfield(parameters, 'outputFolderCellPose') && ~isempty(parameters.outputFolderCellPose) && ~isempty(maskImageFiles) && isfile([parameters.outputFolderCellPose maskImageFiles(i).name]))
+            maskImage = imread([parameters.outputFolderCellPose maskImageFiles(i).name]);
         end
 
         %% extract centroids, pixel indices and bounding boxes from the labeled regions
@@ -89,6 +90,8 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
         %% loop through all cells and extract the occurrence in the current frame
         currentDOrgs = squeeze(d_orgs(:, i, :));
         threadedResults = cell(maxCellID,1);
+        
+        %parfor j=1:length(cellIDs) %% ENABLE AGAIN AFTER DEBUGGING !!! 
         parfor j=1:length(cellIDs)
 
             size(rawImage);
@@ -152,7 +155,7 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
                         end
 
                         %% Segment the nuclues of cell
-                        if (isempty(parameters.maskFolder))
+                        if (~isfield(parameters, 'outputFolderCellPose'))
                             croppedMask = uint16(callback_livecellminer_segment_center_nucleus(croppedImage, singleCenterCC));
                         else
                             croppedMask = uint16(maskImage(rangeX, rangeY));

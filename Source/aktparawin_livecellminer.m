@@ -24,5 +24,13 @@
 %
 %%
 
+
+if (isfield(parameter.projekt, 'timeWindowMother') && ...
+    isfield(parameter.projekt, 'timeWindowDaughter'))
+    parameter.gui.livecellminer.IPTransition = parameter.projekt.timeWindowMother;
+    parameter.gui.livecellminer.MATransition = parameter.projekt.timeWindowMother + 30;
+    parameter.gui.livecellminer.alignedLength = parameter.projekt.timeWindowMother + parameter.projekt.timeWindowDaughter + 30;
+end
+
 return;
 

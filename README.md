@@ -3,16 +3,31 @@
 
 This repository contains the SciXMiner extension LiveCellMiner that is targeted to provide tools for a qualitative and quantitaitve analysis of cells undergoing mitosis. On the basis of time series of 2D microscopy images with a nuclear marker, cells are detected, tracked and analyzed. For valid division cycles, image patches of each frame are extracted and segmented to obtain quantitative features for each time point. Cells can then be temporally aligned using a set of manual and automatic tools, and various possibilities to visualize the data allow comparisons between different treatments.
 
+## Citation
+If you find this work useful, please make sure to cite the following [paper](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0270923): 
+
+    @article{moreno2022livecellminer,
+             title={LiveCellMiner: A New Tool to Analyze Mitotic Progression},
+             author={Moreno-Andr{\'e}s, D. and Bhattacharyya, A. and Scheufen, A. and Stegmaier, J.},
+             journal={PLOS ONE},
+             volume={17},
+             number={7},
+             pages={e0270923},
+             year={2022},
+             publisher={Public Library of Science San Francisco, CA USA}
+             }
+
+
 ## Prerequisites
 
-The *LiveCellMiner* toolbox is an extension of the MATLAB toolbox SciXMiner [1] and assumes SciXMiner is properly installed on your system. Moreover, *LiveCellMiner* uses the third party tools XPIWIT [2] and Cellpose [3] that also have to be installed prior to using the software.
+The *LiveCellMiner* toolbox is an extension of the MATLAB toolbox SciXMiner [1] and assumes SciXMiner is properly installed on your system (see [1] for installation instructions). Moreover, *LiveCellMiner* uses the third party tools XPIWIT [2] and Cellpose [3] that also have to be installed prior to using the software. For installing XPIWIT, you can simply download the precompiled binaries for your operating system from our [bitbucket repository](https://bitbucket.org/jstegmaier/xpiwit/downloads/) and extract the archive to a destination of your choice. For cellpose, please refer to the installation instructions found in the [official repository](https://github.com/MouseLand/cellpose). We tested it with the latest pytorch-based release (v1.0) and created a dedicated cellpose environment as described on the Cellpose website.
 
 After having installed these requirements, download the *LiveCellMiner* toolbox and copy it into the *application_specials* folder of SciXMiner. Start SciXMiner using the command `scixminer` and enable the toolbox using *Extras -> Choose application-specific extension packages...* . Restart SciXMiner and you should see a new menu entry called *LiveCellMiner*.
 
-To be able to use the external tools XPIWIT and Cellpose from within the toolbox (required to import new projects), the SciXMiner has to be provided with the paths to the third party software that should be used for processing. The paths can be set using the menu entry *LiveCellMiner -> Import -> Set External Dependencies*. In particular, these are the path to the executable of *XPIWIT* (e.g., *D:/XPIWIT/Bin/*) and the path to the Cellpose root folder (e.g., *I:/Software/Cellpose/*). Make sure to create a Python environment that is setup using the Cellpose environment.yml (e.g, using miniconda), activate the environment and start the MATLAB session from the Anaconda prompt to allow MATLAB calling the correct python environment when processing the data with Cellpose. Make sure to install an mx_net version that supports GPU processing, if you have a CUDA-capable GPU installed. This can tremendously decrease processing times.
+To be able to use the external tools XPIWIT and Cellpose from within the toolbox (required to import new projects), SciXMiner has to be provided with the paths to the third party software that should be used for processing. The paths can be set using the menu entry *LiveCellMiner -> Import -> Set External Dependencies*. In particular, these are the path to the executable of *XPIWIT* (e.g., *D:/XPIWIT/Bin/*) and the path to the Cellpose environment (e.g, *C:/Environments/cellpose/python.exe*). Make sure to install a pytorch version that supports GPU processing as described in the [official cellpose repository](https://github.com/MouseLand/cellpose), if you have a CUDA-capable GPU installed as this can tremendously decrease processing times.
 
 ## Example Data
-Once you've successfully installed SciXMiner as well as the LiveCellMiner extension, you can already have a look at the example data provided in `Data/LiveCellMiner_ExampleData.zip`. Download the archive to your computer and extract its contents. You can now load the project file (`*.prjz` file in the root folder of the archive). The data set has already been synchronized and you can directly jump to the analysis functionality of LiveCellMiner as described in the *Data Selection and LiveCellMiner Settings* below. This example contains the data from *Figure 4 (last column)* and a good exercise to get started would be trying to recreate the plots of the figure as described in the following steps:
+Once you've successfully installed SciXMiner as well as the LiveCellMiner extension, you can already have a look at the [example data](https://rwth-aachen.sciebo.de/s/dAqOzXHwp6856YS). Download the archive to your computer and extract its contents. You can now load the project file (`*.prjz` file in the root folder of the archive). The data set has already been synchronized and you can directly jump to the analysis functionality of LiveCellMiner as described in the *Data Selection and LiveCellMiner Settings* below. This example contains the data from *Figure 4 (last column)* and a good exercise to get started would be trying to recreate the plots of the figure as described in the following steps:
 
 - Navigate to the time series selection using the dropdown menu the main window of SciXMiner by selecting the entry *Time series: General options*.
 - Select the time series you want to display (e.g., *Area* or *MeanIntensity* as in Figure 4A,B).
@@ -36,13 +51,14 @@ The first required step is to extract the cell trajectories of single mitotic ce
 3. perform tracking of the detected centroids and identify cell trajectories that match the required length of the analysis time window (default: 30 frames before and 60 frames after the detected cell division). 
 
 For each selected cell in each frame, a small patch (default: 96x96 px) is extracted from the raw images and segmented on-the-fly using a classical method based on binary thresholding and a seeded watershed or using the precomputed segmentation obtained with Cellpose [3]. The segmentation and the raw image snippet are then used to extract classical features (area, centroid, major/minor axes, orientation, circularity, mean intensity, intensity std. dev., std. dev. of the gradient magnitude) and a set of Haralick features [4] obtained from the grayscale covariance matrix with a discretization of the image to 64 intensity levels and by omitting all transitions from the background label to any other label (to focus only on texture features within each nucleus). Moreover, we extract CNN-based features for each image snippet using the features of the last fully-connected layer of a GoogLeNet [5] that was pretrained on the ImageNet database, yielding a 1000-dimensional feature vector for each cell in each frame. 
-The tracked cells and associated classical features are stored in a SciXMiner project file (`*.prjz`) that can be opened with the SciXMiner MATLAB toolbox. The raw image snippets can be saved as individual 3D image files (3D TIFF, z-dimension represents time) and are additionally saved in a MATLAB file for easier access (`*_RawImagePatches.mat` and `*_MaskImagePatches.mat`). The CNN features are also saved as separate MATLAB file (`*_MaskedImageCNNFeatures.mat`).
+The tracked cells and associated classical features are stored in a SciXMiner project file (`*.prjz`) that can be opened with the SciXMiner MATLAB toolbox. The raw image snippets are saved in a MATLAB file for easier access (`*_RawImagePatches.mat`, `*_RawImagePatches2.mat` and `*_MaskImagePatches.mat`). The CNN features are also saved as separate MATLAB file (`*_MaskedImageCNNFeatures.mat`).
 
 The import of a single folder as well as a batch job that processes all subfolders in a provided directory can be started with *LiveCellMiner -> Import -> Import New Experiment*. The script lets you decide wheather to process a single position, an entire experiment with multiple positions or multiple experiments with all contained positions.
 
 ### Notes
 - Make sure to have a consistent folder structure. The software assumes the following arrangement of your data: *Microscope / Experiment / Position / ImageFiles*. This information will be used to group the extracted data, e.g., to allow selecting only a subset of experiments, data that was acquired with a specific microscope or a particular position.
 - Depending on the number of images per position, the processing can take a while and usually requires about 1-2 hours for one position depending on the hardware available.
+- There are two tracking methods available in the import dialog. Option "0" uses a nearest-neighbor based linking based on centroid positions. Option "1" is based on the spatio-temporal overlap of the cell segmentations and requires that the temporal resolution is high enough to guarantee spatial overlaps of neighboring frames.
 - The pre-segmentation based on the external tool Cellpose, the writing of separate image snippets and potential image file selection filters can be enabled/disabled in the settings dialog that opens upon calling the script `callback_livecellminer_batch_processing.m`.
 
 
@@ -91,6 +107,15 @@ Use these listboxes to select the subset of the data that you want to analyze in
 
 ![SciXMiner Project Overview](Documentation/Screenshots/SciXMinerProjectOverview.png "The current data selection is summarized in the project overview dialog.")
 
+As SciXMiner is a general purpose data mining tool, the specifiers depicted in this overview might appear cryptic to some non-data scientists. The following bullet points explain the individual depicted values:
+- *Time series* are time resolved features extracted for each cell. For instance, measuring the mean intensity over all tracked frames would be a time series. The number *29* specifies the number of available time series and below, the number of selected time series is depicted. The number of available measurements is reflected by *90 sample points*, i.e., for each time series feature, there are *90* measurements available.
+
+- *Single Features* are features of tracked cell that are not time-resolved. For instance, this could be average values, feature values at a particular point in time or measures like the number of frames from the IP to MA transition. In the example, there is only one single feature and this one is also selected.
+
+- *Output Variables* are intended to group the cells. In this case, the groups *All*, *Microscope*, *Experiment* and *Position* exist. These could be used, e.g., to select cells that were acquired with a particular microscopy platform or only cells or a specific experiment.
+
+- *Data Points* correspont to the number of tracked cells in the case of LiveCellMiner. In this example, there are *1606* cells present and out of these a subset of *67* cells is currently selected, e.g., to just visualize a subset of the data.
+
 In addition to selecting data points (i.e., cells), it is possible to select which of the feature time series should be visualized. This can be performed in the dialog *Time series: General options*:
 
 ![SciXMiner Time Series Overview](Documentation/Screenshots/SciXMinerTimeSeries.png "The overview of the available time series, the selected time window.")
@@ -112,7 +137,7 @@ The output variable *Selection of output variable* controls how the data are spl
 
 - *MA Transition*: The position of the metaphase -> anaphase transition in the aligned visualizations. E.g., 60 means that all phases following anaphase will be placed after frame 60.
 
-- *Aligned Length*: The total number of frames in the aligned plots. IP Transition and MA Transition are within this range. E.g., 0 -> IP Transition -> MA Transition -> end.
+- *Aligned Length*: The total number of frames in the aligned plots. IP Transition and MA Transition are within this range. E.g., 0 -> IP Transition -> MA Transition -> end. 
 
 - *Sister Chromatin Dist. Threshold*: Used to refine the synchronization time point based on the distance of the sister chromatin masses. The value is provided in microns. Note that it's important that projects were processed with the correct physical spacing set, as otherwise length and area measures are not comparable.
 
@@ -121,6 +146,8 @@ The output variable *Selection of output variable* controls how the data are spl
 - *Error Bar Step*: The frequency at which error bars are plotted. Used to avoid cluttered visualizations. Only effective if *Show Error Bars?* is enabled.
 
 - *Rel. Regression Time Range*: Range of frames relative to the synchronization time point that will be used for computing regression-based single features to be visualized as box plots. E.g., 1-5 would indicate to use frames 1-5 after the mitotic event for computing the slope of the regression line. 
+
+- *Multiple Comparison*: Selects the correction mode used for multiple comparison testing.
 
 - *Summarize Experiments?*: If enabled, the oligos of different experiments will be summarized.
 
@@ -145,21 +172,27 @@ In addition to the standard visualization possibilities available in SciXMiner, 
 
 - *Comb. Box Plots*: Shows box plots of the selected single features. Note that single features are not available in the initial project and have to be computed separately (see section on *Data Processing*). Values are summarized according to the selected output variable and the optional *Summarize experiments* setting that can be adjusted in the *Single features* and *LiveCellMiner* dialogs, respectively.
 
+- *Comb. Violing Plots*: Similar to the box plot functionality but using violin plots instead, for additional information.
+
 - *Comb. Histogram Plots*: Shows histogram plots of the selected single features. Note that single features are not available in the initial project and have to be computed separately (see section on *Data Processing*). Values are summarized according to the selected output variable and the optional *Summarize experiments* setting that can be adjusted in the *Single features* and *LiveCellMiner* dialogs, respectively.
+
+- *Auto-Generate Report*: Creates an experimet report as a website that can be viewed in a browser. Feature images are precomputed for faster analysis.
 
 - *Auto-Sync Overview*: prints an overview of the auto-sync performance. Note that this feature only works if the project already contains OligoIDs (see *LiveCellMiner -> Process -> Add OligoID Output Variable*).
 
+- *Export Gallery for Selected Cells*: Creates a high-resolution gallery of all selected cells using the current alignment information. Note that this image can get quite large if a large number of cells is selected.
+
 - *Synchronization GUI*: See respective paragraph in the *Cell Trajectory Synchronization* section.
+
+The following figure showcases the five different visualization possibilities:
+
+![LiveCellMiner Visualizations](Documentation/Screenshots/Visualizations.jpg "The overview of the available time series, the selected time window.")
 
 The selected data points used for visualization can be grouped in different ways. All selected cells with the same value of the output variable (see section on *Data Selection*) will be plotted in a single figure. Moreover, the *LiveCellMiner* settings dialog allows to enable/disable *Summarize experiments?*, where data points of different experiments but with the same output variable are summarized. This can be useful, e.g., to visualize the response of a particular treatment across experiments. When disabled, all experiments are visualized individually. The three panels in the following figure were obtained for a selection of four experiments, where experiments 1-3 were repeats and experiment 4 is a separate experiment also using a different modality (confocal instead of a widefield microscope). The settings for combining the experiments (from left to right) are: (1) *Summarize experiments=true*, *Summary Output Variable=Experiment*, (2) *Summarize experiments=false*, *Summary Output Variable=ExperimentsCombined*, (3), *Summarize experiments=false*, *Summary Output Variable=Experiment*.
 
-![LiveCellMiner Experiment Grouping](Documentation/Screenshots/ExperimentGrouping.png "The overview of the different ways experiments can be grouped.")
+![LiveCellMiner Experiment Grouping](Documentation/Screenshots/ExperimentGrouping.jpg "The overview of the different ways experiments can be grouped.")
 
-The following figure showcases the four different visualization possibilities (left to right, top to botom) with the *OligoID* output variable selected, the *MeanIntensity* time series and the *Summarize experiments* option enabled to merge cells of different experiments that were treated identically:
-
-![LiveCellMiner Visualizations](Documentation/Screenshots/Visualizations.png "The overview of the available time series, the selected time window.")
-
-Finally, the settings *Align plots?* in the *LiveCellMiner* settings dialog uses the identified synchronization time points for spatial alignment if enabled (default) and the unaligned time series if disabled. The edit field *Aligned Length* specifies the number of frames to use for the aligned heat maps and line plots (default value: 120), and the values *IP Transition* and *MA Transition* indicate at which frame the respective transitions identified during the manual/auto synchronization should be placed (default values: 30 and 60 respectively). 
+The depicted plots were generated with the setting *Align plots?* in the *LiveCellMiner* settings dialog enabled, i.e., the identified synchronization time points are used for spatial alignment (default). Disabling this flag displays the unaligned time series. The edit field *Aligned Length* in the *LiveCellMiner* settings dialog specifies the number of frames to use for the aligned heat maps and line plots (default value: 120), and the values *IP Transition* and *MA Transition* indicate at which frame the respective transitions identified during the manual/auto synchronization should be placed (default values: 30 and 60 respectively, if you expect very long IP -> MA durations, increase the total number of aligned frames and increase the *MA Transition* variable). 
 
 ## Data Processing
 The *LiveCellMiner* toolbox also includes a few additional algorithms for postprocessing the time series and to extract single features from the time series. The following functions are currently available:
@@ -223,6 +256,8 @@ The following functions are included:
 Note that all above-mentioned statistical tests make use of the general *SciXMiner* selection, *i.e.*, you can use the *Edit -> Select -> Data Points using Classes ...* menu entry to perform the desired selection of cells to be used for the statistical analysis. Moreover, make sure to specify the correct output variable (dropdown menu entitled *Selection of output variable* that you can find in the *Single features* and *Time series: General options* dialog). 
 
 ## References:
+0. Moreno-Andrés, D., Bhattacharyya, A., Scheufen, A., & Stegmaier, J. (2022). LiveCellMiner: A New Tool to Analyze Mitotic Progression. PLOS ONE, 17(7), e0270923.
+
 1. Mikut, R., Bartschat, A., Doneit, W., Ordiano, J. Á. G., Schott, B., Stegmaier, J., ... & Reischl, M. (2017). The MATLAB Toolbox SciXMiner: User's Manual and Programmer's Guide. arXiv preprint arXiv:1704.03298.
 
 2. Bartschat, A., Hübner, E., Reischl, M., Mikut, R., & Stegmaier, J. (2016). XPIWIT—an XML Pipeline Wrapper for the Insight Toolkit. Bioinformatics, 32(2), 315-317.

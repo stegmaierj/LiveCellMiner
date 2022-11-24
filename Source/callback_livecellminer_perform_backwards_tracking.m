@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 %
 %     http://www.apache.org/licenses/LICENSE-2.0
 %
-% Unless required by applicable law or agreed to in writing, software
+% Unless required by applicable law or agreed to in writing, software   
 % distributed under the License is distributed on an "AS IS" BASIS,
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
@@ -20,7 +20,8 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
@@ -50,7 +51,7 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
                 %currentClusterCutoff = min(0.33 * mean(distances), parameters.maxRadius);
                 currentClusterCutoff = 0.5 * mean(distances);
             else
-                currentClusterCutoff = clusterCutoff;
+                currentClusterCutoff = parameters.clusterCutoff;
             end
         else
             currentClusterCutoff = mean(validPositions(:, parameters.clusterRadiusIndex));
@@ -108,6 +109,25 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
                 currentTrackId = currentTrackId + 1;
             end
         end
+
+%         figure(2); clf; hold on; axis tight; colormap gray;
+%         inputDir = '/Users/jstegmaier/Downloads/InputFolder/016/P0001/';
+%         inputFiles = dir([inputDir '*.tif']);
+% 
+%         imagesc(imadjust(imread([inputDir inputFiles(i).name])));
+%         plot(d_orgs_new(:, i, 3), d_orgs_new(:, i, 4), '*g');
+%         plot(d_orgs(:, i, 3), d_orgs(:, i, 4), '.r');
+% 
+%         colorMap = lines(1000);
+% 
+%         for mytrack = 1:(currentTrackId-1)
+%             validIndices = find(d_orgs_new(mytrack, :, 1) > 0);
+% 
+%             plot(d_orgs_new(mytrack, validIndices, 3), d_orgs_new(mytrack, validIndices, 4), '-r', 'LineWidth', 2, 'Color', colorMap(mytrack,:));
+% 
+%             text(d_orgs_new(mytrack, i, 3), d_orgs_new(mytrack, i, 4), sprintf('Label %i', mytrack));
+%         end
+        
 
         %% propagate tracked seeds backwards in time using optical flow
         if (i > 1)

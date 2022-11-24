@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 %
 %     http://www.apache.org/licenses/LICENSE-2.0
 %
-% Unless required by applicable law or agreed to in writing, software
+% Unless required by applicable law or agreed to in writing, software   
 % distributed under the License is distributed on an "AS IS" BASIS,
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
@@ -20,17 +20,12 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
 function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
-
-    %% setup output folders
-    parameters.outputRawFolder = [parameters.outputFolder 'Raw'];
-    parameters.outputMaskFolder = [parameters.outputFolder 'Masks'];
-    if (~isfolder(parameters.outputRawFolder)); mkdir(parameters.outputRawFolder); end
-    if (~isfolder(parameters.outputMaskFolder)); mkdir(parameters.outputMaskFolder); end
 
     %% TODO: maybe replace seed detection with LoG again...
     [d_orgs, ~] = callback_livecellminer_perform_seed_detection(parameters);
@@ -39,7 +34,13 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     [d_orgs] = callback_livecellminer_refine_detected_seeds(d_orgs, parameters);
 
     %[d_orgs_new] = PerformTracking(d_orgs, settings);
-    [d_orgs] = callback_livecellminer_perform_backwards_tracking(d_orgs, parameters);
+    
+    if (parameters.performSegmentationPropagationTracking == true)
+        d_orgs = callback_livecellminer_perform_segmentation_based_tracking(parameters);
+    else
+        [d_orgs] = callback_livecellminer_perform_backwards_tracking(d_orgs, parameters);
+    end
+      
     
     save([parameters.outputFolder 'trackingProject.prjz'], '-mat', 'd_orgs', '-v7.3');
 
@@ -49,6 +50,11 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     %% generate the candidate list of valid mitotic events with sufficient frames before and after the division
     [motherList, daughterList, motherDaughterList] = callback_livecellminer_candidate_list_generation(d_orgs, parameters);
     candidateList = [motherList; daughterList];
+
+    if (isempty(candidateList))
+        disp('No valid tracks were found! For instance, try to loosen the required tracking length constraint and run again ...');
+        return;
+    end
 
     %% Parameters for cell patch extraction
     [featureNames, featureMatrix, deletionIndices, rawImagePatches, maskImagePatches, rawImagePatches2] = callback_livecellminer_cell_patch_extraction(d_orgs, candidateList, parameters);

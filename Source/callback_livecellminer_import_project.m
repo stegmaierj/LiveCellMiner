@@ -1,6 +1,6 @@
 %%
 % LiveCellMiner.
-% Copyright (C) 2021 D. Moreno-Andrés, A. Bhattacharyya, W. Antonin, J. Stegmaier
+% Copyright (C) 2022 D. Moreno-Andrés, A. Bhattacharyya, J. Stegmaier
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 %
 %     http://www.apache.org/licenses/LICENSE-2.0
 %
-% Unless required by applicable law or agreed to in writing, software
+% Unless required by applicable law or agreed to in writing, software   
 % distributed under the License is distributed on an "AS IS" BASIS,
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
@@ -20,7 +20,8 @@
 % If you use this application for your work, please cite the repository and one
 % of the following publications:
 %
-% TBA 
+% D. Moreno-Andres, A. Bhattacharyya, A. Scheufen, J. Stegmaier, "LiveCellMiner: A
+% New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
 
@@ -31,19 +32,31 @@ function [] = callback_livecellminer_import_project(parameters)
     outputFolder = parameters.outputFolder;
 
     %% derived parameters
-    parameters.imageFilter = [parameters.channelFilter '*.tif'];        %% image filter to select only the image files
-    parameters.imageFilter2 = [parameters.channelFilter2 '*.tif'];        %% image filter to select only the image files
-    parameters.detectionFilter = [parameters.channelFilter '*.csv'];    %% detection filter to select only the CSV files corresponding to the detections
-    parameters.maskFilter = [parameters.channelFilter '*.png'];         %% mask filter to select only the files corresponding to the masks
+    parameters.imageFilter = ['*' parameters.channelFilter '*.tif'];        %% image filter to select only the image files
+    parameters.imageFilter2 = ['*' parameters.channelFilter2 '*.tif'];        %% image filter to select only the image files
+    parameters.detectionFilter = ['*' parameters.channelFilter '*.csv'];    %% detection filter to select only the CSV files corresponding to the detections
+    parameters.maskFilter = ['*' parameters.channelFilter '*.png'];         %% mask filter to select only the files corresponding to the masks
+    
+    parameters.imageFilter = strrep(parameters.imageFilter, '**', '*');
+    parameters.imageFilter2 = strrep(parameters.imageFilter2, '**', '*');
+    parameters.detectionFilter = strrep(parameters.detectionFilter, '**', '*');
+    parameters.maskFilter = strrep(parameters.maskFilter, '**', '*');
 
     %% output directories for seeds and segmentation
     outputFolderSeeds = [outputFolder 'Detections/'];
     if (~isfolder(outputFolderSeeds)); mkdir(outputFolderSeeds); end
     
     %% result folders
+    parameters.twangFolder = [outputFolderSeeds 'item_0006_TwangSegmentation/'];
     parameters.detectionFolder = [outputFolderSeeds 'item_0005_ExtractSeedBasedIntensityWindowFilter/'];
     parameters.detectionExtension = '_ExtractSeedBasedIntensityWindowFilter_.csv';
-    parameters.maskFolder = '';
+    
+    %% setup output folders
+    %parameters.maskFolder = [parameters.outputFolder 'Masks/'];
+    %if (~isfolder(parameters.maskFolder)); mkdir(parameters.maskFolder); end
+
+    parameters.augmentedMaskFolder = [parameters.outputFolder 'AugmentedMasks/'];
+    if (~isfolder(parameters.augmentedMaskFolder)); mkdir(parameters.augmentedMaskFolder); end
 
     %% perform seed detection
     oldPath = pwd;
@@ -85,7 +98,11 @@ function [] = callback_livecellminer_import_project(parameters)
             outputDataExists = false;
         else
             %% check if output images already exist
-            inputFiles = dir([inputFolder parameters.channelFilter parameters.channelFilter '*.tif']);
+            if (~isempty(parameters.channelFilter))
+                inputFiles = dir([inputFolder '*' parameters.channelFilter '*.tif']);
+            else
+                inputFiles = dir([inputFolder '*.tif']);
+            end
             outputFiles = dir([parameters.outputFolderCellPose '*_cp_masks.png']);
             numInputFiles = length(inputFiles);
             numOutputFiles = length(outputFiles);
@@ -105,14 +122,16 @@ function [] = callback_livecellminer_import_project(parameters)
         %% only process if data does not exist yet
         if (outputDataExists == false)
             parameters.maskFolder = parameters.outputFolderCellPose;
-            cd(parameters.CELLPOSEPath);
 
             CELLPOSEFilter = '';
             if (~isempty(parameters.channelFilter))
                 CELLPOSEFilter = [' --img_filter ' parameters.channelFilter];
             end
 
-            CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 --model_dir ' parameters.CELLPOSEModelDir CELLPOSEFilter ' --pretrained_model nuclei --output_dir ' parameters.outputFolderCellPose ' --diameter 30 --use_gpu --save_png'];
+            %% removed model_dir as parameter to just use the default location for the models where cell pose downloads it to "--model_dir ' parameters.CELLPOSEModelDir"
+            %% if cellpose does not find the models or if downloading is not permitted, manually install the models to C:\Users\MY_USER_NAME\.cellpose\models
+            %% Moreover, add environment variable "CELLPOSE_LOCAL_MODELS_PATH" pointing to the models directory "C:\Users\MY_USER_NAME\.cellpose\models"
+            CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 ' CELLPOSEFilter ' --pretrained_model nuclei --savedir ' parameters.outputFolderCellPose ' --diameter ' num2str(parameters.diameterCellpose) ' --use_gpu --save_png --no_npy'];
             system(CELLPOSECommand);
         end
     end
