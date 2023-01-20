@@ -27,6 +27,8 @@
 
 function [] = callback_livecellminer_show_combined_plots(parameter, d_orgs, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, visualizationMode, createNewFigure)
 
+addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'distinguishable_colors']);
+
 %% get the parameters from the GUI
 IPTransition = parameter.gui.livecellminer.IPTransition;
 MATransition = parameter.gui.livecellminer.MATransition;
@@ -74,7 +76,7 @@ end
 [numRows, numColumns] = compute_subplot_layout(numSubPlots);
 
 %% specify the color map and the line styles
-colorMap = lines(length(selectedPositionsOrOligos));
+colorMap = distinguishable_colors(length(selectedPositionsOrOligos));
 lineStyles = {'-', '-', '-', '-', '--', ':', '-.'};
 
 %% box plots

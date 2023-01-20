@@ -32,5 +32,7 @@ if (isfield(parameter.projekt, 'timeWindowMother') && ...
     parameter.gui.livecellminer.alignedLength = parameter.projekt.timeWindowMother + parameter.projekt.timeWindowDaughter + 30;
 end
 
+addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'distinguishable_colors']);
+
 return;
 
