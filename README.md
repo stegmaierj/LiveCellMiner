@@ -18,4 +18,4 @@ If you find this work useful, please make sure to cite the following [paper](htt
              }
 
 ## Documentation
-Please navigate to the wiki of this repository for the documentation.
+Please navigate to the [wiki](https://github.com/stegmaierj/LiveCellMiner/wiki) of this repository for the documentation.
