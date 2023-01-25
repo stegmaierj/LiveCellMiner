@@ -181,6 +181,36 @@ els(ec).bezeichner = [];
 % LiveCellMiner for the first control element (here: a checkbox)
 ec = ec+1; 
 %Tag for the handling of the elements, the name must be unique
+els(ec).tag = 'CE_LiveCellMiner_TimeInMinutes';
+%number of the handle - added as the last column for the handle matrix 
+els(ec).uihd_code = [newcolumn ec]; 
+els(ec).handle = [];
+%name shown in the GUI
+els(ec).name = 'Time in Minutes?';
+%example for a checkbox
+els(ec).style = 'checkbox';
+%the variable can be use for the access to the element value
+els(ec).variable = 'parameter.gui.livecellminer.timeInMinutes';
+%default value at the start
+els(ec).default = 0;
+%help text in the context menu
+els(ec).tooltext = 'If enabled, frame number will be scaled with the temporal spacing';
+%callback for any action at the element, can be empty
+%the function should be exist tn the path of the chromatindec package
+els(ec).callback = '';
+%width of the element in points
+els(ec).breite = 200;
+%hight of the element in points
+els(ec).hoehe = 20;
+%optional handle of an additional GUI element with an explanation text, not neceessary for
+%checkboxes
+els(ec).bezeichner = [];
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% LiveCellMiner for the first control element (here: a checkbox)
+ec = ec+1; 
+%Tag for the handling of the elements, the name must be unique
 els(ec).tag = 'CE_LiveCellMiner_RelativeFrameNumbers';
 %number of the handle - added as the last column for the handle matrix 
 els(ec).uihd_code = [newcolumn ec]; 
@@ -445,9 +475,9 @@ els(ec).variable = 'parameter.gui.livecellminer.SmoothingMethod';
 %default value at the start
 els(ec).default = 'rloess';
 %defines if the values should be integer values (=1) or not
-els(ec).ganzzahlig = 1;
+%els(ec).ganzzahlig = 1;
 %defines the possible values, Inf is also possible
-els(ec).wertebereich = {1, Inf};
+%els(ec).wertebereich = {1, Inf};
 %help text in the context menu
 els(ec).tooltext = 'The smoothing method to be used (moving, lowess, loess, sgolay, rlowess, rloess).';
 %callback for any action at the element, can be empty
@@ -647,6 +677,79 @@ els(ec).bezeichner.breite = 250;
 %height of the explanation text for the element in points
 els(ec).bezeichner.hoehe = 20;
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chose the Options for the neighborhood: Rough or fine neighborhood
+ec = ec+1;
+%Tag for the handling of the elements, the name must be unique
+els(ec).tag = 'CE_LiveCellMiner_ColorMap';
+%number of the handle - added as the last column for the handle matrix
+els(ec).uihd_code = [newcolumn ec];
+els(ec).handle = [];
+%name shown in the GUI
+els(ec).name = 'Color Map';
+%example for a checkbox
+els(ec).style = 'popupmenu';
+%the variable can be use for the access to the element value
+els(ec).variable = 'parameter.gui.livecellminer.colorMap';
+%default value at the start
+els(ec).default = 1;
+%defines the entries of the popup
+els(ec).listen_werte = 'hsv|jet|lines|parula|distinguishable_colors';
+%help text in the context menu
+els(ec).tooltext = 'Specify the colormap you want to use for plotting (supports all MATLAB colormaps, maxDistColor and custom luts in the lut folder).';
+%callback for any action at the element, can be empty
+%the function should be exist tn the path of the model_qualit package
+els(ec).callback = '';
+%width of the element in points
+els(ec).breite = 250;
+%hight of the element in points
+els(ec).hoehe = 20;
+%optional handle of an additional GUI element with an explanation text
+els(ec).bezeichner.uihd_code = [newcolumn+1 ec];
+els(ec).bezeichner.handle = [];
+%width of the explanation text for the element in points
+els(ec).bezeichner.breite = 250;
+%height of the explanation text for the element in points
+els(ec).bezeichner.hoehe = 20;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% LiveCellMiner for the second control element (here: a edit field for numbers)
+ec = ec+1; 
+%Tag for the handling of the elements, the name must be unique
+els(ec).tag = 'CE_LiveCellMiner_TemporalResolution';
+%number of the handle - added as the last column for the handle matrix 
+els(ec).uihd_code = [newcolumn ec]; 
+els(ec).handle = [];
+%name shown in the GUI
+els(ec).name = 'Temporal Resolution (min)';
+%example for a checkbox
+els(ec).style = 'edit';
+%the variable can be use for the access to the element value
+els(ec).variable = 'parameter.gui.livecellminer.temporalResolution';
+%default value at the start
+els(ec).default = 3;
+%defines if the values should be integer values (=1) or not
+els(ec).ganzzahlig = 0;
+%defines the possible values, Inf is also possible
+els(ec).wertebereich = {0, Inf};
+%help text in the context menu
+els(ec).tooltext = 'Time interval between two frames (e.g., 3 for a temporal resolution of 3 minutes).';
+%callback for any action at the element, can be empty
+%the function should be exist in the path of the chromatindec package
+els(ec).callback = '';
+%width of the element in points
+els(ec).breite = 200;
+%hight of the element in points
+els(ec).hoehe = 20;
+%optional handle of an additional GUI element with an explanation text
+els(ec).bezeichner.uihd_code = [newcolumn+1 ec];
+els(ec).bezeichner.handle = [];
+%width of the explanation text for the element in points
+els(ec).bezeichner.breite = 250;
+%height of the explanation text for the element in points
+els(ec).bezeichner.hoehe = 20;
 
 
 

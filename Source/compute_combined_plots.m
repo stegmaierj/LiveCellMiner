@@ -98,6 +98,10 @@ plotName = [zgf_y_bez(selectedOutputVariable,p).name];
 if (visualizationMode ~= 1)
     %% set the axis labels
     xlabel('Frame Number');
+    if (parameter.gui.livecellminer.timeInMinutes)
+        xlabel('Time (min)');
+    end
+
     ylabel(strrep(kill_lz(var_bez(featureIndex,:)), '_', '\_'));
     box off;
 end
@@ -113,3 +117,7 @@ end
 if (parameter.gui.livecellminer.relativeFrameNumbers)
     callback_livecellminer_relative_frame_numbers;
 end
+
+offsetPreIP = parameter.gui.zeitreihen.segment_start-1;
+offsetPostMA = parameter.gui.livecellminer.alignedLength - (size(d_orgs,2) - parameter.gui.zeitreihen.segment_ende);
+set(gca, 'XLim', [offsetPreIP, offsetPostMA])

@@ -40,7 +40,7 @@ if (visualizationMode == 1)
         plot([IPTransition, IPTransition], [-10000, 10000], '--k', 'LineWidth', 2);
         plot([MATransition, MATransition], [-10000, 10000], '--k', 'LineWidth', 2);
     end
-    colormap jet;
+    colormap(callback_livecellminer_get_colormap(parameter.gui.livecellminer.colorMap, [], parameter));
     axis tight;
     maxValue = quantile(currentHeatMap(:), 0.95);
     minValue = quantile(currentHeatMap(:), 0.05);
@@ -99,4 +99,12 @@ if (summarizeSelectedExperiments == false)
 else
     title(strrep(['CombinedExperiments_' zgf_y_bez(selectedOutputVariable,p).name], '_', '\_'));
 end
+
 xlabel('Frame Number');
+if (parameter.gui.livecellminer.timeInMinutes)
+    xlabel('Time (min)');
+end
+
+offsetPreIP = parameter.gui.zeitreihen.segment_start-1;
+offsetPostMA = parameter.gui.livecellminer.alignedLength - (size(d_orgs,2) - parameter.gui.zeitreihen.segment_ende);
+set(gca, 'XLim', [offsetPreIP, offsetPostMA])

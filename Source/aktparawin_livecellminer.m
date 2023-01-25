@@ -26,13 +26,51 @@
 
 
 if (isfield(parameter.projekt, 'timeWindowMother') && ...
-    isfield(parameter.projekt, 'timeWindowDaughter'))
+        isfield(parameter.projekt, 'timeWindowDaughter'))
     parameter.gui.livecellminer.IPTransition = parameter.projekt.timeWindowMother;
     parameter.gui.livecellminer.MATransition = parameter.projekt.timeWindowMother + 30;
     parameter.gui.livecellminer.alignedLength = parameter.projekt.timeWindowMother + parameter.projekt.timeWindowDaughter + 30;
 end
 
+%% add path to distinguishable_colors script and the custom luts path
+lutPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'luts' filesep];
 addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'distinguishable_colors']);
+addpath(lutPath);
+
+%% find valid lut files
+lutFiles = dir([lutPath '*.m']);
+
+%% add the luts to the dropdown menu if not contained yet
+if (~isempty(lutFiles))
+
+    %% find the combobox control element
+    numControlElements = length(parameter.gui.control_elements);
+    for i=1:numControlElements
+
+        %% ignore all other control elements
+        if (~strcmp(parameter.gui.control_elements(i).tag, 'CE_LiveCellMiner_ColorMap'))
+            continue;
+        end
+
+        %% add available lut scripts to the dropdown box
+        for j=1:length(lutFiles)
+
+            %% get the current file name
+            [~, currentLutName, ~] = fileparts(lutFiles(j).name);
+
+            %% get the previous lut string
+            lutStrings = parameter.gui.control_elements(i).listen_werte;
+
+            %% append the new function
+            if (~contains(lutStrings, currentLutName))
+                lutStrings = [lutStrings '|' currentLutName];
+            end
+
+            %% update the control element
+            parameter.gui.control_elements(i).listen_werte = lutStrings;
+            parameter.gui.control_elements(i).handle.String = char(strsplit(lutStrings, '|'));
+        end
+    end
+end
 
 return;
-

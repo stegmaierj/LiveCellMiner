@@ -25,6 +25,11 @@
 %
 %%
 
+temporalScaling = 1;
+if (parameter.gui.livecellminer.timeInMinutes)
+    temporalScaling = parameter.gui.livecellminer.temporalResolution;
+end
+
 IPTransition = parameter.gui.livecellminer.IPTransition;
 MATransition = parameter.gui.livecellminer.MATransition;
 alignedLength = parameter.gui.livecellminer.alignedLength;
@@ -35,13 +40,13 @@ for j=1:length(relativeXTick)
     absoluteTime = relativeXTick(j);
 
     if (absoluteTime <= IPTransition)
-        relativeXTickLabels{j} = ['-' num2str(IPTransition - relativeXTick(j))];
+        relativeXTickLabels{j} = ['-' num2str((IPTransition - relativeXTick(j)) * temporalScaling)];
     elseif (absoluteTime > IPTransition && relativeXTick(j) <= (IPTransition+((MATransition-IPTransition)/2)))
-        relativeXTickLabels{j} = num2str(relativeXTick(j) - IPTransition);
+        relativeXTickLabels{j} = num2str((relativeXTick(j) - IPTransition) * temporalScaling);
     elseif (absoluteTime > (IPTransition+((MATransition-IPTransition)/2)) && absoluteTime < MATransition)
-        relativeXTickLabels{j} = ['-' num2str(MATransition - relativeXTick(j))];
+        relativeXTickLabels{j} = ['-' num2str((MATransition - relativeXTick(j)) * temporalScaling)];
     else                
-        relativeXTickLabels{j} = num2str(relativeXTick(j) - MATransition);
+        relativeXTickLabels{j} = num2str((relativeXTick(j) - MATransition) * temporalScaling);
     end
 
     if (str2double(relativeXTickLabels{j}) == 0)

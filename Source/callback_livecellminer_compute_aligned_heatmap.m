@@ -31,7 +31,8 @@ function [resultHeatMap] = callback_livecellminer_compute_aligned_heatmap(d_orgs
     IPTransition = parameter.gui.livecellminer.IPTransition;
     MATransition = parameter.gui.livecellminer.MATransition;
     alignedLength = parameter.gui.livecellminer.alignedLength;
-    timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
+    %timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
+    timeRange = 1:size(d_orgs,2);
     alignPlots = parameter.gui.livecellminer.alignPlots;
 
     %% create the current heat map

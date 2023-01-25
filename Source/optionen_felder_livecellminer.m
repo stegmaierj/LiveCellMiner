@@ -79,6 +79,11 @@ felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_ShowErrorBars';
 felder(fc).visible(end).pos = [550 150];
 felder(fc).visible(end).bez_pos_rel = [];
 
+felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_TimeInMinutes';
+%relative position in the window here: 300 points from left and 30 from the bottom 
+felder(fc).visible(end).pos = [550 210];
+felder(fc).visible(end).bez_pos_rel = [];
+
 felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_RelativeFrameNumbers';
 %relative position in the window here: 300 points from left and 30 from the bottom 
 felder(fc).visible(end).pos = [550 180];
@@ -105,10 +110,21 @@ felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
-felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_MultipleTestingMethod';
+felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_TemporalResolution';
 felder(fc).visible(end).pos = [300 90];
 felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
+%%%%%%%%%%%%%%%%%%
+% Element: Linke/Rechte Einzüge verwenden
+felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_MultipleTestingMethod';
+felder(fc).visible(end).pos = [300 60];
+felder(fc).visible(end).bez_pos_rel = [-280 -3];
+
+%%%%%%%%%%%%%%%%%%
+% Element: Linke/Rechte Einzüge verwenden
+felder(fc).visible(end+1).i_control_elements = 'CE_LiveCellMiner_ColorMap';
+felder(fc).visible(end).pos = [300 30];
+felder(fc).visible(end).bez_pos_rel = [-280 -3];
 
 %%%%%%%%%%%%%%%%%%
 % Element: Linke/Rechte Einzüge verwenden
