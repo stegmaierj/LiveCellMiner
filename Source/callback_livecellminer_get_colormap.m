@@ -36,7 +36,7 @@ function colorMap = callback_livecellminer_get_colormap(colorMapID, numColors, p
             continue;
         end
 
-        colorMapString = parameter.gui.control_elements(410).listen_werte;
+        colorMapString = parameter.gui.control_elements(i).listen_werte;
         break;
     end
 
