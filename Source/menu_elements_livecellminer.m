@@ -131,7 +131,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Align';
 elements(mc).tag = 'MI_LiveCellMiner_Align';
-elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_SaveTrainingData', 'MI_LiveCellMiner_TrainLSTMClassifier', -1, 'MI_LiveCellMiner_ExportSync', 'MI_LiveCellMiner_ImportSync'};
+elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_PerformRandomSelection', 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_SaveTrainingData', 'MI_LiveCellMiner_TrainLSTMClassifier', -1, 'MI_LiveCellMiner_ExportSync', 'MI_LiveCellMiner_ImportSync'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -142,6 +142,17 @@ elements(mc).name = 'Perform Auto Sync';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_livecellminer_perform_auto_sync;';
 elements(mc).tag = 'MI_LiveCellMiner_PerformAutoSync';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Randomly Select Cells';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_perform_random_selection;';
+elements(mc).tag = 'MI_LiveCellMiner_PerformRandomSelection';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
