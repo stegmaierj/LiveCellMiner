@@ -131,7 +131,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Align';
 elements(mc).tag = 'MI_LiveCellMiner_Align';
-elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_PerformRandomSelection', 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_SaveTrainingData', 'MI_LiveCellMiner_TrainLSTMClassifier', -1, 'MI_LiveCellMiner_ExportSync', 'MI_LiveCellMiner_ImportSync'};
+elements(mc).menu_items = {'MI_LiveCellMiner_PerformAutoSync', 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization', 'MI_LiveCellMiner_AlignmentClassifier', -1, 'MI_LiveCellMiner_ExportSync', 'MI_LiveCellMiner_ImportSync'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -145,6 +145,16 @@ elements(mc).tag = 'MI_LiveCellMiner_PerformAutoSync';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Alignment Classifier';
+elements(mc).tag = 'MI_LiveCellMiner_AlignmentClassifier';
+elements(mc).menu_items = {'MI_LiveCellMiner_PerformRandomSelection', 'MI_LiveCellMiner_SelectAllAnnotations', 'MI_LiveCellMiner_ResetManualAnnotations', -1, 'MI_LiveCellMiner_FindInconsistentSynchronizations', 'MI_LiveCellMiner_SaveTrainingData', 'MI_LiveCellMiner_TrainLSTMClassifier'};
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
@@ -155,6 +165,31 @@ elements(mc).callback = 'callback_livecellminer_perform_random_selection;';
 elements(mc).tag = 'MI_LiveCellMiner_PerformRandomSelection';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Select All Annotated Cells';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_select_all_manual_annotations;';
+elements(mc).tag = 'MI_LiveCellMiner_SelectAllAnnotations';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Reset Manual Annotations';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_reset_manual_annotations;';
+elements(mc).tag = 'MI_LiveCellMiner_ResetManualAnnotations';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 mc = mc+1;
@@ -195,6 +230,30 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
+elements(mc).name = 'Auto-Sync Overview';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_show_auto_sync_overview;';
+elements(mc).tag = 'MI_LiveCellMiner_ShowAutoSyncOverview';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Synchronization GUI';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_manual_synchronization_gui;';
+elements(mc).tag = 'MI_LiveCellMiner_PerformManualSynchronization';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
 elements(mc).name = 'Export Synchronization';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_livecellminer_export_sync;';
@@ -221,7 +280,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Show';
 elements(mc).tag = 'MI_LiveCellMiner_Show';
-elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots', -1, 'MI_LiveCellMiner_ShowAutoSyncOverview', 'MI_LiveCellMiner_PerformManualSynchronization'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -289,30 +348,6 @@ elements(mc).name = 'Comb. Histogram Plots';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'showHistogram = true; callback_livecellminer_show_combined_boxplots(parameter, d_org, d_orgs, dorgbez, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, showHistogram);';
 elements(mc).tag = 'MI_LiveCellMiner_ShowCombHistogramPlots';
-%is enabled if at least one single feature exist
-elements(mc).freischalt = {};
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%
-mc = mc+1;
-elements(mc).uihd_code = [newcolumn mc];
-elements(mc).handle = [];
-elements(mc).name = 'Auto-Sync Overview';
-elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_livecellminer_show_auto_sync_overview;';
-elements(mc).tag = 'MI_LiveCellMiner_ShowAutoSyncOverview';
-%is enabled if at least one single feature exist
-elements(mc).freischalt = {};
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%
-mc = mc+1;
-elements(mc).uihd_code = [newcolumn mc];
-elements(mc).handle = [];
-elements(mc).name = 'Synchronization GUI';
-elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_livecellminer_manual_synchronization_gui;';
-elements(mc).tag = 'MI_LiveCellMiner_PerformManualSynchronization';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 

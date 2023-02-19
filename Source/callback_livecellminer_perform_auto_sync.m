@@ -34,6 +34,8 @@ syncMethod = questdlg('Which synchronization method do you want to use?', 'Selec
 useClassicalSync = ~isempty(strfind(syncMethod, 'Classical')); %#ok<STREMP> 
 useAutoRejection = ~isempty(strfind(syncMethod, 'Auto Rejection')); %#ok<STREMP> 
 
+%% specify image data base
+imageDataBase = [parameter.projekt.pfad filesep parameter.projekt.datei '.h5'];
 
 %% path to the pretrained model
 if (useAutoRejection == true)
@@ -44,6 +46,14 @@ if (useAutoRejection == true)
     if (~exist('maskedImageCNNFeatures', 'var'))
         callback_livecellminer_load_image_files;
     end    
+
+    %% specify filename for the image data base
+    if (~exist(imageDataBase, 'file'))
+        fprintf('Image database file %s not found. Trying to create it!', imageDataBase);
+        
+        callback_livecellminer_convert_image_database_to_hdf5;
+    end
+
     
     if (exist(modelPath, 'file'))
         load(modelPath, '-mat');
@@ -98,7 +108,10 @@ for i=1:2:size(d_orgs,1)
     
     %% check if classifier exists
     if (exist('classificationLSTM', 'var') && useAutoRejection == true)
-        currentFeaturesCNN = zeros(1000, numFrames);
+        
+        %currentFeaturesCNN = zeros(1000, numFrames);
+        currentFeaturesCNN = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn'));
+
         validCNNFeatures = true;
         for j=1:numFrames
             if (~isempty(maskedImageCNNFeatures{i, j}))

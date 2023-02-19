@@ -71,6 +71,23 @@ if (dataPrecached == false)
    dataPrecached = true;
 end
 
+%% ask which data to save
+numTotalAnnotations = sum(d_org(:, manuallyConfirmedIndex) > 0);
+numSelectedAnnotations = sum(d_org(ind_auswahl, manuallyConfirmedIndex) > 0);
+answer = questdlg(sprintf('Which annotations would you like to save?\n\nAll Annotations (n=%i)\nSelected Annotations (n=%i)', numTotalAnnotations, numSelectedAnnotations), ...
+	'Save Annotations', ...
+	'All', 'Selected', 'Cancel', 'All');
+
+if (strcmp(answer, 'All'))
+    ind_auswahl = (1:size(d_org,1))';
+    fprintf('Exporting all %i manual annotations ...\n', numTotalAnnotations);
+elseif (strcmp(answer, selectedAnnotationsString))
+    fprintf('Exporting %i selected manual annotations ...\n', numSelectedAnnotations);
+else
+    disp('Stopping export ...\n');
+    return;
+end
+
 %% specify the image sizes
 featureRange = 1:29;
 oldImageSize = 90;
@@ -109,10 +126,11 @@ for i=validIndices'
     end
     
     %% summarize the CNN features for the current time series
-    currentFeaturesCNN = zeros(1000, numFrames);
-    for j=1:numFrames
-        currentFeaturesCNN(:,j) = maskedImageCNNFeatures{i, j};
-    end
+%     currentFeaturesCNN = zeros(1000, numFrames);
+%     for j=1:numFrames
+%         currentFeaturesCNN(:,j) = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn')); %maskedImageCNNFeatures{i, j};
+%     end
+    currentFeaturesCNN = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn'));
     currentCheckSum = sum(currentFeaturesCNN(:) / max(0.1, currentFeaturesCNN(end)));
 
     %% skip adding the current detection if there is already an entry with the same checksum
@@ -160,6 +178,7 @@ dummyVariable = 0;
 %% save data if any changes were made
 if (dirtyFlag == true)
     save(dataPath, 'dummyVariable', '-v7.3', 'sequencesCNN', 'sequencesClassical', 'classicalFeatureNames', 'stateLabels', 'validityLabels', 'checkSum');
+    fprintf('Classifier training data base saved to: %s\n', dataPath);
 end
 
 %% ask if the new model should directly be fit

@@ -25,6 +25,13 @@
 %
 %%
 
+%% specify filename for the image data base
+imageDataBase = [parameter.projekt.pfad filesep parameter.projekt.datei '.h5'];
+if (exist(imageDataBase, 'file'))
+    fprintf('File %s already exists, skipping recreation. To force recreation, manually delete the file!\n', imageDataBase);
+    return;
+end
+
 %% declare global variables for the image patches
 global maskImagePatches; %#ok<GVMIS> 
 global rawImagePatches; %#ok<GVMIS> 
@@ -167,3 +174,6 @@ for i=1:length(inputFolders)
     
     fprintf('Successfully loaded image patches of experiment %s, plate %s.\n', experimentName, positionName);
 end
+
+%% convert the current selection of image files to hdf5 for faster lookup
+callback_livecellminer_convert_image_database_to_hdf5;

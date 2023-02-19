@@ -44,92 +44,131 @@ experimentId = callback_livecellminer_find_output_variable(bez_code, 'Experiment
 microscopeId = callback_livecellminer_find_output_variable(bez_code, 'Microscope');
 positionId = callback_livecellminer_find_output_variable(bez_code, 'Position');
 
-%% check if the oligoID output variable already exists to avoid creating another one
-newOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'OligoID');
-if (newOutputVariable == 0)    
-    code_alle(:,end+1) = 0;
-    newOutputVariable = size(code_alle, 2);
-    bez_code = char(bez_code, 'OligoID');
+%% open the first file and provide selection of which output variable to add.
+%% find all cells belonging to the current experiment and determine the microscope
+currentIndices = find(code_alle(:,experimentId) == 1);
+currentMicroscrope = code_alle(currentIndices(1), microscopeId);
+
+%% identify the folder containing the experiment
+currentInputFolder = [inputFolder zgf_y_bez(microscopeId,currentMicroscrope).name filesep];
+if (~isfolder(currentInputFolder))
+    currentInputFolder = inputFolder;
 end
-    
-%% initialize the oligoIDs
-oligoIDs = cell(0);
-    
-%% run through all experiments and add the oligoIDs to each plate
-for i=unique(code_alle(:,experimentId))'
 
-	%% find all cells belonging to the current experiment and determine the microscope
-    currentIndices = find(code_alle(:,experimentId) == i);
-    currentMicroscrope = code_alle(currentIndices(1), microscopeId);
+%% try to load the oligoIds from a text file named identical to the experiment name with txt extension
+oligoIdTextFile = [currentInputFolder zgf_y_bez(experimentId,1).name '.txt'];
+if (~exist(oligoIdTextFile, 'file'))
+    disp(['ERROR: OligoID CSV file was not found in the following path: ' oligoIdTextFile]);
+    return;
+end
 
-	%% identify the folder containing the experiment
-    currentInputFolder = [inputFolder zgf_y_bez(microscopeId,currentMicroscrope).name filesep];
-    if (~isfolder(currentInputFolder))
-        currentInputFolder = inputFolder;
+%% open the file to get the available specifiers
+fileID = fopen(oligoIdTextFile);
+specifiers = strsplit(fgetl(fileID), '\t'); 
+fclose(fileID);
+
+prompt = specifiers;
+dlgtitle = 'Which output variables do you want to add?';
+dims = [1 35];
+definput = {'0','1','0'};
+selectedOutputVariables = inputdlg(prompt,dlgtitle,dims,definput);
+
+
+for o=1:length(selectedOutputVariables)
+
+    %% check if output variable should be added
+    if (selectedOutputVariables{o} == '0')
+        continue;
     end
-    
-	%% try to load the oligoIds from a text file named identical to the experiment name with txt extension
-    oligoIdTextFile = [currentInputFolder zgf_y_bez(experimentId,i).name '.txt'];
-    if (~exist(oligoIdTextFile, 'file'))
-        disp(['ERROR: OligoID CSV file was not found in the following path: ' oligoIdTextFile]);
-        return;
+    currentOutputVariableName = specifiers{o};
+
+    %% check if the oligoID output variable already exists to avoid creating another one
+    newOutputVariable = callback_livecellminer_find_output_variable(bez_code, currentOutputVariableName);
+    if (newOutputVariable == 0)    
+        code_alle(:,end+1) = 0;
+        newOutputVariable = size(code_alle, 2);
+        bez_code = char(bez_code, currentOutputVariableName);
     end
-
-	%% open the text file and process each line
-    fileID = fopen(oligoIdTextFile);
-    fgetl(fileID); %% skip the specifiers
-    currentLine = fgetl(fileID);
-
-	%% process all lines
-    while ischar(currentLine)
-
-		%% extract the position and oligoID from the current line
-        splitString = strsplit(currentLine, '\t');
-        currentProject = zgf_y_bez(experimentId,i).name;
         
-        if (splitString{1}(1) == 'P')
-            splitString{1} = splitString{1}(2:end);
-        end
+    %% initialize the oligoIDs
+    oligoIDs = cell(0);
         
-        currentPosition = str2double(splitString{1});
-        currentOligoID = splitString{2};
-
-        %% check if oligo ID is already present
-        existingID = 0;
-        for j=1:size(oligoIDs, 2)
-            if (strcmp(oligoIDs(j), currentOligoID))
-                existingID = j;
-                break;
-            end
-        end
-
-		%% if id is not present, add it
-        if (existingID == 0)
-            existingID = length(oligoIDs)+1;
-            oligoIDs{existingID} = currentOligoID;
-            zgf_y_bez(newOutputVariable,existingID).name = currentOligoID; %#ok<SAGROW> 
+    %% run through all experiments and add the oligoIDs to each plate
+    for i=unique(code_alle(:,experimentId))'
+    
+	    %% find all cells belonging to the current experiment and determine the microscope
+        currentIndices = find(code_alle(:,experimentId) == i);
+        currentMicroscrope = code_alle(currentIndices(1), microscopeId);
+    
+	    %% identify the folder containing the experiment
+        currentInputFolder = [inputFolder zgf_y_bez(microscopeId,currentMicroscrope).name filesep];
+        if (~isfolder(currentInputFolder))
+            currentInputFolder = inputFolder;
         end
         
-        %% find positionId in the output variable
-        codeAllePosition = 0;
-        for j=unique(code_alle(:,positionId))'
-            if (str2double(zgf_y_bez(positionId, j).name(end-1:end)) == currentPosition)
-               codeAllePosition = j;
-               break;
-            end
+	    %% try to load the oligoIds from a text file named identical to the experiment name with txt extension
+        metaDataTextFile = [currentInputFolder zgf_y_bez(experimentId,i).name '.txt'];
+        if (~exist(metaDataTextFile, 'file'))
+            disp(['ERROR: meta data CSV file was not found in the following path: ' metaDataTextFile]);
+            return;
         end
-
-		%% identify cells belonging to the current position and experiment and set the code value accordingly
-        validIndices = find(code_alle(:,experimentId) == i & code_alle(:,positionId) == codeAllePosition);
-        code_alle(validIndices, newOutputVariable) = existingID;
-
-		%% get the next line
+    
+	    %% open the text file and process each line
+        fileID = fopen(metaDataTextFile);
+        fgetl(fileID); %% skip the specifiers
         currentLine = fgetl(fileID);
+    
+	    %% process all lines
+        while ischar(currentLine)
+    
+		    %% extract the position and oligoID from the current line
+            splitString = strsplit(currentLine, '\t');
+            currentProject = zgf_y_bez(experimentId,i).name;
+            
+            if (splitString{1}(1) == 'P')
+                splitString{1} = splitString{1}(2:end);
+            end
+            
+            currentPosition = str2double(splitString{1});
+            currentOligoID = splitString{o};
+    
+            %% check if oligo ID is already present
+            existingID = 0;
+            for j=1:size(oligoIDs, 2)
+                if (strcmp(oligoIDs(j), currentOligoID))
+                    existingID = j;
+                    break;
+                end
+            end
+    
+		    %% if id is not present, add it
+            if (existingID == 0)
+                existingID = length(oligoIDs)+1;
+                oligoIDs{existingID} = currentOligoID;
+                zgf_y_bez(newOutputVariable,existingID).name = currentOligoID; %#ok<SAGROW> 
+            end
+            
+            %% find positionId in the output variable
+            codeAllePosition = 0;
+            for j=unique(code_alle(:,positionId))'
+                if (str2double(zgf_y_bez(positionId, j).name(end-1:end)) == currentPosition)
+                   codeAllePosition = j;
+                   break;
+                end
+            end
+    
+		    %% identify cells belonging to the current position and experiment and set the code value accordingly
+            validIndices = find(code_alle(:,experimentId) == i & code_alle(:,positionId) == codeAllePosition);
+            code_alle(validIndices, newOutputVariable) = existingID;
+    
+		    %% get the next line
+            currentLine = fgetl(fileID);
+        end
+	    
+	    %% close the file handle
+        fclose(fileID);
     end
-	
-	%% close the file handle
-    fclose(fileID);
+    
+    %% update the scixminer window
+    aktparawin;
 end
-
-%% update the scixminer window
-aktparawin;

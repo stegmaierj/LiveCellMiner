@@ -33,9 +33,13 @@ global bez_code; %#ok<NUSED,GVMIS>
 global code_alle; %#ok<NUSED,GVMIS> 
 global d_org; %#ok<GVMIS> 
 
-%% preload image files if not done yet
-if (~exist('rawImagePatches', 'var') || isempty(rawImagePatches))
-   callback_livecellminer_load_image_files; 
+
+%% specify filename for the image data base
+imageDataBase = [parameter.projekt.pfad filesep parameter.projekt.datei '.h5'];
+if (~exist(imageDataBase, 'file'))
+    fprintf('Image database file %s not found. Trying to create it!', imageDataBase);
+    
+    callback_livecellminer_convert_image_database_to_hdf5;
 end
 
 %% find the synchronization index or create it if not present yet

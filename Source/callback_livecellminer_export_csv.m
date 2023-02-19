@@ -35,6 +35,8 @@ outputDirectory = uigetdir();
 
 %% get the selected indices
 synchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
+selectedOutputVariable = parameter.gui.merkmale_und_klassen.ausgangsgroesse;
+selectedOutputVariableName = kill_lz(bez_code(selectedOutputVariable, :));
 
 %% get stage transitions
 if (synchronizationIndex > 0)
@@ -66,7 +68,8 @@ if (strcmp(answer, 'Time Series (TS)'))
 
         %% construct the output file name
         featureName = kill_lz(var_bez(f, :));
-        fileID = fopen([outputDirectory filesep featureName '_' datestr(now,'YYYY_mm_DD_HH_MM_SS') '.csv'], 'wb');
+        fileID = fopen([outputDirectory filesep featureName '_' datestr(now,'YYYY_mm_DD_HH_MM_SS') '_SingleCells.csv'], 'wb');
+        fileIDCombined = fopen([outputDirectory filesep featureName '_' datestr(now,'YYYY_mm_DD_HH_MM_SS') '_GroupedCells_' selectedOutputVariableName '.csv'], 'wb');
 
         %% create the specifier string for the first line
         outputVariables = '';
@@ -76,6 +79,7 @@ if (strcmp(answer, 'Time Series (TS)'))
 
         %% print the specifiers
         fprintf(fileID, '%s%s\n', outputVariables, relativeFrameNumbers);
+        fprintf(fileIDCombined, '%s%s%s\n', outputVariables, 'Metric;', relativeFrameNumbers);
 
         %% export values of all selected cells
         for j=1:length(validIndices)
@@ -88,15 +92,41 @@ if (strcmp(answer, 'Time Series (TS)'))
             fprintf(fileID, '%s%s\n', currentOutputVariables, num2str(currentHeatMap(j,:), '%.2f;'));
         end
 
+        %% export combined values for the current output variable
+        for j=unique(code_alle(validIndices, selectedOutputVariable))'
+
+            currentIndices = find(code_alle(validIndices, selectedOutputVariable) == j);
+
+            meanValues = nanmean(currentHeatMap(currentIndices,:));
+            stdValues = nanstd(currentHeatMap(currentIndices,:));
+
+            currentOutputVariables = [];
+            for k=1:size(bez_code,1)
+
+                numCodeValues = length(unique(code_alle(validIndices(currentIndices),k)));
+
+                if (numCodeValues == 1)
+                    currentOutputVariables = [currentOutputVariables zgf_y_bez(k,code_alle(validIndices(currentIndices(1)),k)).name ';' ];
+                else
+                    currentOutputVariables = [currentOutputVariables 'Multiple Values' ';' ];
+                end
+            end
+
+            fprintf(fileIDCombined, '%s%s%s\n', currentOutputVariables, 'Mean;', num2str(meanValues, '%.2f;'));
+            fprintf(fileIDCombined, '%s%s%s\n', currentOutputVariables, 'Std;', num2str(stdValues, '%.2f;'));
+        end
+
         %% close the file handle
         fclose(fileID);
+        fclose(fileIDCombined);
     end
 
 %% export single features
 elseif (strcmp(answer, 'Single Features (SF)'))
 
     %% construct the output file name
-    fileID = fopen([outputDirectory filesep 'SingleFeatures' '_' datestr(now,'YYYY_mm_DD_HH_MM_SS') '.csv'], 'wb');
+    fileID = fopen([outputDirectory filesep 'SingleFeatures' '_' datestr(now,'YYYY_mm_DD_HH_MM_SS') '_SingleCells.csv'], 'wb');
+    fileIDCombined = fopen([outputDirectory filesep featureName '_' datestr(now,'YYYY_mm_DD_HH_MM_SS') '_GroupedCells_' selectedOutputVariableName '.csv'], 'wb');
 
     %% create the specifier string for the first line
     outputVariables = '';
@@ -111,6 +141,7 @@ elseif (strcmp(answer, 'Single Features (SF)'))
 
     %% print the specifiers
     fprintf(fileID, '%s%s\n', outputVariables, featureNames);
+    fprintf(fileIDCombined, '%s%s%s\n', outputVariables, 'Metric;', featureNames);
 
     %% export values of all selected cells
     for j=validIndices'
@@ -123,8 +154,33 @@ elseif (strcmp(answer, 'Single Features (SF)'))
         fprintf(fileID, '%s%s\n', currentOutputVariables, num2str(d_org(j,parameter.gui.merkmale_und_klassen.ind_em), '%.2f;'));
     end
 
+    %% export combined values for the current output variable
+    for j=unique(code_alle(validIndices, selectedOutputVariable))'
+
+        currentIndices = validIndices(code_alle(validIndices, selectedOutputVariable) == j);
+
+        meanValues = nanmean(d_org(currentIndices,parameter.gui.merkmale_und_klassen.ind_em));
+        stdValues = nanstd(d_org(currentIndices,parameter.gui.merkmale_und_klassen.ind_em));
+
+        currentOutputVariables = [];
+        for k=1:size(bez_code,1)
+
+            numCodeValues = length(unique(code_alle(currentIndices,k)));
+
+            if (numCodeValues == 1)
+                currentOutputVariables = [currentOutputVariables zgf_y_bez(k,code_alle(currentIndices(1),k)).name ';' ];
+            else
+                currentOutputVariables = [currentOutputVariables 'Multiple Values' ';' ];
+            end
+        end
+
+        fprintf(fileIDCombined, '%s%s%s\n', currentOutputVariables, 'Mean;', num2str(meanValues, '%.2f;'));
+        fprintf(fileIDCombined, '%s%s%s\n', currentOutputVariables, 'Std;', num2str(stdValues, '%.2f;'));
+    end
+
     %% close the file handle
     fclose(fileID);
+    fclose(fileIDCombined);
 
 else
     disp('Nothing selected for export, skipping ...');

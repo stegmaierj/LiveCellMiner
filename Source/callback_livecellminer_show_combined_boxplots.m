@@ -87,8 +87,8 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
     [numRows, numColumns] = compute_subplot_layout(numSubPlots);
     
     %% specify the color map and the line styles
-    colorMap = distinguishable_colors(length(selectedPositionsOrOligos));
-    lineStyles = {'-', '--', ':', '-.'};
+    colorMap = callback_livecellminer_get_colormap(parameter.gui.livecellminer.colorMap, length(selectedPositionsOrOligos), parameter);
+    lineStyles = {'-', '-', '-', '-', '--', ':', '-.'};
     
     %% box plots
     dataPoints = [];
@@ -349,9 +349,6 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
             %% plot the data in box plot format
             numGroups = length(unique(grouping));
             groupColors = colorMap(1:numGroups, :);
-            if (numGroups == 1)
-                groupColors = [];
-            end
     
             minValue = min(minValue, min(dataPoints(:)));
             maxValue = max(minValue, max(dataPoints(:))); %#ok<NASGU>

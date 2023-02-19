@@ -32,9 +32,6 @@ global d_orgs;
 global zgf_y_bez;
 global bez_code;
 global code_alle;
-global rawImagePatches;
-global rawImagePatches2;
-global maskImagePatches;
 
 %% get the current time range
 parameters.timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
@@ -43,6 +40,12 @@ parameters.timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeit
 experimentIdIndex = callback_livecellminer_find_output_variable(bez_code, 'Experiment');
 positionIdIndex = callback_livecellminer_find_output_variable(bez_code, 'Position');
 oligoIdIndex = callback_livecellminer_find_output_variable(bez_code, 'OligoID');
+
+%% specify filename for the image data base
+imageDataBase = [parameter.projekt.pfad filesep parameter.projekt.datei '.h5'];
+if (~exist(imageDataBase, 'file'))
+    fprintf('Image database file %s not found. Please make sure the file exists and try again!', imageDataBase);
+end
 
 %% only update if anything changed
 if (parameters.dirtyFlag == true)
@@ -64,65 +67,68 @@ if (parameters.dirtyFlag == true)
         %% specify range of the current row
         rangeY = ((currentCell-1)*imageSize(2)+1):currentCell*imageSize(2);
 
+        if (parameters.visualizationMode ~= 2)
+            tic;
+            currentRawImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'raw'));
+            toc
+        end
+
+        if (parameters.visualizationMode == 4 || parameters.visualizationMode == 5)
+            try
+                currentRawImage2 = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'raw2'));
+            catch
+                disp('Error: no secondary channel information available to display!');
+            end
+        end
+
+        if (parameters.visualizationMode == 2 || parameters.visualizationMode == 3)
+            currentMaskImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'mask'));
+        end
+        
+
         %% fill the individual time points
         currentTimePoint = 1;
         for j=timeRange
 
             %% specify range for the current column
             rangeX = ((currentTimePoint-1)*imageSize(1)+1):currentTimePoint*imageSize(1);
-
-            %% fill the montage image
-            if (exist('rawImagePatches', 'var') && exist('maskImagePatches', 'var') && ~isempty(rawImagePatches) && ~isempty(maskImagePatches)) 
-
-                %% continue if images are empty
-                if (isempty(rawImagePatches{i, j}) || isempty(maskImagePatches{i, j}))
-                    continue;
-                end
-                
-                %% normalize the intensities
-                if (parameters.visualizationMode ~= 2)
-                    minValue1 = min(double(rawImagePatches{i, j}(:)));
-                    maxValue1 = max(double(rawImagePatches{i, j}(:)));
-                    normalizedPatch1 = (double(rawImagePatches{i, j}) - minValue1) / (maxValue1 - minValue1);
-                end
-                
-                if (~isempty(rawImagePatches2{i,j}) && parameters.visualizationMode >= 4)
-                    minValue2 = min(double(rawImagePatches2{i, j}(:)));
-                    maxValue2 = max(double(rawImagePatches2{i, j}(:)));
-                    normalizedPatch2 = (double(rawImagePatches2{i, j}) - minValue2) / (maxValue2 - minValue2);
-                end
-                
-                %% set visualized image patches depending on current visualization mode
-                if (parameters.visualizationMode == 1)
-                    parameters.montageImage(rangeY, rangeX) = normalizedPatch1;
-                    
-                %% mask image mode
-                elseif (parameters.visualizationMode == 2)
-                    parameters.montageImage(rangeY, rangeX) = maskImagePatches{i, j};
-                    
-                %% masked raw image mode
-                elseif (parameters.visualizationMode == 3)
-                    parameters.montageImage(rangeY, rangeX) = normalizedPatch1 .* double(maskImagePatches{i, j});
-                   
-                %% secondary channel image
-                elseif (parameters.visualizationMode == 4)
-                    if (~isempty(rawImagePatches2{i,j}))
-                        parameters.montageImage(rangeY, rangeX) = normalizedPatch2;
-                    else
-                        disp('Error: no secondary channel information available to display!');
-                    end
-                    
-                %% superimposed first and second channel
-                else
-                    if (~isempty(rawImagePatches2{i,j}))                       
-                        parameters.montageImage(rangeY, rangeX, 1) = normalizedPatch1;
-                        parameters.montageImage(rangeY, rangeX, 2) = normalizedPatch2;
-                        parameters.montageImage(rangeY, rangeX, 3) = 0;
-                    else
-                        disp('Error: no secondary channel information available to display!');
-                    end
-                end
+            
+            %% normalize the intensities
+            if (parameters.visualizationMode ~= 2)
+                minValue1 = min(double(currentRawImage(:,:,j)), [], 'all');
+                maxValue1 = max(double(currentRawImage(:,:,j)), [], 'all');
+                normalizedPatch1 = (double(currentRawImage(:,:,j)) - minValue1) / (maxValue1 - minValue1);
             end
+            
+            if (parameters.visualizationMode >= 4)
+                minValue2 = min(double(currentRawImage(:,:,j)), [], 'all');
+                maxValue2 = max(double(currentRawImage(:,:,j)), [], 'all');
+                normalizedPatch2 = (double(currentRawImage(:,:,j)) - minValue2) / (maxValue2 - minValue2);
+            end
+            
+            %% set visualized image patches depending on current visualization mode
+            if (parameters.visualizationMode == 1)
+                parameters.montageImage(rangeY, rangeX) = normalizedPatch1;
+                
+            %% mask image mode
+            elseif (parameters.visualizationMode == 2)
+                parameters.montageImage(rangeY, rangeX) = currentMaskImage(:,:,j);
+                
+            %% masked raw image mode
+            elseif (parameters.visualizationMode == 3)
+                parameters.montageImage(rangeY, rangeX) = normalizedPatch1 .* double(currentMaskImage(:,:,j));
+               
+            %% secondary channel image
+            elseif (parameters.visualizationMode == 4)
+                parameters.montageImage(rangeY, rangeX) = normalizedPatch2;
+                
+            %% superimposed first and second channel
+            else
+                parameters.montageImage(rangeY, rangeX, 1) = normalizedPatch1;
+                parameters.montageImage(rangeY, rangeX, 2) = normalizedPatch2;
+                parameters.montageImage(rangeY, rangeX, 3) = 0;
+            end
+            
 
             %% initialize the labelImage used for state annotation
             parameters.labelImage(rangeY, rangeX, 1) = i;
