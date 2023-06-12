@@ -25,14 +25,14 @@
 %
 %%
 
-%% preload image files if not done yet
-if (~exist('rawImagePatches', 'var') || isempty(rawImagePatches))
-   callback_livecellminer_load_image_files; 
-end
-
 %% get the number of cells and frames
 numCells = size(d_orgs,1);
 numFrames = size(d_orgs,2);
+
+%% correct var_bez before adding new features
+if (size(var_bez,1) > size(d_orgs,3))
+    var_bez = var_bez(1:size(d_orgs,3), :);
+end
 
 %% initialize the new feature arrays
 circularityFeature = zeros(numCells, numFrames);
@@ -47,8 +47,19 @@ f = waitbar(0, 'Computing additional time series features for all cells ...');
 
 %% extract the new features
 for i=1:size(d_orgs,1)
+
+    %% specify filename for the image data base
+    imageDataBase = callback_livecellminer_get_image_data_base_filename(i, parameter, code_alle, zgf_y_bez, bez_code);
+    if (~exist(imageDataBase, 'file'))
+        fprintf('Image database file %s not found. Starting the conversion script to have it ready next time. Please be patient!', imageDataBase);
+        callback_livecellminer_convert_image_files_to_hdf5;
+    end
+    
+    %% load the entire time series image patches for the current cell
+    currentMasks = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'mask'));
+    
     parfor j=1:size(d_orgs,2)
-        currentMask = maskImagePatches{i,j};
+        currentMask = currentMasks(:,:,j);
         
         currentRegionProps = regionprops(currentMask > 0, 'circularity', 'eccentricity', 'perimeter', 'area', 'solidity', 'convexarea', 'equivdiameter', 'extent');
         
@@ -76,8 +87,5 @@ d_orgs(:,:,end+1) = equivDiameterFeature;
 d_orgs(:,:,end+1) = extentFeature;
 
 %% update specifiers
-if (strcmp(kill_lz(var_bez(end,:)), 'y') == 1)
-    var_bez = var_bez(1:end-1, :);
-end
 var_bez = char(var_bez, 'Circularity2', 'Eccentricity', 'Solidity', 'ConvexArea', 'EquivDiameter', 'Extent');
 aktparawin;

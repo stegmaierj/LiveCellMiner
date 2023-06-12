@@ -62,15 +62,6 @@ synchronizationIndex = parameter.gui.merkmale_und_klassen.ind_zr;
 set(gaitfindobj('CE_Auswahl_ZR'),'value', oldSelection);
 aktparawin;
 
-%% check if precached images were already loaded
-dataPrecached = exist('rawImagePatches', 'var') && exist('maskImagePatches', 'var') && exist('maskedImageCNNFeatures', 'var') && ~isempty(rawImagePatches) && ~isempty(maskImagePatches) && ~isempty(maskedImageCNNFeatures);
-
-%% precache the image snippets
-if (dataPrecached == false)
-   callback_livecellminer_load_image_files;
-   dataPrecached = true;
-end
-
 %% ask which data to save
 numTotalAnnotations = sum(d_org(:, manuallyConfirmedIndex) > 0);
 numSelectedAnnotations = sum(d_org(ind_auswahl, manuallyConfirmedIndex) > 0);
@@ -130,6 +121,14 @@ for i=validIndices'
 %     for j=1:numFrames
 %         currentFeaturesCNN(:,j) = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn')); %maskedImageCNNFeatures{i, j};
 %     end
+
+    %% specify filename for the image data base
+    imageDataBase = callback_livecellminer_get_image_data_base_filename(i, parameter, code_alle, zgf_y_bez, bez_code);
+    if (~exist(imageDataBase, 'file'))
+        fprintf('Image database file %s not found. Starting the conversion script to have it ready next time. Please be patient!', imageDataBase);
+        callback_livecellminer_convert_image_files_to_hdf5;
+    end
+
     currentFeaturesCNN = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn'));
     currentCheckSum = sum(currentFeaturesCNN(:) / max(0.1, currentFeaturesCNN(end)));
 

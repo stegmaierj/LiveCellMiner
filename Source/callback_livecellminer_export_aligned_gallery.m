@@ -25,11 +25,6 @@
 %
 %%
 
-%% preload image files if not done yet
-if (~exist('rawImagePatches', 'var') || isempty(rawImagePatches))
-   callback_livecellminer_load_image_files; 
-end
-
 %% warn if too many cells were selected
 if (length(ind_auswahl) > 50)
     answer = questdlg(sprintf('You selected %i cells for image export. Export may be slow. Continue?', length(ind_auswahl)));
@@ -49,8 +44,10 @@ if (synchronizationIndex == 0)
 end
 
 %% get the extents of the image snippets
-imageWidth = size(rawImagePatches{1,1}, 1);
-imageHeight = size(rawImagePatches{1,1}, 2);
+imageDataBase = callback_livecellminer_get_image_data_base_filename(1, parameter, code_alle, zgf_y_bez, bez_code);
+dummyImage = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(1, code_alle, zgf_y_bez, 'raw')));
+imageWidth = size(dummyImage, 1);
+imageHeight = size(dummyImage, 2);
 
 %% get the number of cells
 numCells = length(ind_auswahl);
@@ -81,6 +78,15 @@ for i=1:numCells
     phase2Indices = selectedTimePoints(d_orgs(currentIndex, selectedTimePoints, synchronizationIndex) == 2);
     phase3Indices = selectedTimePoints(d_orgs(currentIndex, selectedTimePoints, synchronizationIndex) == 3);
 
+    %% specify filename for the image data base
+    imageDataBase = callback_livecellminer_get_image_data_base_filename(i, parameter, code_alle, zgf_y_bez, bez_code);
+    if (~exist(imageDataBase, 'file'))
+        fprintf('Image database file %s not found. Starting the conversion script to have it ready next time. Please be patient!', imageDataBase);
+        callback_livecellminer_convert_image_files_to_hdf5;
+    end
+
+    currentRawImage = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(currentIndex, code_alle, zgf_y_bez, 'raw')));
+
 
     %% add phase 1 frames
     for j=1:length(phase1Indices)
@@ -91,7 +97,7 @@ for i=1:numCells
         rangeX = startPosX:(startPosX+imageWidth-1);
         rangeY = startPosY:(startPosY+imageHeight-1);
 
-        resultImage(rangeY, rangeX) = rawImagePatches{currentIndex, phase1Indices(length(phase1Indices)-j+1)};
+        resultImage(rangeY, rangeX) = currentRawImage(:,:, phase1Indices(length(phase1Indices)-j+1));
     end
 
     %% add phase 2 frames
@@ -108,7 +114,7 @@ for i=1:numCells
         rangeX = startPosX:(startPosX+imageWidth-1);
         rangeY = startPosY:(startPosY+imageHeight-1);
 
-        resultImage(rangeY, rangeX) = rawImagePatches{currentIndex, phase2IndicesPart1(j)};
+        resultImage(rangeY, rangeX) = currentRawImage(:,:, phase2IndicesPart1(j));
     end
     
     %% add phase 1 frames
@@ -120,7 +126,7 @@ for i=1:numCells
         rangeX = startPosX:(startPosX+imageWidth-1);
         rangeY = startPosY:(startPosY+imageHeight-1);
 
-        resultImage(rangeY, rangeX) = rawImagePatches{currentIndex, phase2IndicesPart2(length(phase2IndicesPart2)-j+1)};
+        resultImage(rangeY, rangeX) = currentRawImage(:,:, phase2IndicesPart2(length(phase2IndicesPart2)-j+1));
     end
 
     %% add phase 3 frames
@@ -132,7 +138,7 @@ for i=1:numCells
         rangeX = startPosX:(startPosX+imageWidth-1);
         rangeY = startPosY:(startPosY+imageHeight-1);
 
-        resultImage(rangeY, rangeX) = rawImagePatches{currentIndex, phase3Indices(j)};
+        resultImage(rangeY, rangeX) = currentRawImage(:,:, phase3Indices(j));
     end
 
 end

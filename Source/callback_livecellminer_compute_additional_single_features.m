@@ -49,7 +49,7 @@ d_org(:,end+1) = 0;
 d_org(:,end+1) = 0;
 
 %% add the specifier for the new single feature
-if (size(d_org,2) == 1)
+if (isempty(dorgbez))
     dorgbez = char('IPToMALength_Frames', 'IPToMALength_Minutes', 'InterphaseMeanIntensity', 'MeanOrientationDiffPMA');
 else
     dorgbez = char(dorgbez, 'IPToMALength_Frames', 'IPToMALength_Minutes', 'InterphaseMeanIntensity', 'MeanOrientationDiffPMA');

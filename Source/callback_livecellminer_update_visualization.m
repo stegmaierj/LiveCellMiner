@@ -41,11 +41,6 @@ experimentIdIndex = callback_livecellminer_find_output_variable(bez_code, 'Exper
 positionIdIndex = callback_livecellminer_find_output_variable(bez_code, 'Position');
 oligoIdIndex = callback_livecellminer_find_output_variable(bez_code, 'OligoID');
 
-%% specify filename for the image data base
-imageDataBase = [parameter.projekt.pfad filesep parameter.projekt.datei '.h5'];
-if (~exist(imageDataBase, 'file'))
-    fprintf('Image database file %s not found. Please make sure the file exists and try again!', imageDataBase);
-end
 
 %% only update if anything changed
 if (parameters.dirtyFlag == true)
@@ -63,6 +58,13 @@ if (parameters.dirtyFlag == true)
     %% loop through all selected cells and add them to the montage
     currentCell = 1;
     for i=generate_rowvector(parameters.currentCells)
+
+        %% specify filename for the image data base
+        imageDataBase = callback_livecellminer_get_image_data_base_filename(i, parameter, code_alle, zgf_y_bez, bez_code);
+        if (~exist(imageDataBase, 'file'))
+            fprintf('Image database file %s not found. Starting the conversion script to have it ready next time. Please be patient!', imageDataBase);
+            callback_livecellminer_convert_image_files_to_hdf5;
+        end
 
         %% specify range of the current row
         rangeY = ((currentCell-1)*imageSize(2)+1):currentCell*imageSize(2);

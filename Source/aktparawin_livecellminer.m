@@ -37,6 +37,10 @@ lutPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' files
 addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'distinguishable_colors']);
 addpath(lutPath);
 
+addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'struct2File']);
+addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'getarg']);
+
+
 %% find valid lut files
 lutFiles = dir([lutPath '*.m']);
 

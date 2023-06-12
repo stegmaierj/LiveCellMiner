@@ -33,15 +33,6 @@ global bez_code; %#ok<NUSED,GVMIS>
 global code_alle; %#ok<NUSED,GVMIS> 
 global d_org; %#ok<GVMIS> 
 
-
-%% specify filename for the image data base
-imageDataBase = [parameter.projekt.pfad filesep parameter.projekt.datei '.h5'];
-if (~exist(imageDataBase, 'file'))
-    fprintf('Image database file %s not found. Trying to create it!', imageDataBase);
-    
-    callback_livecellminer_convert_image_database_to_hdf5;
-end
-
 %% find the synchronization index or create it if not present yet
 synchronizationIndex = callback_livecellminer_find_single_feature(var_bez, 'manualSynchronization');
 if (synchronizationIndex == 0)

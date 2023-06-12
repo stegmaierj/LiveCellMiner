@@ -131,7 +131,8 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     projekt.patchWidth = parameters.patchWidth;
     projekt.timeWindowDaughter = parameters.timeWindowDaughter;
     projekt.timeWindowMother = parameters.timeWindowMother;
-    
+    projekt.parameters = parameters;
+
     %% create the output file names for the current project
     outputNames = callback_livecellminer_generate_output_paths(parameters);
     save(outputNames.project, '-mat', 'd_orgs', 'code', 'var_bez', 'code_alle', 'projekt');
@@ -143,5 +144,6 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     end
     
     %% display success message
+    writetable(struct2table(parameters), [parameters.outputFolder filesep parameters.experimentName '_' parameters.positionNumber '_Settings.csv']);
     disp(['Processing of input folder experiment ' parameters.experimentName ', position ' parameters.positionNumber ' was successful. Results saved in ' strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '*')]);
 end

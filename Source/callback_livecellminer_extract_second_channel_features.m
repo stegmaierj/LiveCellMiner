@@ -28,11 +28,6 @@
 %% add haralick function for feature computation
 addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'haralick' filesep]);
 
-%% preload image patches if not available yet
-if (~exist('rawImagePatches', 'var') || isempty(rawImagePatches))
-    callback_livecellminer_load_image_files;
-end
-
 %% segmentation mode to be used (extend, shring, toroidal)
 dlgtitle = '2nd Channel Feature Extraction:';
 dims = [1 100];
@@ -110,19 +105,33 @@ tic;
 %% initialize the thread data collection variable
 threadResults = cell(numFrames, 1);
 
-%% process all frames
-parfor i=1:numFrames
+%% process all cells
+parfor c=1:numCells
+
     
+    %% specify filename for the image data base
+    imageDataBase = callback_livecellminer_get_image_data_base_filename(c, parameter, code_alle, zgf_y_bez, bez_code);
+    if (~exist(imageDataBase, 'file'))
+        fprintf('Image database file %s not found. Starting the conversion script to have it ready next time. Please be patient!', imageDataBase);
+        callback_livecellminer_convert_image_files_to_hdf5;
+    end
+    
+    %% load the entire time series image patches for the current cell
+    rawImages1 = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(c, code_alle, zgf_y_bez, 'raw')));
+    rawImages2 = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(c, code_alle, zgf_y_bez, 'raw2')));
+    maskImages = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(c, code_alle, zgf_y_bez, 'mask'));
+
+
     %% initialize the current results
-    currentResults = zeros(numCells, numFeatures);
+    currentResults = zeros(numFrames, numFeatures);
     
     %% extract features for all cells
-    for j=1:numCells
-        
+    for t=1:numFrames
+
         %% get the current input images
-        maskImage = maskImagePatches{j, i};
-        rawImage1 = double(rawImagePatches{j, i});
-        rawImage2 = double(rawImagePatches2{j, i});
+        maskImage = maskImages(:,:,t);
+        rawImage1 = rawImages1(:,:,t);
+        rawImage2 = rawImages2(:,:,t);
         
         %% compute the mask
         if (extractionMode == 0)
@@ -140,10 +149,10 @@ parfor i=1:numFrames
         end
         
         %% compute the actual features
-        currentResults(j,1) = mean(rawImage2(currentRegionProps(1).PixelIdxList));
-        currentResults(j,2) = std(rawImage2(currentRegionProps(1).PixelIdxList));
-        currentResults(j,3) = max(rawImage2(currentRegionProps(1).PixelIdxList));
-        currentResults(j,4) = mean(rawImage1(currentRegionProps(1).PixelIdxList)) / mean(rawImage2(currentRegionProps(1).PixelIdxList));
+        currentResults(t,1) = mean(rawImage2(currentRegionProps(1).PixelIdxList));
+        currentResults(t,2) = std(rawImage2(currentRegionProps(1).PixelIdxList));
+        currentResults(t,3) = max(rawImage2(currentRegionProps(1).PixelIdxList));
+        currentResults(t,4) = mean(rawImage1(currentRegionProps(1).PixelIdxList)) / mean(rawImage2(currentRegionProps(1).PixelIdxList));
         
         %% characterize the maximum displacement
         outerIntensities = rawImage2(maskImageCh2 > 0 & ~maskImage);
@@ -158,17 +167,19 @@ parfor i=1:numFrames
         [xpos, ypos] = ind2sub(size(maskImageCh2), globalUpperQuantileIndices);
         upperQuantileCentroid = [sum(globalUpperQuantileIntensities .* xpos), sum(globalUpperQuantileIntensities .* ypos)];
         
-        currentResults(j,5) = mean(outerIntensities(outerIntensities>outerUpperQuantile)) / mean(innerIntensities(innerIntensities>innerUpperQuantile));
-        currentResults(j,6) = norm(parameter.projekt.patchRescaleFactor * (upperQuantileCentroid - currentRegionProps(1).Centroid));
+        currentResults(t,5) = mean(outerIntensities(outerIntensities>outerUpperQuantile)) / mean(innerIntensities(innerIntensities>innerUpperQuantile));
+        currentResults(t,6) = norm(parameter.projekt.patchRescaleFactor * (upperQuantileCentroid - currentRegionProps(1).Centroid));
         
         if (extractAdvancedFeatures)
             [~, featureVector] = callback_livecellminer_extract_nucleus_features(rawImage2, double(maskImageCh2));
-            currentResults(j,7:end) = featureVector;
+            currentResults(t,7:end) = featureVector;
         end
     end
     
     %% pass results to the thread data collector
-    threadResults{i} = currentResults;
+    threadResults{c} = currentResults;
+
+    c
 end
 
 %% add new features to d_orgs
@@ -183,8 +194,8 @@ for i=1:numFeatures
     d_orgs(:,:,end+1) = 0; %#ok<SAGROW>
     
     %% add results for all frames
-    for j=1:numFrames
-        d_orgs(:,j,end) = threadResults{j}(:,i);
+    for c=1:numCells
+        d_orgs(c,:,end) = threadResults{c}(:,i);
     end
     
     %% update the specifiers

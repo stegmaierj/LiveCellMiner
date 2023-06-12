@@ -41,24 +41,18 @@ imageDataBase = [parameter.projekt.pfad filesep parameter.projekt.datei '.h5'];
 if (useAutoRejection == true)
     
     [modelFile, modelPath] = uigetfile('*.cdc', 'Select LSTM classifier for the current data set!');
-    modelPath = [modelPath modelFile];
-    
-    if (~exist('maskedImageCNNFeatures', 'var'))
-        callback_livecellminer_load_image_files;
-    end    
 
-    %% specify filename for the image data base
-    if (~exist(imageDataBase, 'file'))
-        fprintf('Image database file %s not found. Trying to create it!', imageDataBase);
-        
-        callback_livecellminer_convert_image_database_to_hdf5;
+    if (modelFile == 0)
+        disp('LSTM classifier for discarding invalid tracks and auto sync was not found. Perform manual annotations first and train a classifier using "Chromatindec -> Align -> Update LSTM Classifier"');
+        return;
     end
-
+    modelPath = [modelPath modelFile];
     
     if (exist(modelPath, 'file'))
         load(modelPath, '-mat');
     else
         disp('LSTM classifier for discarding invalid tracks and auto sync was not found. Perform manual annotations first and train a classifier using "Chromatindec -> Align -> Update LSTM Classifier"');
+        return;
     end
 end
 
@@ -109,21 +103,26 @@ for i=1:2:size(d_orgs,1)
     %% check if classifier exists
     if (exist('classificationLSTM', 'var') && useAutoRejection == true)
         
-        %currentFeaturesCNN = zeros(1000, numFrames);
+        %% specify filename for the image data base
+        imageDataBase = callback_livecellminer_get_image_data_base_filename(i, parameter, code_alle, zgf_y_bez, bez_code);
+        if (~exist(imageDataBase, 'file'))
+            fprintf('Image database file %s not found. Starting the conversion script to have it ready next time. Please be patient!', imageDataBase);
+            callback_livecellminer_convert_image_files_to_hdf5;
+        end
+
         currentFeaturesCNN = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn'));
 
-        validCNNFeatures = true;
-        for j=1:numFrames
-            if (~isempty(maskedImageCNNFeatures{i, j}))
-                currentFeaturesCNN(:,j) = maskedImageCNNFeatures{i, j};
-            else
-                validCNNFeatures = false;
-                break;
-            end
-        end 
+%         for j=1:numFrames
+%             if (~isempty(maskedImageCNNFeatures{i, j}))
+%                 currentFeaturesCNN(:,j) = maskedImageCNNFeatures{i, j};
+%             else
+%                 validCNNFeatures = false;
+%                 break;
+%             end
+%         end 
         validTrajectoryProbability = predict(classificationLSTM, currentFeaturesCNN);
         
-        if (validTrajectoryProbability(1) > validTrajectoryProbability(2) || validCNNFeatures == false)
+        if (validTrajectoryProbability(1) > validTrajectoryProbability(2))
             %% set the synchronization time points
             d_orgs(i:(i+1), :, synchronizationIndex) = -1;
             invalidSynchronization = invalidSynchronization+2;
