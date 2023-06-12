@@ -144,6 +144,6 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     end
     
     %% display success message
-    writetable(struct2table(parameters), [parameters.outputFolder filesep parameters.experimentName '_' parameters.positionNumber '_Settings.csv']);
+    callback_livecellminer_save_parameters_as_csv(parameters, [parameters.outputFolder filesep parameters.experimentName '_' parameters.positionNumber '_Settings.csv']);
     disp(['Processing of input folder experiment ' parameters.experimentName ', position ' parameters.positionNumber ' was successful. Results saved in ' strcat(parameters.outputFolder, '/', parameters.experimentName, '_', parameters.positionNumber, '*')]);
 end
