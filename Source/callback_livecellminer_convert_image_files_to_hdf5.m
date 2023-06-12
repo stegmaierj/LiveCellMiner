@@ -27,13 +27,6 @@
 
 compressionLevel = 0;
 
-%% specify filename for the image data base
-imageDataBase = [parameter.projekt.pfad filesep parameter.projekt.datei '.h5'];
-if (exist(imageDataBase, 'file'))
-    fprintf('File %s already exists, skipping recreation. To force recreation, manually delete the file!\n', imageDataBase);
-    return;
-end
-
 %% get the root directory of the projects to import
 inputRootFolder = cell(1,1);
 inputRootFolder{1} = parameter.projekt.pfad;
