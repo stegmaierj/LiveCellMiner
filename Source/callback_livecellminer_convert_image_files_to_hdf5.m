@@ -34,45 +34,65 @@ if (~isfolder(inputRootFolder{1}))
     inputRootFolder{1} = uigetdir();
 end
 inputRootFolder{1} = [inputRootFolder{1} filesep];
-try
-    [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolder);
-catch
-    inputRootFolder{1} = uigetdir();
-    inputRootFolder{1} = [inputRootFolder{1} filesep];
-    [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolder);
+
+%% check if current input folder is part of the project
+experimentIDs = unique(code_alle(:,3));
+positionIDs = unique(code_alle(:,4));
+
+clear inputFolders;
+currentFolder = 1;
+
+for e=experimentIDs
+    for p=positionIDs'
+        experimentName = zgf_y_bez(3,e).name;
+        positionName = zgf_y_bez(4,p).name;
+
+        inputFolders{currentFolder} = strrep([inputRootFolder{1} experimentName filesep positionName filesep], '\', '/');
+
+        if (isfolder(inputFolders{currentFolder}))
+            currentFolder = currentFolder+1;
+        end
+    end
 end
 
 %% import all projects contained in the root folder
 for i=1:length(inputFolders)
 
     fprintf('Attempting to convert image data base %s ...\n', inputFolders{i});
-    
+
     %% get the current microscope
-    currentInputFolder = inputFolders{i};
-
-    %% check if current input folder is part of the project
-    experimentIDs = unique(code_alle(:,3));
-    experimentIsPartOfProject = false;
-    for j=experimentIDs'
-        experimentName = zgf_y_bez(3,j).name;
-
-        if (contains(currentInputFolder, experimentName))
-            experimentIsPartOfProject = true;
-            break;
-        end
-    end
-    
-    if (~experimentIsPartOfProject)
-        fprintf('Skipping %s as it is not a part of the current fused project ...\n', inputFolders{i});
-        continue;
-    end
+    currentInputFolder = inputFolders{i};    
     
     %% identify microscope, experiment and position names
     splitString = strsplit(currentInputFolder(1:end-1), '/');
     microscopeName = splitString{end-2};
     experimentName = splitString{end-1};
     positionName = splitString{end};
-    [microscopeId, experimentId, positionId] = callback_livecellminer_get_output_variables(microscopeList, experimentList, positionList, microscopeName, experimentName, positionName);
+
+    microscopeIDs = unique(code_alle(:,2));
+    experimentIDs = unique(code_alle(:,3));
+    positionIDs = unique(code_alle(:,4));
+    
+    microscopeId = 0;
+    experimentId = 0;
+    positionId = 0;
+    
+    for m=microscopeIDs'
+        for e=experimentIDs'
+            for p=positionIDs'
+                
+                if (strcmp(zgf_y_bez(2,m).name, microscopeName) && ...
+                    strcmp(zgf_y_bez(3,e).name, experimentName) && ...
+                    strcmp(zgf_y_bez(4,p).name, positionName))
+                    microscopeId = m;
+                    experimentId = e;
+                    positionId = p;
+                end
+            end
+        end
+    end
+
+    %%[microscopeId, experimentId, positionId] = callback_livecellminer_get_output_variables(microscopeList, experimentList, positionList, microscopeName, experimentName, positionName);
     
     %% load the image patches
     load([currentInputFolder experimentName '_' positionName '_RawImagePatches.mat'], '-mat');
