@@ -49,6 +49,23 @@ for i=1:length(inputFolders)
     
     %% get the current microscope
     currentInputFolder = inputFolders{i};
+
+    %% check if current input folder is part of the project
+    experimentIDs = unique(code_alle(:,3));
+    experimentIsPartOfProject = false;
+    for j=experimentIDs'
+        experimentName = zgf_y_bez(3,j).name;
+
+        if (contains(currentInputFolder, experimentName))
+            experimentIsPartOfProject = true;
+            break;
+        end
+    end
+    
+    if (~experimentIsPartOfProject)
+        fprintf('Skipping %s as it is not a part of the current fused project ...\n', inputFolders{i});
+        continue;
+    end
     
     %% identify microscope, experiment and position names
     splitString = strsplit(currentInputFolder(1:end-1), '/');
