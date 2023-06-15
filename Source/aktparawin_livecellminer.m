@@ -32,6 +32,10 @@ if (isfield(parameter.projekt, 'timeWindowMother') && ...
     parameter.gui.livecellminer.alignedLength = parameter.projekt.timeWindowMother + parameter.projekt.timeWindowDaughter + 30;
 end
 
+%% add path for tiff writing
+tiffPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'saveastiff_4.3' filesep];
+addpath(tiffPath);
+
 %% add path to distinguishable_colors script and the custom luts path
 lutPath = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'luts' filesep];
 addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'distinguishable_colors']);

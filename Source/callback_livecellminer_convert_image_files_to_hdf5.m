@@ -47,7 +47,11 @@ for e=experimentIDs
         experimentName = zgf_y_bez(3,e).name;
         positionName = zgf_y_bez(4,p).name;
 
-        inputFolders{currentFolder} = strrep([inputRootFolder{1} experimentName filesep positionName filesep], '\', '/');
+        if (contains(parameter.projekt.pfad, experimentName))
+            inputFolders{currentFolder} = strrep([inputRootFolder{1} positionName filesep], '\', '/');
+        else
+            inputFolders{currentFolder} = strrep([inputRootFolder{1} experimentName filesep positionName filesep], '\', '/');
+        end
 
         if (isfolder(inputFolders{currentFolder}))
             currentFolder = currentFolder+1;

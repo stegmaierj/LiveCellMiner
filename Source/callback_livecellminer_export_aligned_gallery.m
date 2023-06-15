@@ -37,6 +37,7 @@ end
 
 %% find synchronization
 synchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
+ind_auswahl_valid = ind_auswahl(d_orgs(ind_auswahl, 1, synchronizationIndex) > 0);
 
 if (synchronizationIndex == 0)
     disp('Perform synchronization first, as it is needed for the export of an aligned gallery. Synchronization can be done with LiveCellMiner -> Align');
@@ -50,7 +51,7 @@ imageWidth = size(dummyImage, 1);
 imageHeight = size(dummyImage, 2);
 
 %% get the number of cells
-numCells = length(ind_auswahl);
+numCells = length(ind_auswahl_valid);
 selectedTimePoints = parameter.gui.zeitreihen.segment_start:parameter.gui.zeitreihen.segment_ende;
 numTimePoints = length(selectedTimePoints);
 
@@ -59,7 +60,7 @@ maxPhase1 = 0;
 maxPhase2 = 0;
 maxPhase3 = 0;
 
-for i=ind_auswahl'
+for i=ind_auswahl_valid'
     currentStages = d_orgs(i, selectedTimePoints, synchronizationIndex);
 
     maxPhase1 = max(maxPhase1, sum(currentStages == 1));
@@ -73,13 +74,13 @@ resultImage = zeros(imageHeight*numCells, imageWidth*(maxPhase1+maxPhase2+maxPha
 
 for i=1:numCells
 
-    currentIndex = ind_auswahl(i);
+    currentIndex = ind_auswahl_valid(i);
     phase1Indices = selectedTimePoints(d_orgs(currentIndex, selectedTimePoints, synchronizationIndex) == 1);
     phase2Indices = selectedTimePoints(d_orgs(currentIndex, selectedTimePoints, synchronizationIndex) == 2);
     phase3Indices = selectedTimePoints(d_orgs(currentIndex, selectedTimePoints, synchronizationIndex) == 3);
 
     %% specify filename for the image data base
-    imageDataBase = callback_livecellminer_get_image_data_base_filename(i, parameter, code_alle, zgf_y_bez, bez_code);
+    imageDataBase = callback_livecellminer_get_image_data_base_filename(currentIndex, parameter, code_alle, zgf_y_bez, bez_code);
     if (~exist(imageDataBase, 'file'))
         fprintf('Image database file %s not found. Starting the conversion script to have it ready next time. Please be patient!', imageDataBase);
         callback_livecellminer_convert_image_files_to_hdf5;
@@ -160,4 +161,3 @@ options.overwrite = true;
 options.compress = 'lzw';
 
 saveastiff(uint16(resultImage), [path file], options);
-

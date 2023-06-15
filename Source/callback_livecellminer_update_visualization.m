@@ -103,9 +103,9 @@ if (parameters.dirtyFlag == true)
             end
             
             if (parameters.visualizationMode >= 4)
-                minValue2 = min(double(currentRawImage(:,:,j)), [], 'all');
-                maxValue2 = max(double(currentRawImage(:,:,j)), [], 'all');
-                normalizedPatch2 = (double(currentRawImage(:,:,j)) - minValue2) / (maxValue2 - minValue2);
+                minValue2 = min(double(currentRawImage2(:,:,j)), [], 'all');
+                maxValue2 = max(double(currentRawImage2(:,:,j)), [], 'all');
+                normalizedPatch2 = (double(currentRawImage2(:,:,j)) - minValue2) / (maxValue2 - minValue2);
             end
             
             %% set visualized image patches depending on current visualization mode
