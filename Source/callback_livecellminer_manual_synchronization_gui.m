@@ -85,6 +85,13 @@ parameters.showInfo = false;
 parameters.dirtyFlag = true;
 parameters.numStages = 2;
 parameters.showInfo = false;
+    
+%% convert parameters to the required format
+parameters.secondChannelFeatures.showMask = false;
+parameters.secondChannelFeatures.extractionMode = 0;
+parameters.secondChannelFeatures.strelType = 'disk';
+parameters.secondChannelFeatures.strelRadius = 2;
+parameters.secondChannelFeatures.toroidalPadding = 0;
 
 %% open the main figure
 parameters.mainFigure = figure;

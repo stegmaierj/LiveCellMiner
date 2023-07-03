@@ -55,6 +55,10 @@ if (parameters.dirtyFlag == true)
     parameters.montageImage = zeros(numCells * imageSize(2), numTimePoints*imageSize(1));
     parameters.labelImage = zeros(numCells * imageSize(2), numTimePoints*imageSize(1), 3);
 
+    if (parameters.secondChannelFeatures.showMask)
+        parameters.montageImageSecondChannel = zeros(numCells * imageSize(2), numTimePoints*imageSize(1));
+    end
+
     %% loop through all selected cells and add them to the montage
     currentCell = 1;
     for i=generate_rowvector(parameters.currentCells)
@@ -80,11 +84,16 @@ if (parameters.dirtyFlag == true)
                 currentRawImage2 = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'raw2'));
             catch
                 disp('Error: no secondary channel information available to display!');
+                return;
             end
         end
 
-        if (parameters.visualizationMode == 2 || parameters.visualizationMode == 3)
+        if (parameters.visualizationMode == 2 || parameters.visualizationMode == 3 || parameters.secondChannelFeatures.showMask)
             currentMaskImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'mask'));
+
+            if (parameters.secondChannelFeatures.showMask == true)
+                currentSecondChannelMaskImage = callback_livecellminer_compute_second_channel_mask(currentMaskImage, parameters.secondChannelFeatures.strelType, parameters.secondChannelFeatures.strelRadius, parameters.secondChannelFeatures.extractionMode, parameters.secondChannelFeatures.toroidalPadding);
+            end
         end
         
 
@@ -131,6 +140,10 @@ if (parameters.dirtyFlag == true)
                 parameters.montageImage(rangeY, rangeX, 3) = 0;
             end
             
+            if (parameters.secondChannelFeatures.showMask)
+                parameters.montageImageSecondChannel(rangeY, rangeX) = currentSecondChannelMaskImage(:,:,j);
+            end
+
 
             %% initialize the labelImage used for state annotation
             parameters.labelImage(rangeY, rangeX, 1) = i;
@@ -165,6 +178,17 @@ axis equal;
 axis tight;
 axis off;
 
+if (parameters.secondChannelFeatures.showMask)
+    hold on;
+    [B,L] = bwboundaries(parameters.montageImageSecondChannel);
+
+    for k = 1:length(B)
+       boundary = B{k};
+       plot(boundary(:,2), boundary(:,1), 'r', 'LineWidth', 0.5)
+    end
+    hold off;
+end
+
 %% set the figure title
 currentCellIndex = find(parameters.currentCells(1) == parameters.selectedCells);
 totalNumberOfCells = length(parameters.selectedCells);
@@ -198,7 +222,7 @@ for i=generate_rowvector(parameters.currentCells)
     end
 
     %% plot text label showing the experiment, position and plate
-    if (parameters.showInfo)
+    if (parameters.showInfo && oligoIdIndex > 0)
         positionName = zgf_y_bez(positionIdIndex, code_alle(i, positionIdIndex)).name;
         oligoName = zgf_y_bez(oligoIdIndex, code_alle(i, oligoIdIndex)).name;
         text(0.3*parameter.projekt.patchWidth, (currentCell-1)*parameter.projekt.patchWidth+0.25*parameter.projekt.patchWidth, strrep(['Exp. ' num2str(code_alle(i, experimentIdIndex)) ', ' positionName '(' oligoName ')'], '_', '-'), 'Color','white', 'BackgroundColor', [0,0,0,0.5]);

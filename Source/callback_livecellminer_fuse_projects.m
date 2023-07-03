@@ -54,10 +54,10 @@ for i=1:length(inputFolders)
     currentInputFolder = inputFolders{i};
     
     splitString = strsplit(currentInputFolder(1:end-1), '/');
-    microscopeName = splitString{end-2};
+    microscopeName = splitString{end-2};    
     experimentName = splitString{end-1};
     positionName = splitString{end};
-    [microscopeId, experimentId, positionId] = callback_livecellminer_get_output_variables(microscopeList, experimentList, positionList, microscopeName, experimentName, positionName);
+    [microscopeId, experimentId, positionId] = callback_livecellminer_get_output_variables(microscopeList, experimentList, positionList, microscopeName, experimentName, positionName);    
     
     %% load the current project
     projectName = [currentInputFolder experimentName '_' positionName '_SciXMiner.prjz'];

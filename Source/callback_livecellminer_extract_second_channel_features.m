@@ -31,7 +31,15 @@ addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep
 %% segmentation mode to be used (extend, shring, toroidal)
 dlgtitle = '2nd Channel Feature Extraction:';
 dims = [1 100];
-additionalUserSettings = inputdlg({'Segmentation Mode (0: Extend, 1: Shrink, 2: Toroidal)', 'Structuring Element (e.g., disk, square, diamond)', 'Structuring Element Radius', 'Extract Advanced Features?'}, dlgtitle, dims, {'0', 'disk', '2', '0'});
+
+if (isfield(parameters, 'secondChannelFeatures'))
+    selectedParameters = {num2str(parameters.secondChannelFeatures.extractionMode), parameters.secondChannelFeatures.strelType, num2str(parameters.secondChannelFeatures.strelRadius), num2str(parameters.secondChannelFeatures.toroidalPadding), '0'};
+else
+    selectedParameters = {'0', 'disk', '2', '0', '0'};
+end
+
+additionalUserSettings = inputdlg({'Segmentation Mode (0: Extend, 1: Shrink, 2: Toroidal, 3: Padded Toroidal)', 'Structuring Element (e.g., disk, square, diamond)', 'Structuring Element Radius', 'Padding of Toroidal Region', 'Extract Advanced Features?'}, ...
+                                  dlgtitle, dims, selectedParameters);
 if (isempty(additionalUserSettings))
     disp('No feature extraction settings provided, stopping processing ...');
     return;
@@ -40,9 +48,9 @@ else
     extractionMode = str2double(additionalUserSettings{1});
     strelType = additionalUserSettings{2};
     strelRadius = str2double(additionalUserSettings{3});
-    extractAdvancedFeatures = str2double(additionalUserSettings{4}) > 0;
-    structuringElement = strel(strelType, strelRadius);
-    
+    toroidalPadding = str2double(additionalUserSettings{4});
+    extractAdvancedFeatures = str2double(additionalUserSettings{5}) > 0;
+        
     %% spefify feature name parts
     if (extractionMode == 0)
         extractionSuffix = 'Ext';
@@ -133,14 +141,8 @@ parfor c=1:numCells
         rawImage1 = rawImages1(:,:,t);
         rawImage2 = rawImages2(:,:,t);
         
-        %% compute the mask
-        if (extractionMode == 0)
-            maskImageCh2 = imdilate(maskImage, structuringElement);
-        elseif (extractionMode == 1)
-            maskImageCh2 = imerode(maskImage, structuringElement);
-        else
-            maskImageCh2 = imdilate(maskImage, structuringElement) - maskImage;
-        end
+        maskImageCh2 = callback_livecellminer_compute_second_channel_mask(maskImage, strelType, strelRadius, extractionMode, toroidalPadding)
+        
         
         %% compute the current feature
         currentRegionProps = regionprops(maskImageCh2, 'PixelIdxList', 'Centroid');

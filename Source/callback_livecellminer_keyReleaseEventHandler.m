@@ -82,7 +82,7 @@ function callback_livecellminer_keyReleaseEventHandler(~,evt)
         
     %% display help dialog box
     elseif(strcmp(evt.Character, 'h'))
-        showHelp;
+        callback_livecellminer_showHelp;
     
 	%% export the csv file and save the current workspace    
     elseif(strcmp(evt.Character, 's'))
@@ -96,6 +96,35 @@ function callback_livecellminer_keyReleaseEventHandler(~,evt)
     %% toggle add/delete/deselect mode
     elseif (strcmp(evt.Character, 'a'))
         parameters.axesEqual = ~parameters.axesEqual;
+        callback_livecellminer_update_visualization;
+
+    elseif (strcmp(evt.Character, 'm'))
+    
+        parameters.dirtyFlag = true;
+        parameters.secondChannelFeatures.showMask = ~parameters.secondChannelFeatures.showMask;
+        callback_livecellminer_update_visualization;
+
+    elseif (strcmp(evt.Character, 'p'))
+    
+        parameters.dirtyFlag = true;
+
+        %% segmentation mode to be used (extend, shring, toroidal)
+        dlgtitle = '2nd Channel Feature Extraction:';
+        dims = [1 100];
+        additionalUserSettings = inputdlg({'Segmentation Mode (0: Extend, 1: Shrink, 2: Toroidal, 3: Padded Toroidal)', 'Structuring Element (e.g., disk, square, diamond)', 'Structuring Element Radius', 'Padding of Toroidal Region'}, ...
+                                           dlgtitle, dims, {num2str(parameters.secondChannelFeatures.extractionMode), parameters.secondChannelFeatures.strelType, num2str(parameters.secondChannelFeatures.strelRadius), num2str(parameters.secondChannelFeatures.toroidalPadding)});
+        if (isempty(additionalUserSettings))
+            disp('No feature extraction settings provided, stopping processing ...');
+            return;
+        else
+            %% convert parameters to the required format
+            parameters.secondChannelFeatures.extractionMode = str2double(additionalUserSettings{1});
+            parameters.secondChannelFeatures.strelType = additionalUserSettings{2};
+            parameters.secondChannelFeatures.strelRadius = str2double(additionalUserSettings{3});
+            parameters.secondChannelFeatures.toroidalPadding = str2double(additionalUserSettings{4});
+            parameters.secondChannelFeatures.structuringElement = strel(parameters.secondChannelFeatures.strelType, parameters.secondChannelFeatures.strelRadius);
+        end
+
         callback_livecellminer_update_visualization;
 
     %% toggle info text

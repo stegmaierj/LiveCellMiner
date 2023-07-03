@@ -36,25 +36,40 @@ end
 inputRootFolder{1} = [inputRootFolder{1} filesep];
 
 %% check if current input folder is part of the project
+microscopeIDs = unique(code_alle(:,2));
 experimentIDs = unique(code_alle(:,3));
 positionIDs = unique(code_alle(:,4));
 
 clear inputFolders;
 currentFolder = 1;
 
-for e=experimentIDs
-    for p=positionIDs'
-        experimentName = zgf_y_bez(3,e).name;
-        positionName = zgf_y_bez(4,p).name;
+for m=microscopeIDs
+    for e=experimentIDs
+        for p=positionIDs'
+            microscopeName = zgf_y_bez(2,m).name;
+            experimentName = zgf_y_bez(3,e).name;
+            positionName = zgf_y_bez(4,p).name;
 
-        if (contains(parameter.projekt.pfad, experimentName))
-            inputFolders{currentFolder} = strrep([inputRootFolder{1} positionName filesep], '\', '/');
-        else
-            inputFolders{currentFolder} = strrep([inputRootFolder{1} experimentName filesep positionName filesep], '\', '/');
-        end
-
-        if (isfolder(inputFolders{currentFolder}))
-            currentFolder = currentFolder+1;
+            inputFolders{currentFolder} = callback_livecellminer_find_position_folder(inputRootFolder{1}, microscopeName, experimentName, positionName);
+    
+%             inputFolders{currentFolder} = strrep(inputRootFolder{1}, '\', '/');
+%     
+%             isInMicroscopeFolder = contains(parameter.projekt.pfad, microscopeName);
+%             isInExperimentFolder = contains(parameter.projekt.pfad, experimentName);
+% 
+%             if (~isInMicroscopeFolder)
+%                 inputFolders{currentFolder} = [inputFolders{currentFolder} microscopeName filesep];
+%             end
+% 
+%             if (~isInExperimentFolder)
+%                 inputFolders{currentFolder} = [inputFolders{currentFolder} experimentName filesep];
+%             end
+%     
+%             inputFolders{currentFolder} = strrep([inputFolders{currentFolder} positionName filesep], '\', '/');
+    
+            if (isfolder(inputFolders{currentFolder}))
+                currentFolder = currentFolder+1;
+            end
         end
     end
 end

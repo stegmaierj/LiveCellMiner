@@ -64,7 +64,11 @@ function [inputFolders, microscopeList, experimentList, positionList] = callback
         %% get the list of subdirectories
         initialSubdirList = dir([inputRootFolder filesep '**']);
         subdirList = cell(1,1);
-        currentSubDir = 1;
+
+        %% add root folder (in case the desired positions were directly selected)
+        subdirList{1} = inputRootFolder;
+
+        currentSubDir = 2;
         for i=1:length(initialSubdirList)
            if (initialSubdirList(i).isdir && ~strcmp(initialSubdirList(i).name, '.') && ~strcmp(initialSubdirList(i).name, '..'))
                subdirList{currentSubDir} = [initialSubdirList(i).folder filesep initialSubdirList(i).name];
