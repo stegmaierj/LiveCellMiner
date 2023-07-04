@@ -58,6 +58,8 @@ else
         extractionSuffix = 'Shr';
     elseif (extractionMode == 2)
         extractionSuffix = 'Tor';
+    elseif (extractionMode == 3)
+        extractionSuffix = ['Tor-pad=' num2str(strelRadius)];
     else
         extractionSuffix = '';
     end
