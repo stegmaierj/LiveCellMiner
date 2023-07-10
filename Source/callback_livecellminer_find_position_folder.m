@@ -22,6 +22,7 @@ function positionFolder = callback_livecellminer_find_position_folder(projectRoo
     end
 
     positionFolder = [positionFolder positionName filesep];
+    positionFolder = strrep(positionFolder, '\', '/');
 
     if (~isfolder(positionFolder))
         fprintf('Error: position was not found at the location %s, please double-check folder structure!', positionFolder);

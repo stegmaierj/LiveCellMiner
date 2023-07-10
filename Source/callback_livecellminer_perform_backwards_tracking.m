@@ -41,11 +41,13 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
         validPositions = squeeze(d_orgs(validIndices, i, :));
 
         if (parameters.seedBasedDetection == true)
+                    
+            kdtree = KDTreeSearcher(validPositions(:,3:4));
+            [nnIndices, nnDistances] = knnsearch(kdtree, validPositions(:,3:4), 'K', 8);
+
             %% perform automatic cluster cutoff calculation
             if (parameters.clusterCutoff < 0)
-                kdtree = KDTreeSearcher(validPositions(:,3:4));
-
-                [~, nnDistances] = knnsearch(kdtree, validPositions(:,3:4), 'K', 8);
+                
                 distances = mean(nnDistances(:,3:end), 2);
 
                 %currentClusterCutoff = min(0.33 * mean(distances), parameters.maxRadius);
@@ -64,6 +66,23 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
         Z = linkage(validPositions(:,3:4), 'ward');
         clusterIndices = cluster(Z, 'cutoff', currentClusterCutoff, 'criterion', 'distance');
 
+        %% find outliers that are forming a cluster of size 1.
+        numCells = length(validIndices);
+        numForcedLinks = 0;
+
+        if (parameters.forceNNLinking == true && i < numFrames)
+            for j=unique(clusterIndices)'
+                currentClusterIndices = find(clusterIndices == j);
+                
+                if (length(currentClusterIndices) == 1 && parameters.maxRadius >= nnDistances(currentClusterIndices, 2) && validPositions(currentClusterIndices, parameters.trackingIdIndex) > 0)
+
+
+                    clusterIndices(currentClusterIndices) = clusterIndices(nnIndices(currentClusterIndices,2));
+                    numForcedLinks = numForcedLinks + 1;
+                end
+            end
+        end
+
         %% initialize track ids at the last frame
         %% propagate seeds to the previous frame using optical flow
         %% cluster seeds in the previous frame
@@ -81,10 +100,16 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
                 d_orgs_new(currentTrackId, i, parameters.trackingIdIndex) = currentTrackId;
                 currentTrackId = currentTrackId + 1;
 
-                %% if a single tracking id exists already, use it
+            %% if a single tracking id exists already, use it
             elseif (sum(trackingIds > 0) == 1)
                 existingTrackingId = max(validPositions(currentIndices, parameters.trackingIdIndex));
-                d_orgs_new(existingTrackingId, i, :) = mean(validPositions(currentIndices, :), 1);
+                
+                untrackedIndices = (validPositions(currentIndices, parameters.trackingIdIndex) == 0);
+                
+                d_orgs_new(existingTrackingId, i, :) = mean(validPositions(currentIndices(untrackedIndices), :), 1);
+
+
+
                 d_orgs_new(existingTrackingId, i, parameters.trackingIdIndex) = existingTrackingId;
                 if (i<numFrames)
                     d_orgs_new(existingTrackingId, i+1, parameters.predecessorIdIndex) = existingTrackingId;
@@ -96,7 +121,7 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
                     %d_orgs_new(existingTrackingId, i+1, trackingIdIndex) = 0;
                 end
 
-                %% if multiple ids larger than zero exist, perform a merge
+            %% if multiple ids larger than zero exist, perform a merge
             else
                 d_orgs_new(currentTrackId, i, :) = mean(validPositions(currentIndices, :), 1);
                 d_orgs_new(currentTrackId, i, parameters.trackingIdIndex) = currentTrackId;
@@ -107,6 +132,11 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
                 end
 
                 currentTrackId = currentTrackId + 1;
+            end
+
+            %% extend d_orgs_new if more than the preinitialized number of tracks is found
+            if (currentTrackId >= size(d_orgs_new, 1))
+                d_orgs_new(currentTrackId + 50000, :, :) = 0;
             end
         end
 
@@ -156,4 +186,7 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
         %% display progress
         fprintf('Finished tracking for frame %i (%.2f %%)\n', i, 100*(numFrames-i)/numFrames);
     end
+
+    %% prune the result structure to only valid tracks
+    d_orgs_new(currentTrackId:end, :, :) = [];
 end

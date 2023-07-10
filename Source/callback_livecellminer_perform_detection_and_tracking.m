@@ -34,6 +34,8 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     [d_orgs] = callback_livecellminer_refine_detected_seeds(d_orgs, parameters);
 
     %[d_orgs_new] = PerformTracking(d_orgs, settings);
+
+    save([parameters.outputFolder 'trackingProject_DEBUG.prjz'], '-mat', 'd_orgs', 'parameters', '-v7.3');
     
     if (parameters.performSegmentationPropagationTracking == true)
         d_orgs = callback_livecellminer_perform_segmentation_based_tracking(parameters);

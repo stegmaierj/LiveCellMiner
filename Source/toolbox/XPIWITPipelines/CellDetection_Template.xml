@@ -90,8 +90,8 @@
                 <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
                 <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
                 <parameter key="Step" value="1.0" type="1" description="Step width from min to max sigma."/>
-                <parameter key="MinSigma" value="4" type="1" description="Minimum sigma value."/>
-                <parameter key="MaxSigma" value="6" type="1" description="Maximum sigma value."/>
+                <parameter key="MinSigma" value="%LOG_MIN_SIGMA%" type="1" description="Minimum sigma value."/>
+                <parameter key="MaxSigma" value="%LOG_MAX_SIGMA%" type="1" description="Maximum sigma value."/>
                 <parameter key="NormalizeAcrossScales" value="1" type="3" description="Normalize scales."/>
                 <parameter key="NormalizationExponent" value="2" type="1" description="Normalization exponent used for the scale space normalization."/>
                 <parameter key="WriteIntermediateResults" value="0" type="3" description="If enabled, the intermediate LoG filtered images are also saved (32bit)."/>
@@ -115,7 +115,7 @@
                 <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
                 <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
                 <parameter key="KeyPointThreshold" value="-1" type="1" description="Minium value for extrema. If set to -1 an automatic selection based on the mean intensity and the intensity standard deviation are used."/>
-                <parameter key="StdDevMultiplicator" value="2" type="1" description="Multiplicator for the standard deviation. If automatic threshold selection is used, all seeds below (mu + StdDevMultiplicator * sigma) are rejected. "/>
+                <parameter key="StdDevMultiplicator" value="%LOG_STD_THRESHOLD%" type="1" description="Multiplicator for the standard deviation. If automatic threshold selection is used, all seeds below (mu + StdDevMultiplicator * sigma) are rejected. "/>
                 <parameter key="QuantileThreshold" value="-1" type="1" description="If set to a value between 0 and 1, values within the respective quantile are rejected. I.e. if set to 0.95 all seeds with intensity in the 95% quantile are rejected."/>
                 <parameter key="KeyPointIndexOffset" value="0" type="2" description="Adds an offset to the coordinates of each seed point. E.g. useful for MATLABs 1-based indexing."/>
                 <parameter key="Neighborhood3D" value="1" type="2" description="0 to search in 2D only, 1 for searching in 3D only and 2 for searching in both 2D and 3D."/>

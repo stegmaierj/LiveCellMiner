@@ -82,7 +82,7 @@ performanceLog = fopen([outputRoot 'performanceLog.csv'], 'wb');
 %% prepare question dialog to ask for the physical spacing of the experiments
 dlgtitle = 'Additional settings:';
 dims = [1 100];
-additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?', 'Time Window Before Mitosis (min)', 'Time Window After Mitosis (min)', 'Diameter (Cellpose)', 'Tracking Method (0: Seed Clustering, 1: Segmentation Propagation)'}, dlgtitle, dims, {'', '', '0', '0', '150', '180', '30', '0'});
+additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?', 'Time Window Before Mitosis (min)', 'Time Window After Mitosis (min)', 'Diameter (Cellpose)', 'Tracking Method (0: Seed Clustering, 1: Segmentation Propagation)', 'Cluster Cutoff Radius for Tracking (auto: -1, manual: cell diameter in px)', 'Force NN-based Linking (enable for large movements)', 'Max. Distance for Forced Linking (e.g. half average the distance between neighboring cells in px)', 'Small Cells? (if enabled, the seed detection is parametrized for smaller cells)'}, dlgtitle, dims, {'', '', '0', '0', '150', '180', '30', '0', '-1', '0', '50', '0'});
 if (isempty(additionalUserSettings))
     disp('No additional settings provided, stopping processing ...');
     return;
@@ -176,19 +176,31 @@ for i=1:length(inputFolders)
     parameters.singleCellCCDisableRadius = 3;     %% the number of frames before/after the division time point where the single connected component segmentation is disabled (used for early ana segmentation)
     parameters.patchWidth = 96;                   %% patch width used for extracting the image snippets
     parameters.patchRescaleFactor = 0.415;        %% use spacing of confocal images as reference, i.e., they remain unscaled whereas widefield images are enlarged to ideally have a single cell in the center
-    parameters.maxRadius = 15;                    %% maximum radius to search for neighboring cells during tracking
     parameters.diameterCellpose = str2double(additionalUserSettings{7});  %% diameter parameter used for the cellpose segmentation
     parameters.clusterRadiusIndex = 9;            %% index to the cluster radius feature
     parameters.trackingIdIndex = 10;              %% index to the tracking id
     parameters.predecessorIdIndex = 11;           %% index to the predecessor
     parameters.posIndices = 3:5;                  %% indices to the positions
     parameters.prevPosIndices = 6:8;              %% indices to the previous positions
-    parameters.clusterCutoff = -1;                %% cluster cutoff (-1 for automatic detection based on the nearest neighbor distribution)
+    parameters.clusterCutoff = str2double(additionalUserSettings{9}); %% cluster cutoff (-1 for automatic detection based on 0.5 * average nearest neighbor distance of the 8 nearest neighbors)
+    parameters.forceNNLinking = str2double(additionalUserSettings{10});
+    parameters.maxRadius = str2double(additionalUserSettings{11});  %% maximum radius to search for neighboring cells during tracking
     parameters.numFrames = inf;                   %% number of frames in the entire sequence
     parameters.numRefinementSteps = 0;            %% if larger than 0, multiple rounds of centroid relocation to the weighted centroid are performed
     parameters.refinementRadius = 5;              %% radius for computing the weighted centroid
     parameters.allowedEmptyFrames = 2;            %% the maximum number of allowed empty frames. If an empty frame is encountered, the detections of the next frame are used.
     parameters.debugFigures = false;              %% if enabled, debug figures will be shown
+    parameters.smallCells = str2double(additionalUserSettings{12}); 
+
+    if (parameters.smallCells == true)
+        parameters.seedDetectionStdThreshold = 0.0;   %% LoG-based seed detection uses only seeds that exceed the mean intensity + x*stdDev.
+        parameters.logMinSigma = 1.0;                 %% Minimum std. dev. used by the LoG-based seed detection
+        parameters.logMaxSigma = 6.0;                 %% Maximum std. dev. used by the LoG-based seed detection
+    else
+        parameters.seedDetectionStdThreshold = 2.0;   %% LoG-based seed detection uses only seeds that exceed the mean intensity + x*stdDev.
+        parameters.logMinSigma = 4.0;                 %% Minimum std. dev. used by the LoG-based seed detection
+        parameters.logMaxSigma = 6.0;                 %% Maximum std. dev. used by the LoG-based seed detection
+    end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,20 +209,21 @@ for i=1:length(inputFolders)
     parameters.XPIWITPath = XPIWITPath;
     parameters.XPIWITDetectionPipeline = [strrep(parameter.allgemein.pfad_gaitcad, '\', '/') '/application_specials/livecellminer/toolbox/XPIWITPipelines/CellDetection_micronsPerVoxel=' micronsPerPixel{experimentIndex} '.xml'];
     
-    if (~exist(parameters.XPIWITDetectionPipeline, 'file'))
-        fileIDTemplate = fopen([strrep(parameter.allgemein.pfad_gaitcad, '\', '/') '/application_specials/livecellminer/toolbox/XPIWITPipelines/CellDetection_Template.xml'], 'rb');
-        fileID = fopen(parameters.XPIWITDetectionPipeline, 'wb');
+    fileIDTemplate = fopen([strrep(parameter.allgemein.pfad_gaitcad, '\', '/') '/application_specials/livecellminer/toolbox/XPIWITPipelines/CellDetection_Template.xml'], 'rb');
+    fileID = fopen(parameters.XPIWITDetectionPipeline, 'wb');
 
-        while ~feof(fileIDTemplate)
-            currentLine = fgetl(fileIDTemplate);
-            currentLine = strrep(currentLine, '%IMAGE_SPACING%', micronsPerPixel{experimentIndex});
+    while ~feof(fileIDTemplate)
+        currentLine = fgetl(fileIDTemplate);
+        currentLine = strrep(currentLine, '%IMAGE_SPACING%', micronsPerPixel{experimentIndex});
+        currentLine = strrep(currentLine, '%LOG_STD_THRESHOLD%', num2str(parameters.seedDetectionStdThreshold));
+        currentLine = strrep(currentLine, '%LOG_MIN_SIGMA%', num2str(parameters.logMinSigma));
+        currentLine = strrep(currentLine, '%LOG_MAX_SIGMA%', num2str(parameters.logMaxSigma));
 
-            fprintf(fileID, '%s\n', currentLine);
-        end
-
-        fclose(fileIDTemplate);
-        fclose(fileID);
+        fprintf(fileID, '%s\n', currentLine);
     end
+
+    fclose(fileIDTemplate);
+    fclose(fileID);
     
     if (~exist(parameters.XPIWITDetectionPipeline, 'file'))
         disp(['ERROR: Couldn''t find processing pipeline ' parameters.XPIWITDetectionPipeline ' . Make sure the file exists or create a pipeline for the selected physical spacing!']);
