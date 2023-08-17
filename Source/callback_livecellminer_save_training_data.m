@@ -45,22 +45,18 @@ if (exist(dataPath, 'file'))
 end
 
 %% loop through all manually corrected cells and add them to the training data
-oldSelection = parameter.gui.merkmale_und_klassen.ind_zr;
-set_textauswahl_listbox(gaitfindobj('CE_Auswahl_EM'),{'manuallyConfirmed'});eval(gaitfindobj_callback('CE_Auswahl_EM'));
-manuallyConfirmedIndex = parameter.gui.merkmale_und_klassen.ind_em;
-
-%% restore the old selection
-set(gaitfindobj('CE_Auswahl_EM'),'value', oldSelection);
-aktparawin;
+manuallyConfirmedIndex = callback_livecellminer_find_single_feature(dorgbez, 'manuallyConfirmed');
+if (manuallyConfirmedIndex == 0)
+    disp('No confirmed training data available yet! Please label a few image snippets first using the annotation GUI.');
+    return;
+end
 
 %% find the synchronization index
-oldSelection = parameter.gui.merkmale_und_klassen.ind_zr;
-set_textauswahl_listbox(gaitfindobj('CE_Auswahl_ZR'),{'manualSynchronization'});eval(gaitfindobj_callback('CE_Auswahl_ZR'));
-synchronizationIndex = parameter.gui.merkmale_und_klassen.ind_zr;
-
-%% restore the old selection
-set(gaitfindobj('CE_Auswahl_ZR'),'value', oldSelection);
-aktparawin;
+synchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
+if (synchronizationIndex == 0)
+    disp('No manually synced trajectories available! Please label a few image snippets first using the annotation GUI.');
+    return;
+end
 
 %% ask which data to save
 numTotalAnnotations = sum(d_org(:, manuallyConfirmedIndex) > 0);
@@ -72,7 +68,7 @@ answer = questdlg(sprintf('Which annotations would you like to save?\n\nAll Anno
 if (strcmp(answer, 'All'))
     ind_auswahl = (1:size(d_org,1))';
     fprintf('Exporting all %i manual annotations ...\n', numTotalAnnotations);
-elseif (strcmp(answer, selectedAnnotationsString))
+elseif (strcmp(answer, 'Selected'))
     fprintf('Exporting %i selected manual annotations ...\n', numSelectedAnnotations);
 else
     disp('Stopping export ...\n');

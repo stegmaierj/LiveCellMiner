@@ -30,9 +30,17 @@ debugFigures = false;
 maxMAShift = 3;
 
 %% load the previous data
-syncMethod = questdlg('Which synchronization method do you want to use?', 'Select Synchronization Mode', 'Classical', 'Classical + Auto Rejection', 'LSTM + HMM + Auto Rejection', 'Classical + Auto Rejection');
+syncMethods = {'Classical', 'Classical + Auto Rejection', 'LSTM + HMM + Auto Rejection', 'Hybrid (Classical+Auto Rejection for MA; LSTM + HMM for IP)'};
+[selectedSyncMethod, ~] = listdlg('Name', 'Select the sync. method to use!', 'SelectionMode','single','ListString', syncMethods, 'ListSize',[350, 100]);
+if (isempty(selectedSyncMethod))
+    disp('No synchronization method selected, aborting ...');
+    return;
+end
+
+syncMethod = syncMethods{selectedSyncMethod};
 useClassicalSync = ~isempty(strfind(syncMethod, 'Classical')); %#ok<STREMP> 
 useAutoRejection = ~isempty(strfind(syncMethod, 'Auto Rejection')); %#ok<STREMP> 
+useHybrid = ~isempty(strfind(syncMethod, 'Hybrid')); %#ok<STREMP> 
 
 %% specify image data base
 imageDataBase = [parameter.projekt.pfad filesep parameter.projekt.datei '.h5'];
@@ -100,6 +108,13 @@ for i=1:2:size(d_orgs,1)
        continue; 
     end
     
+    %% initialize transition time points for the different methods
+    IPClassical = -1;
+    IPLSTM = -1;
+    MAClassical = -1;
+    MALSTM = -1;
+    InvalidLSTMSync = false;
+
     %% check if classifier exists
     if (exist('classificationLSTM', 'var') && useAutoRejection == true)
         
@@ -111,114 +126,124 @@ for i=1:2:size(d_orgs,1)
         end
 
         currentFeaturesCNN = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn'));
-
-%         for j=1:numFrames
-%             if (~isempty(maskedImageCNNFeatures{i, j}))
-%                 currentFeaturesCNN(:,j) = maskedImageCNNFeatures{i, j};
-%             else
-%                 validCNNFeatures = false;
-%                 break;
-%             end
-%         end 
         validTrajectoryProbability = predict(classificationLSTM, currentFeaturesCNN);
-        
+
+        %% check if LSTM predicted an invalid track
         if (validTrajectoryProbability(1) > validTrajectoryProbability(2))
-            %% set the synchronization time points
-            d_orgs(i:(i+1), :, synchronizationIndex) = -1;
-            invalidSynchronization = invalidSynchronization+2;
-            continue;
+            InvalidLSTMSync = true;
         end
                 
         %% if LSTM + HMM sync is selected, use the pretrained network for prediction
-        if (useClassicalSync == false)
+        if (useClassicalSync == false || useHybrid == true)
             autoSyncPrediction = predict(regressionLSTM, currentFeaturesCNN);
             autoSyncPrediction = round(autoSyncPrediction);
             autoSyncPrediction(autoSyncPrediction < 0) = 0;
             autoSyncPrediction(autoSyncPrediction > 3) = 3;
             autoSyncPredictionHMMCorrected = callback_livecellminer_perform_HMM_prediction(autoSyncPrediction);
             
+            bestIP = min(find(autoSyncPredictionHMMCorrected == 2)); %#ok<MXFND> 
             bestMA = min(find(autoSyncPredictionHMMCorrected == 3)); %#ok<MXFND> 
             
+            %% check if track is reasonable and contains all stages
             if (length(unique(autoSyncPredictionHMMCorrected)) < 3 || ...
                 sum(autoSyncPredictionHMMCorrected <= 0) > 0 || ...
-                sum(autoSyncPredictionHMMCorrected==1) > parameter.gui.livecellminer.IPTransition || ...
-                abs(bestMA - MATransition) > maxMAShift)
-                d_orgs(i:(i+1), :, synchronizationIndex) = -1;
-                invalidSynchronization = invalidSynchronization+2;
-                continue;
+                sum(autoSyncPredictionHMMCorrected==1) > parameter.gui.livecellminer.IPTransition)
+                InvalidLSTMSync = true;
             end
-            
-            d_orgs(i, :, synchronizationIndex) = autoSyncPredictionHMMCorrected;
-            d_orgs(i+1, :, synchronizationIndex) = autoSyncPredictionHMMCorrected;
-            validSynchronization = validSynchronization+2;
-            continue;
+
+            %% save best IP and MA predicted by the LSTM
+            IPLSTM = bestIP;
+            MALSTM = bestMA;
         end
     end
    
-    %% Perform classical synchronization
-    %% identify the current values for the std. dev. feature
-    currentValues1 = squeeze(d_orgs(i,:, clusterFeatures));
-    currentValues2 = squeeze(d_orgs(i+1,:, clusterFeatures));
-    currentValues = zscore(0.5 * (currentValues1 + currentValues2));
-
-    %% find best IP transition based on extensive search for the threshold value that
-    %% minimizes intraclass variance
-    bestIP = 1;
-    bestScore = inf;
-    for m=1:(MATransition-1)
-        intFrames = 1:m;
-        proMetFrames = (m+1):MATransition;
-
-        meanInt = mean(currentValues(intFrames, :));
-        meanProMet = mean(currentValues(proMetFrames, :));
-
-        currentScore = 0;
-        for o=intFrames
-            currentScore = currentScore + sum((currentValues(o, :) - meanInt) .^ 2);
+    if (useClassicalSync)
+        %% Perform classical synchronization
+        %% identify the current values for the std. dev. feature
+        currentValues1 = squeeze(d_orgs(i,:, clusterFeatures));
+        currentValues2 = squeeze(d_orgs(i+1,:, clusterFeatures));
+        currentValues = zscore(0.5 * (currentValues1 + currentValues2));
+    
+        %% find best IP transition based on extensive search for the threshold value that
+        %% minimizes intraclass variance
+        bestIP = 1;
+        bestMA = MATransition;
+        bestScore = inf;
+        for m=1:(MATransition-1)
+            intFrames = 1:m;
+            proMetFrames = (m+1):MATransition;
+    
+            meanInt = mean(currentValues(intFrames, :));
+            meanProMet = mean(currentValues(proMetFrames, :));
+    
+            currentScore = 0;
+            for o=intFrames
+                currentScore = currentScore + sum((currentValues(o, :) - meanInt) .^ 2);
+            end
+            for o=proMetFrames
+                currentScore = currentScore + sum((currentValues(o, :) - meanProMet) .^ 2);
+            end
+    
+            if (currentScore < bestScore)
+                bestScore = currentScore;
+                bestIP = m;
+            end          
         end
-        for o=proMetFrames
-            currentScore = currentScore + sum((currentValues(o, :) - meanProMet) .^ 2);
+    
+        %% remember the best IP transition of the classical method
+        IPClassical = bestIP;
+    
+        %% apply heuristic for the meta to anaphase transition
+        anaPhaseFrames = MATransition:numFrames;
+    
+        %% use chromatin distance as a criterion to determine the late ana phase
+        if (parameter.gui.livecellminer.sisterDistanceThreshold >= 0)
+            sisterDistance = sqrt(sum((squeeze(d_orgs(i, :, positionXIndex:positionYIndex)) - squeeze(d_orgs(i+1, :, positionXIndex:positionYIndex))).^2, 2));
+            bestMA = max(MATransition, min(find(sisterDistance >= parameter.gui.livecellminer.sisterDistanceThreshold))-1); %#ok<MXFND> 
+            MAClassical = bestMA;
+        else
+            bestMA = MATransition;
+            
+            %% check if current sync point is early anaphase
+            area11 = d_orgs(i, anaPhaseFrames(1), areaIndex);
+            area12 = d_orgs(i, anaPhaseFrames(2), areaIndex);
+            area21 = d_orgs(i+1, anaPhaseFrames(1), areaIndex);
+            area22 = d_orgs(i+1, anaPhaseFrames(2), areaIndex);
+            intensity11 = d_orgs(i, anaPhaseFrames(1), meanIntensityIndex);
+            intensity12 = d_orgs(i, anaPhaseFrames(2), meanIntensityIndex);
+            intensity21 = d_orgs(i+1, anaPhaseFrames(1), meanIntensityIndex);
+            intensity22 = d_orgs(i+1, anaPhaseFrames(2), meanIntensityIndex);
+            
+            %% shift meta-ana transition time point by a frame if:
+            %% 1. the area of both daughters is smaller in the next frame OR
+            %% 2. the intensity of both daughters is higher in the next frame
+            %% both cases indicate a stronger compaction of the chromatin and a
+            %% void selecting early ana phase as the transition.
+            if ((area11 > area12 || area21 > area22) || ...
+                (intensity11 < intensity12 && intensity21 < intensity22))
+                bestMA = bestMA + 1;
+            end
+            MAClassical = bestMA;
         end
-
-        if (currentScore < bestScore)
-            bestScore = currentScore;
-            bestIP = m;
-        end          
     end
 
-    %% apply heuristic for the meta to anaphase transition
-    anaPhaseFrames = MATransition:numFrames;
-
-    %% use chromatin distance as a criterion to determine the late ana phase
-    if (parameter.gui.livecellminer.sisterDistanceThreshold >= 0)
-        sisterDistance = sqrt(sum((squeeze(d_orgs(i, :, positionXIndex:positionYIndex)) - squeeze(d_orgs(i+1, :, positionXIndex:positionYIndex))).^2, 2));
-        bestMA = max(MATransition, min(find(sisterDistance >= parameter.gui.livecellminer.sisterDistanceThreshold))-1); %#ok<MXFND> 
-    else
-        bestMA = MATransition;
-        
-        %% check if current sync point is early anaphase
-        area11 = d_orgs(i, anaPhaseFrames(1), areaIndex);
-        area12 = d_orgs(i, anaPhaseFrames(2), areaIndex);
-        area21 = d_orgs(i+1, anaPhaseFrames(1), areaIndex);
-        area22 = d_orgs(i+1, anaPhaseFrames(2), areaIndex);
-        intensity11 = d_orgs(i, anaPhaseFrames(1), meanIntensityIndex);
-        intensity12 = d_orgs(i, anaPhaseFrames(2), meanIntensityIndex);
-        intensity21 = d_orgs(i+1, anaPhaseFrames(1), meanIntensityIndex);
-        intensity22 = d_orgs(i+1, anaPhaseFrames(2), meanIntensityIndex);
-        
-        %% shift meta-ana transition time point by a frame if:
-        %% 1. the area of both daughters is smaller in the next frame OR
-        %% 2. the intensity of both daughters is higher in the next frame
-        %% both cases indicate a stronger compaction of the chromatin and a
-        %% void selecting early ana phase as the transition.
-        if ((area11 > area12 || area21 > area22) || ...
-            (intensity11 < intensity12 && intensity21 < intensity22))
-            bestMA = bestMA + 1;
-        end
+    %% select the transition time points to be used depending on the selected method
+    if (strcmp('Classical', syncMethod) || strcmp('Classical + Auto Rejection', syncMethod))
+        bestIP = IPClassical;
+        bestMA = MAClassical;
+    elseif (strcmp('LSTM + HMM + Auto Rejection', syncMethod))
+        bestIP = IPLSTM;
+        bestMA = MALSTM;
+    elseif (strcmp('Hybrid (Classical+Auto Rejection for MA; LSTM + HMM for IP)', syncMethod))
+        bestIP = IPLSTM;
+        bestMA = MAClassical;
     end
 
     %% avoid unrealistically large MA transition shifts
-    if (abs(bestMA - MATransition) > maxMAShift)
+    if (isempty(bestMA) || ...
+        isempty(bestIP) || ...
+        abs(bestMA - MATransition) > maxMAShift || ...
+        InvalidLSTMSync == true)
         d_orgs(i:(i+1), :, synchronizationIndex) = -1;
         invalidSynchronization = invalidSynchronization+2;
         continue;

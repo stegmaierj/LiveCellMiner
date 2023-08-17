@@ -43,8 +43,8 @@ positionIDs = unique(code_alle(:,4));
 clear inputFolders;
 currentFolder = 1;
 
-for m=microscopeIDs
-    for e=experimentIDs
+for m=microscopeIDs'
+    for e=experimentIDs'
         for p=positionIDs'
             microscopeName = zgf_y_bez(2,m).name;
             experimentName = zgf_y_bez(3,e).name;
