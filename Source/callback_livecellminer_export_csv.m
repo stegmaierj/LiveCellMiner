@@ -126,7 +126,7 @@ elseif (strcmp(answer, 'Single Features (SF)'))
 
     %% construct the output file name
     fileID = fopen([outputDirectory filesep 'SingleFeatures' '_' datestr(now,'YYYY_mm_DD_HH_MM_SS') '_SingleCells.csv'], 'wb');
-    fileIDCombined = fopen([outputDirectory filesep featureName '_' datestr(now,'YYYY_mm_DD_HH_MM_SS') '_GroupedCells_' selectedOutputVariableName '.csv'], 'wb');
+    fileIDCombined = fopen([outputDirectory filesep 'SingleFeatures' '_' datestr(now,'YYYY_mm_DD_HH_MM_SS') '_GroupedCells_' selectedOutputVariableName '.csv'], 'wb');
 
     %% create the specifier string for the first line
     outputVariables = '';
