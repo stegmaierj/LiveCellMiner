@@ -82,7 +82,7 @@ performanceLog = fopen([outputRoot 'performanceLog.csv'], 'wb');
 %% prepare question dialog to ask for the physical spacing of the experiments
 dlgtitle = 'Additional settings:';
 dims = [1 100];
-additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?', 'Time Window Before Mitosis (min)', 'Time Window After Mitosis (min)', 'Diameter (Cellpose)', 'Tracking Method (0: Seed Clustering, 1: Segmentation Propagation)', 'Cluster Cutoff Radius for Tracking (auto: -1, manual: cell diameter in px)', 'Force NN-based Linking (enable for large movements)', 'Max. Distance for Forced Linking (e.g. half average the distance between neighboring cells in px)', 'Small Cells? (if enabled, the seed detection is parametrized for smaller cells)'}, dlgtitle, dims, {'', '', '0', '0', '150', '180', '30', '0', '-1', '0', '50', '0'});
+additionalUserSettings = inputdlg({'Input Path Windows Prefix (e.g., V:/)', 'Input Path IP-based Prefix ((e.g., \\filesrv\Images\, leave empty to ignore)', 'Use CNN-based segmentation (Cellpose)', 'Reprocess existing projects?', 'Time Window Before Mitosis (min)', 'Time Window After Mitosis (min)', 'Diameter (Cellpose)', 'Tracking Method (0: Seed Clustering, 1: Segmentation Propagation)', 'Cluster Cutoff Radius for Tracking (auto: -1, manual: cell diameter in px)', 'Force NN-based Linking (enable for large movements)', 'Max. Distance for Forced Linking (e.g. half average the distance between neighboring cells in px)', 'Cell Size? (0: small cells; 1: normal cells; 2: large cells)'}, dlgtitle, dims, {'', '', '0', '0', '150', '180', '30', '0', '-1', '0', '50', '1'});
 if (isempty(additionalUserSettings))
     disp('No additional settings provided, stopping processing ...');
     return;
@@ -192,14 +192,18 @@ for i=1:length(inputFolders)
     parameters.debugFigures = false;              %% if enabled, debug figures will be shown
     parameters.smallCells = str2double(additionalUserSettings{12}); 
 
-    if (parameters.smallCells == true)
+    if (parameters.smallCells == 0)
         parameters.seedDetectionStdThreshold = 0.0;   %% LoG-based seed detection uses only seeds that exceed the mean intensity + x*stdDev.
         parameters.logMinSigma = 1.0;                 %% Minimum std. dev. used by the LoG-based seed detection
         parameters.logMaxSigma = 6.0;                 %% Maximum std. dev. used by the LoG-based seed detection
-    else
+    elseif (parameters.smallCells == 1)
         parameters.seedDetectionStdThreshold = 2.0;   %% LoG-based seed detection uses only seeds that exceed the mean intensity + x*stdDev.
         parameters.logMinSigma = 4.0;                 %% Minimum std. dev. used by the LoG-based seed detection
         parameters.logMaxSigma = 6.0;                 %% Maximum std. dev. used by the LoG-based seed detection
+    elseif (parameters.smallCells == 2)
+        parameters.seedDetectionStdThreshold = 2.0;   %% LoG-based seed detection uses only seeds that exceed the mean intensity + x*stdDev.
+        parameters.logMinSigma = 4.0;                 %% Minimum std. dev. used by the LoG-based seed detection
+        parameters.logMaxSigma = 8.0;                 %% Maximum std. dev. used by the LoG-based seed detection
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

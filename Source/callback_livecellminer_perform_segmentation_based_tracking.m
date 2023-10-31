@@ -35,7 +35,7 @@ function d_orgs = callback_livecellminer_perform_segmentation_based_tracking(par
     useRegistrationBasedCorrection = false;
     preloadData = true; %% only set to false if debugging to avoid reloading the data at each call
     minVolume = 100; %% excludes objects smaller than this volume
-    skipFrames = 10; %% the allowed number of frames to skip for tracking an object
+    skipFrames = 1; %% the allowed number of frames to skip for tracking an object
     maxCellSize = 10000; % 4000 for Weiyis Project;
     %%%%%%%%%% PARAMETERS %%%%%%%%%%%
     
@@ -172,6 +172,10 @@ function d_orgs = callback_livecellminer_perform_segmentation_based_tracking(par
     
     %% iterate over all frames in a backward fashion
     for i=numFrames:-1:1
+
+        if (i==170)
+            test = 1;
+        end
     
         %% process all cells contained in the current frame
         for j=1:size(regionProps{i},1)
