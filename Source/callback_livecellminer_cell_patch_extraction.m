@@ -173,7 +173,7 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
 
                         %% create result matrix
                         [currentResults.featureNames, features] = callback_livecellminer_extract_nucleus_features(croppedImage, croppedMask);
-                        currentResults.resultMatrix = [currentIndex, currentDOrgs(currentIndex, 2), currentDOrgs(currentIndex, 3), currentDOrgs(currentIndex, 4), 0, 1];
+                        currentResults.resultMatrix = [currentIndex, currentDOrgs(currentIndex, 2), currentDOrgs(currentIndex, 3), currentDOrgs(currentIndex, 4), i, 1];
                         if length(features) == (numFeatures-6)
                             currentResults.resultMatrix = [currentResults.resultMatrix, features];  %only add those cells which have valid features
                         end
@@ -215,5 +215,5 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
     end
 
     %% add a few default features for id, area and location
-    featureNames = char('id', 'scale', 'xpos', 'ypos', 'zpos', 'Tracking state', featureNames);
+    featureNames = char('id', 'scale', 'xpos', 'ypos', 'frameNumber', 'Tracking state', featureNames);
 end

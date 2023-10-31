@@ -359,7 +359,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Process';
 elements(mc).tag = 'MI_LiveCellMiner_Process';
-elements(mc).menu_items = {'MI_LiveCellMiner_ComputeSecondaryChannelFeatures', 'MI_LiveCellMiner_ComputeAdditionalSingleFeatures', 'MI_LiveCellMiner_ComputeStageDependentMeanFeatures', 'MI_LiveCellMiner_ComputeLinearRegressionSlope', 'MI_LiveCellMiner_ComputeInterphaseRecoveryFeature', 'MI_LiveCellMiner_ComputeSisterDistance', 'MI_LiveCellMiner_ComputeSingleFeatureBeforeIP', 'MI_LiveCellMiner_ComputeSingleFeatureAfterMA', 'MI_LiveCellMiner_ComputeTimeSeriesRatio', -1, 'MI_LiveCellMiner_AddOligoIDOutputVariable', 'MI_LiveCellMiner_AddRepeatsOutputVariable', 'MI_LiveCellMiner_SelSingleFeatureRange', 'MI_LiveCellMiner_SelSingleDaughter', -1, 'MI_LiveCellMiner_PerformFeatureNormalization', 'MI_LiveCellMiner_SmoothFeatures'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ComputeSecondaryChannelFeatures', 'MI_LiveCellMiner_ComputeAdditionalSingleFeatures', 'MI_LiveCellMiner_ComputeStageDependentMeanFeatures', 'MI_LiveCellMiner_ComputeLinearRegressionSlope', 'MI_LiveCellMiner_ComputeInterphaseRecoveryFeature', 'MI_LiveCellMiner_ComputeSisterDistance', 'MI_LiveCellMiner_ComputeSingleFeatureBeforeIP', 'MI_LiveCellMiner_ComputeSingleFeatureAfterMA', 'MI_LiveCellMiner_ComputeFrameBasedGrouping', 'MI_LiveCellMiner_ComputeTimeSeriesRatio', -1, 'MI_LiveCellMiner_AddOligoIDOutputVariable', 'MI_LiveCellMiner_AddRepeatsOutputVariable', 'MI_LiveCellMiner_SelSingleFeatureRange', 'MI_LiveCellMiner_SelSingleDaughter', -1, 'MI_LiveCellMiner_PerformFeatureNormalization', 'MI_LiveCellMiner_SmoothFeatures'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -426,6 +426,17 @@ elements(mc).name = 'Compute Stage-Dependent Mean Features';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_livecellminer_compute_stage_dependent_mean_features;';
 elements(mc).tag = 'MI_LiveCellMiner_ComputeStageDependentMeanFeatures'; 
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Compute Frame-based Grouping Feature';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_create_framebased_grouping;';
+elements(mc).tag = 'MI_LiveCellMiner_ComputeFrameBasedGrouping'; 
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
