@@ -30,11 +30,24 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
     %% get the number of frames
     numFrames = size(d_orgs, 2);
 
+    maskImageFiles = [];
+    if (isfield(parameters, 'augmentedMaskFolder') && ~isempty(parameters.augmentedMaskFolder))
+        maskImageFiles = dir([parameters.augmentedMaskFolder parameters.maskFilter]);
+    else
+        disp('The selected tracking method (backwards tracking) only works with segmentation enabled. Make sure the intermediate folder AugmentedMasks exists and is filled with reasonable images');
+        return;
+    end
+
     %% perform the tracking by clustering
     d_orgs_new = zeros(80000, size(d_orgs,2), size(d_orgs,3));
     objectRadii = ones(size(d_orgs,2),1);
     currentTrackId = 1;
     for i=numFrames:-1:1
+
+        if (~isempty(maskImageFiles))
+            currentMaskImage = imread([parameters.augmentedMaskFolder maskImageFiles(i).name]);
+            currentRegionProps = regionprops(currentMaskImage, 'Centroid');
+        end
 
         %% get the valid locations at the current position
         validIndices = squeeze(d_orgs(:,i,3)) > 0;
@@ -91,8 +104,8 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
         %% case 3: two or more of the seeds have a tracking id -> introduce merge and add new seed with new tracking id (#current tracks + 1)
         %% special case if only one tracked location resides in a cluster -> potential dead end, i.e., apply intensity heuristic or fuse to nearest neighbor
         for j=unique(clusterIndices)'
-            currentIndices = find(clusterIndices == j);
-            trackingIds = unique(validPositions(currentIndices, parameters.trackingIdIndex));
+            currentIndices = find(clusterIndices == j); %% object indices in the current cluster
+            trackingIds = unique(validPositions(currentIndices, parameters.trackingIdIndex)); %% tracking ids of objects of the current cluster
 
             %% propagate tracking id if it already exists
             if (sum(trackingIds > 0) == 0)
@@ -123,15 +136,117 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
 
             %% if multiple ids larger than zero exist, perform a merge
             else
-                d_orgs_new(currentTrackId, i, :) = mean(validPositions(currentIndices, :), 1);
-                d_orgs_new(currentTrackId, i, parameters.trackingIdIndex) = currentTrackId;
 
-                %% update the successors
-                for k=trackingIds(trackingIds>0)
-                    d_orgs_new(k, i+1, parameters.predecessorIdIndex) = currentTrackId;
+                %% detect if there are multiple segments hit by the current merge candidates
+                %% initialize arrays for the non-zero detections and the associated labels
+                nonZeroDetectionIDs = [];
+                matchedSegmentLabels = [];
+
+                %figure(5); clf;
+                %imagesc(currentMaskImage); hold on;
+                %plot(validPositions(currentIndices, 3), validPositions(currentIndices, 4), '*r');
+
+                %% loop through all objects of the current cluster
+                for k=currentIndices'
+
+                    %% get current position clamped by the image extents
+                    currentPosition = [max(1, min(size(currentMaskImage,1), round(validPositions(k, 4)))), ...
+                                       max(1, min(size(currentMaskImage,2), round(validPositions(k, 3))))];
+
+                    %% get label of the current detection
+                    currentLabel = currentMaskImage(currentPosition(1), currentPosition(2));
+
+                    %% if non-zero, save the label and the corresponding object index
+                    if (currentLabel > 0)
+                        nonZeroDetectionIDs = [nonZeroDetectionIDs; k];
+                        matchedSegmentLabels = [matchedSegmentLabels; currentLabel];
+                    end
                 end
+            
+                %% if only one segment is present, use the centroid of this segment for merging
+                if (length(unique(matchedSegmentLabels)) == 1)
+                    
+                    %% use object information of the non-zero object (i.e., the one that sits on the segment) and replace position with the centroid of the segment
+                    d_orgs_new(currentTrackId, i, :) = validPositions(nonZeroDetectionIDs(1), :);
+                    d_orgs_new(currentTrackId, i, 3:4) = round(currentRegionProps(matchedSegmentLabels(1)).Centroid); 
+                    d_orgs_new(currentTrackId, i, parameters.trackingIdIndex) = currentTrackId;
+                    %plot(d_orgs_new(currentTrackId, i, 3), d_orgs_new(currentTrackId, i, 4), 'ok');
+    
+                    %% update the successors
+                    for k=trackingIds(trackingIds>0)
+                        d_orgs_new(k, i+1, parameters.predecessorIdIndex) = currentTrackId;
+                    end
+    
+                    currentTrackId = currentTrackId + 1;
 
-                currentTrackId = currentTrackId + 1;
+                %% if multiple segments are present, preserve the segments and assign unmatched positions to the closest segment
+                else
+
+                    %% save segment label of the closest segment for each detection of the current cluster
+                    closestSegmentLabels = [];
+
+                    %% loop through all detections and find closest segment
+                    for s=currentIndices'
+
+                        %% initialize min distance and min label
+                        minDistance = inf;
+                        minLabel = 0;
+
+                        %% compute distance of the current object to the available segmentations
+                        for t=matchedSegmentLabels'
+
+                            %% compute current distance
+                            currentDistance = norm(validPositions(s, 3:4) - currentRegionProps(t).Centroid);
+
+                            %% update label and index of the current matched segmentation
+                            if (currentDistance < minDistance)
+                                minDistance = currentDistance;
+                                minLabel = t;
+                            end
+                        end
+
+                        %% add the respective closest segment labels
+                        closestSegmentLabels = [closestSegmentLabels; minLabel];
+                    end
+
+                    %% perform merges for all unqiue segments
+                    uniqueSegmentLabels = unique(matchedSegmentLabels);
+
+                    %% loop though the existing segments and handle merges
+                    for s=uniqueSegmentLabels'
+
+                        %% get object indices that are associated with the current segment
+                        currentSegmentIndices = nonZeroDetectionIDs(matchedSegmentLabels == s);
+
+                        %% get tracking ids of all current objects and use the smallest one
+                        existingTrackingIDs = validPositions(currentSegmentIndices, parameters.trackingIdIndex);
+                        existingTrackingId = min(existingTrackingIDs(existingTrackingIDs>0));
+
+                        %% check if tracking id needs to be increased (in case of appearances of an untracked object)
+                        increaseTrackingId = false;
+                        if (isempty(existingTrackingId))
+                            existingTrackingId = currentTrackId;
+                            increaseTrackingId = true;
+                        end
+
+                        %% update d_orgs with the first objects properties and replace position with the centroid of the region
+                        d_orgs_new(existingTrackingId, i, :) = validPositions(currentSegmentIndices(1), :);
+                        d_orgs_new(existingTrackingId, i, 3:4) = round(currentRegionProps(s).Centroid); 
+                        d_orgs_new(existingTrackingId, i, parameters.trackingIdIndex) = existingTrackingId;
+
+                        %plot(d_orgs_new(existingTrackingId, i, 3), d_orgs_new(existingTrackingId, i, 4), 'ok');
+    
+                        %% update the non-zero successors
+                        for k=existingTrackingIDs(existingTrackingIDs>0)  %currentSegmentIndices(currentSegmentIndices>0)
+                            d_orgs_new(k, i+1, parameters.predecessorIdIndex) = existingTrackingId;
+                        end
+
+                        %% if the continuous track counter was used, increase it        
+                        if (increaseTrackingId == true)
+                            currentTrackId = currentTrackId + 1;
+                        end
+                    end
+                end
             end
 
             %% extend d_orgs_new if more than the preinitialized number of tracks is found

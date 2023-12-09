@@ -36,7 +36,7 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
     end
 
     if (parameters.useTWANG == true)
-        twangFiles = dir([parameters.twangFolder '*.tif']);
+        twangFiles = dir([parameters.twangFolder parameters.twangSegFilter]);
     end
         
     numFrames = min(length(detectionFiles), parameters.numFrames);
