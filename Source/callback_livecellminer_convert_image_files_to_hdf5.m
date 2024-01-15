@@ -113,14 +113,26 @@ for i=1:length(inputFolders)
 
     %%[microscopeId, experimentId, positionId] = callback_livecellminer_get_output_variables(microscopeList, experimentList, positionList, microscopeName, experimentName, positionName);
     
+    %% perform consistency check
+    currentIndices = find(code_alle(:,3) == experimentId & code_alle(:,4) == positionId);
+
+    if (isempty(currentIndices))
+        continue;
+    end
+
+    %% construct the output name based on the current project name
+    outputFileName = callback_livecellminer_get_image_data_base_filename(currentIndices(1), parameter, code_alle, zgf_y_bez, bez_code);
+    
+    if (exist(outputFileName, 'file'))
+        fprintf('File %s already exists, skipping recreation. To force recreation, manually delete  the file!\n', outputFileName);
+        continue;
+    end
+
     %% load the image patches
     load([currentInputFolder experimentName '_' positionName '_RawImagePatches.mat'], '-mat');
     load([currentInputFolder experimentName '_' positionName '_RawImagePatches2.mat'], '-mat');
     load([currentInputFolder experimentName '_' positionName '_MaskImagePatches.mat'], '-mat');
-    
-    %% perform consistency check
-    currentIndices = find(code_alle(:,3) == experimentId & code_alle(:,4) == positionId);
-    
+        
     numCells = 0;
     for k=1:size(finalRawImagePatches, 1)
         if (~isempty(finalRawImagePatches{k, 1}))
@@ -181,14 +193,6 @@ for i=1:length(inputFolders)
     end
     
     %% write hdf5 file for current position
-    %% construct the output name based on the current project name
-    outputFileName = callback_livecellminer_get_image_data_base_filename(currentIndices(1), parameter, code_alle, zgf_y_bez, bez_code);
-    
-    if (exist(outputFileName, 'file'))
-        fprintf('File %s already exists, skipping recreation. To force recreation, manually delete  the file!\n', outputFileName);
-        continue;
-    end
-        
     imageSize = size(finalRawImagePatches{1,1});
     featureSize = size(finalMaskedImageCNNFeatures{1,1});
     numFrames = size(d_orgs,2);
