@@ -80,7 +80,11 @@ for i=1:length(inputFolders)
     fprintf('Attempting to convert image data base %s ...\n', inputFolders{i});
 
     %% get the current microscope
-    currentInputFolder = inputFolders{i};    
+    currentInputFolder = inputFolders{i};
+
+    if (isnumeric(currentInputFolder))
+        continue;
+    end
     
     %% identify microscope, experiment and position names
     splitString = strsplit(currentInputFolder(1:end-1), '/');
