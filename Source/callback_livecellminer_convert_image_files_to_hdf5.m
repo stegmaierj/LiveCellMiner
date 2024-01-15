@@ -67,7 +67,7 @@ for m=microscopeIDs'
 %     
 %             inputFolders{currentFolder} = strrep([inputFolders{currentFolder} positionName filesep], '\', '/');
     
-            if (isfolder(inputFolders{currentFolder}))
+            if (isnumeric(inputFolders{currentFolder}) == 0 && isfolder(inputFolders{currentFolder}))
                 currentFolder = currentFolder+1;
             end
         end
