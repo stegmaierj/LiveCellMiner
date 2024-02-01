@@ -57,6 +57,7 @@ end
 
 if (reprocessSegmentation == true)
     recomputedFeatureIds = [];
+
     if (useCellpose == true)
         cp = cellpose;
     end
