@@ -57,13 +57,21 @@ definput = {XPIWITPath, CELLPOSEEnvironment};
 answer = inputdlg(prompt,dlgtitle,dims,definput);
 
 %% write the new path to disk
-if (~isempty(answer) && isfolder(answer{1}) && isfile(answer{2}))
+if (~isempty(answer))
     
     XPIWITPath = strrep(answer{1}, '\', '/');
     if (XPIWITPath(end) ~= '/'); XPIWITPath = [XPIWITPath '/']; end
+
+    if (~isfolder(answer{1}))
+        disp('Wrong XPIWIT path provided - please try again and specify path to the Bin folder that contains the XPIWIT(.exe).');
+    end
         
     CELLPOSEEnvironment = answer{2};
-    
+
+    if (~isfile(answer{2}))
+        disp('Wrong cellpose environment provided - please try again and specify path to the python(.exe) of the Cellpose environment.');
+    end
+
     fileHandle = fopen(settingsFile, 'wb');
     fprintf(fileHandle, '%s;%s;%s', XPIWITPath, CELLPOSEEnvironment);
     fclose(fileHandle);

@@ -130,11 +130,31 @@ function [] = callback_livecellminer_import_project(parameters)
                 CELLPOSEFilter = [' --img_filter ' parameters.channelFilter];
             end
 
-            %% removed model_dir as parameter to just use the default location for the models where cell pose downloads it to "--model_dir ' parameters.CELLPOSEModelDir"
-            %% if cellpose does not find the models or if downloading is not permitted, manually install the models to C:\Users\MY_USER_NAME\.cellpose\models
-            %% Moreover, add environment variable "CELLPOSE_LOCAL_MODELS_PATH" pointing to the models directory "C:\Users\MY_USER_NAME\.cellpose\models"
-            CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 ' CELLPOSEFilter ' --pretrained_model nuclei --savedir ' parameters.outputFolderCellPose ' --diameter ' num2str(parameters.diameterCellpose) ' --use_gpu --save_png --no_npy'];
-            system(CELLPOSECommand);
+            useMATLABCellpose = true;
+            if (useMATLABCellpose == true)
+                cellposeInstance = cellpose(Model='nuclei');
+
+                %% check if output images already exist
+                if (~isempty(parameters.channelFilter))
+                    inputFiles = dir([inputFolder '*' parameters.channelFilter '*.tif']);
+                else
+                    inputFiles = dir([inputFolder '*.tif']);
+                end
+
+                numInputFiles = length(inputFiles);
+
+                for f=1:numInputFiles
+                    currentImage = imadjust(imread([inputFolder inputFiles(f).name]));
+                    currentLabelImage = segmentCells2D(cellposeInstance, currentImage, ImageCellDiameter=parameters.diameterCellpose);
+                    imwrite(uint16(currentLabelImage), [parameters.outputFolderCellPose strrep(inputFiles(f).name, '.tif', '_cp_masks.png')]);
+                end
+            else
+                %% removed model_dir as parameter to just use the default location for the models where cell pose downloads it to "--model_dir ' parameters.CELLPOSEModelDir"
+                %% if cellpose does not find the models or if downloading is not permitted, manually install the models to C:\Users\MY_USER_NAME\.cellpose\models
+                %% Moreover, add environment variable "CELLPOSE_LOCAL_MODELS_PATH" pointing to the models directory "C:\Users\MY_USER_NAME\.cellpose\models"
+                CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 ' CELLPOSEFilter ' --pretrained_model nuclei --savedir ' parameters.outputFolderCellPose ' --diameter ' num2str(parameters.diameterCellpose) ' --use_gpu --save_png --no_npy'];
+                system(CELLPOSECommand);
+            end
         end
     end
 
