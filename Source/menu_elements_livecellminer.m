@@ -647,7 +647,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Export';
 elements(mc).tag = 'MI_LiveCellMiner_Export';
-elements(mc).menu_items = {'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ExportAlignedGallery', 'MI_LiveCellMiner_ExportCSV'};
+elements(mc).menu_items = {'MI_LiveCellMiner_GenerateReport', 'MI_LiveCellMiner_ExportAlignedGallery', 'MI_LiveCellMiner_ExportCSV', 'MI_LiveCellMiner_ExportGTSnippets'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -681,6 +681,17 @@ elements(mc).name = 'Export Selected Cells as CSV';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'callback_livecellminer_export_csv;';
 elements(mc).tag = 'MI_LiveCellMiner_ExportCSV';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Export Selected Cells as Raw Image, Mask and CSV';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_export_ground_truth_snippets;';
+elements(mc).tag = 'MI_LiveCellMiner_ExportGTSnippets';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 
