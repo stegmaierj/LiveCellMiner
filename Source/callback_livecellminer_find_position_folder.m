@@ -1,21 +1,11 @@
-function positionFolder = callback_livecellminer_find_position_folder(projectRoot, microscopeName, experimentName, positionName)
+function positionFolder = callback_livecellminer_find_position_folder(projectRoot, experimentName, positionName)
 
 
     projectRoot = strrep(projectRoot, '\', '/');
 
-    containsMicroscopeFolder = isfolder([projectRoot microscopeName filesep]);
-
-    if (containsMicroscopeFolder)
-        containsProjectFolder = isfolder([projectRoot microscopeName filesep experimentName filesep]);
-    else
-        containsProjectFolder = isfolder([projectRoot experimentName filesep]);
-    end
+    containsProjectFolder = isfolder([projectRoot experimentName filesep]);
 
     positionFolder = projectRoot;
-
-    if (containsMicroscopeFolder)
-        positionFolder = [positionFolder microscopeName filesep];
-    end
 
     if (containsProjectFolder)
         positionFolder = [positionFolder experimentName filesep];

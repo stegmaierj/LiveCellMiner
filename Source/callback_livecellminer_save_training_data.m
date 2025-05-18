@@ -115,7 +115,7 @@ for i=validIndices'
     %% summarize the CNN features for the current time series
 %     currentFeaturesCNN = zeros(1000, numFrames);
 %     for j=1:numFrames
-%         currentFeaturesCNN(:,j) = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn')); %maskedImageCNNFeatures{i, j};
+%         currentFeaturesCNN(:,j) = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, bez_code, zgf_y_bez, 'cnn')); %maskedImageCNNFeatures{i, j};
 %     end
 
     %% specify filename for the image data base
@@ -125,7 +125,7 @@ for i=validIndices'
         callback_livecellminer_convert_image_files_to_hdf5;
     end
 
-    currentFeaturesCNN = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn'));
+    currentFeaturesCNN = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, bez_code, zgf_y_bez, 'cnn'));
     currentCheckSum = sum(currentFeaturesCNN(:) / max(0.1, currentFeaturesCNN(end)));
 
     %% skip adding the current detection if there is already an entry with the same checksum

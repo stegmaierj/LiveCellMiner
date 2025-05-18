@@ -26,21 +26,12 @@
 %%
 
 %% returns the id of specific output variables based on the respective names
-function [microscopeId, experimentId, positionId] = callback_livecellminer_get_output_variables(microscopeList, experimentList, positionList, microscopeName, experimentName, positionName)
+function [experimentId, positionId] = callback_livecellminer_get_output_variables(experimentList, positionList, experimentName, positionName)
 
 	%% initialize ids to 0
-    microscopeId = 0;
     experimentId = 0;
     positionId = 0;
-    
-	%% try to find the microscope id
-    for j=1:length(microscopeList)
-       if (strcmp(microscopeList{j}, microscopeName))
-           microscopeId = j;
-           break;
-       end
-    end
-	
+    	
 	%% try to find the experiment id
     for j=1:length(experimentList)
        if (strcmp(experimentList{j}, experimentName))

@@ -40,6 +40,7 @@ parameters.timeRange = parameter.gui.zeitreihen.segment_start:parameter.gui.zeit
 experimentIdIndex = callback_livecellminer_find_output_variable(bez_code, 'Experiment');
 positionIdIndex = callback_livecellminer_find_output_variable(bez_code, 'Position');
 oligoIdIndex = callback_livecellminer_find_output_variable(bez_code, 'OligoID');
+cellIdIndex = callback_livecellminer_find_output_variable(bez_code, 'Cell');
 
 
 %% only update if anything changed
@@ -75,13 +76,13 @@ if (parameters.dirtyFlag == true)
 
         if (parameters.visualizationMode ~= 2)
             tic;
-            currentRawImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'raw'));
+            currentRawImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, bez_code, zgf_y_bez, 'raw'));
             toc
         end
 
         if (parameters.visualizationMode == 4 || parameters.visualizationMode == 5)
             try
-                currentRawImage2 = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'raw2'));
+                currentRawImage2 = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, bez_code, zgf_y_bez, 'raw2'));
             catch
                 disp('Error: no secondary channel information available to display!');
                 return;
@@ -89,7 +90,7 @@ if (parameters.dirtyFlag == true)
         end
 
         if (parameters.visualizationMode == 2 || parameters.visualizationMode == 3 || parameters.secondChannelFeatures.showMask)
-            currentMaskImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'mask'));
+            currentMaskImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, bez_code, zgf_y_bez, 'mask'));
 
             if (parameters.secondChannelFeatures.showMask == true)
                 currentSecondChannelMaskImage = callback_livecellminer_compute_second_channel_mask(currentMaskImage, parameters.secondChannelFeatures.strelType, parameters.secondChannelFeatures.strelRadius, parameters.secondChannelFeatures.extractionMode, parameters.secondChannelFeatures.toroidalPadding);
@@ -222,10 +223,28 @@ for i=generate_rowvector(parameters.currentCells)
     end
 
     %% plot text label showing the experiment, position and plate
-    if (parameters.showInfo && oligoIdIndex > 0)
-        positionName = zgf_y_bez(positionIdIndex, code_alle(i, positionIdIndex)).name;
-        oligoName = zgf_y_bez(oligoIdIndex, code_alle(i, oligoIdIndex)).name;
-        text(0.3*parameter.projekt.patchWidth, (currentCell-1)*parameter.projekt.patchWidth+0.25*parameter.projekt.patchWidth, strrep(['Exp. ' num2str(code_alle(i, experimentIdIndex)) ', ' positionName '(' oligoName ')'], '_', '-'), 'Color','white', 'BackgroundColor', [0,0,0,0.5]);
+    if (parameters.showInfo)
+
+        experimentName = '';
+        if (experimentIdIndex > 0)
+            experimentName = [', ' zgf_y_bez(experimentIdIndex, code_alle(i, experimentIdIndex)).name];
+        end
+
+        positionName = '';
+        if (positionIdIndex > 0)
+            positionName = [', ' zgf_y_bez(positionIdIndex, code_alle(i, positionIdIndex)).name];
+        end
+
+        oligoName = '';
+        if (oligoIdIndex > 0)
+            oligoName = [', ' zgf_y_bez(oligoIdIndex, code_alle(i, oligoIdIndex)).name];
+        end
+
+        cellName = '';
+        if (cellIdIndex > 0)
+            cellName = [', ' zgf_y_bez(cellIdIndex, code_alle(i, cellIdIndex)).name];
+        end
+        text(0.3*parameter.projekt.patchWidth, (currentCell-1)*parameter.projekt.patchWidth+0.25*parameter.projekt.patchWidth, strrep([experimentName positionName oligoName, cellName], '_', '-'), 'Color','white', 'BackgroundColor', [0,0,0,0.5]);
     end
     
     currentCell = currentCell + 1;

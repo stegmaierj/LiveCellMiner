@@ -37,8 +37,29 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
 
     save([parameters.outputFolder 'trackingProject_DEBUG.prjz'], '-mat', 'd_orgs', 'parameters', '-v7.3');
     
-    if (parameters.performSegmentationPropagationTracking == true)
+    if (strcmp(parameters.trackingMethod, 'Segmentation Propagation'))
         d_orgs = callback_livecellminer_perform_segmentation_based_tracking(parameters);
+    elseif (strcmp(parameters.trackingMethod, 'Ultrack'))
+
+        inputPathRaw = parameters.inputFolder;
+        inputPathCellpose = parameters.augmentedMaskFolder;
+        outputPathTracking = [parameters.outputFolder 'TrackedMasks/'];
+
+        overwriteTracking = '';
+        if (parameters.reprocessTracking)
+            overwriteTracking = ' --overwrite';
+        end
+        
+        pythonCommand = ['/opt/anaconda3/envs/ultrack/bin/python' ...
+                         ' /Users/jstegmaier/Programming/SciXMiner/application_specials/livecellminer/perform_tracking_ultrack.py' ...
+                         ' --input_path_raw ' inputPathRaw ...
+                         ' --input_path_cellpose ' inputPathCellpose ...
+                         ' --output_path ' outputPathTracking ...
+                         overwriteTracking];
+
+        system(pythonCommand);
+
+        [d_orgs] = callback_livecellminer_import_ultrack_results(outputPathTracking, parameters);
     else
         [d_orgs] = callback_livecellminer_perform_backwards_tracking(d_orgs, parameters);
     end
@@ -138,11 +159,72 @@ function [] = callback_livecellminer_perform_detection_and_tracking(parameters)
     %% create the output file names for the current project
     outputNames = callback_livecellminer_generate_output_paths(parameters);
     save(outputNames.project, '-mat', 'd_orgs', 'code', 'var_bez', 'code_alle', 'projekt');
-    save(outputNames.rawImagePatches, '-mat', 'finalRawImagePatches', '-v7.3');
-    save(outputNames.maskImagePatches, '-mat', 'finalMaskImagePatches', '-v7.3');
-    save(outputNames.maskedImageCNNFeatures, '-mat', 'finalMaskedImageCNNFeatures', '-v7.3');
-    if (~isempty(finalRawImagePatches2))
-        save(outputNames.rawImagePatches2, '-mat', 'finalRawImagePatches2', '-v7.3');
+    %save(outputNames.rawImagePatches, '-mat', 'finalRawImagePatches', '-v7.3');
+    %save(outputNames.maskImagePatches, '-mat', 'finalMaskImagePatches', '-v7.3');
+    %save(outputNames.maskedImageCNNFeatures, '-mat', 'finalMaskedImageCNNFeatures', '-v7.3');
+    %if (~isempty(finalRawImagePatches2))
+    %    save(outputNames.rawImagePatches2, '-mat', 'finalRawImagePatches2', '-v7.3');
+    %end
+
+    %% HDF5 OUTPUT
+    numCells = size(d_orgs,1);
+    imageSize = size(finalRawImagePatches{1,1});
+    hasSecondChannel = ~isempty(finalRawImagePatches2);
+    outputFileName = [parameters.outputFolder projekt.experimentName '_' projekt.positionNumber  '_ImageData.h5'];
+    if (isfile(outputFileName))
+        delete(outputFileName);
+    end
+
+
+    outputTensorRaw = uint16(zeros(imageSize(1), imageSize(2), numFrames));
+    outputTensorMask = uint8(zeros(imageSize(1), imageSize(2), numFrames));
+    if (hasSecondChannel)
+        outputTensorRaw2 = uint16(zeros(imageSize(1), imageSize(2), numFrames));
+    end
+
+    featureSize = size(finalMaskedImageCNNFeatures{1,1});
+    outputTensorCNN = single(zeros(featureSize(1), numFrames));
+
+    for c=1:numCells
+
+        if (isempty(finalRawImagePatches{c,1}))
+            continue;
+        end
+
+        parfor j=1:numFrames
+            outputTensorRaw(:,:,j) = finalRawImagePatches{c,j};
+    
+            if (~isempty(finalRawImagePatches2{c,j}))
+                outputTensorRaw2(:,:,j) = finalRawImagePatches2{c,j};
+            end
+    
+            outputTensorMask(:,:,j) = finalMaskImagePatches{c,j};
+        end
+
+
+        for j=1:numFrames
+            outputTensorCNN(:,j) = finalMaskedImageCNNFeatures{c,j};
+        end
+
+        % %% TODO: directly write all files to H5
+        outputStringRaw = callback_livecellminer_create_hdf5_path_strings(projekt.experimentName, projekt.positionNumber, sprintf('cell_id_%04d', c), 'raw');
+        outputStringRaw2 = callback_livecellminer_create_hdf5_path_strings(projekt.experimentName, projekt.positionNumber, sprintf('cell_id_%04d', c), 'raw2');
+        outputStringMask = callback_livecellminer_create_hdf5_path_strings(projekt.experimentName, projekt.positionNumber, sprintf('cell_id_%04d', c), 'mask');
+        outputStringCNNFeatures = callback_livecellminer_create_hdf5_path_strings(projekt.experimentName, projekt.positionNumber, sprintf('cell_id_%04d', c), 'cnn');
+
+        h5create(outputFileName, outputStringRaw, size(outputTensorRaw), 'Datatype', 'uint16'); %% , 'ChunkSize', size(outputTensorRaw), 'Deflate', compressionLevel
+        h5write(outputFileName, outputStringRaw, outputTensorRaw);
+
+        if (hasSecondChannel)
+            h5create(outputFileName, outputStringRaw2, size(outputTensorRaw2), 'Datatype', 'uint16'); %% , 'ChunkSize', size(outputTensorRaw2), 'Deflate', compressionLevel
+            h5write(outputFileName, outputStringRaw2, outputTensorRaw2);
+        end
+
+        h5create(outputFileName, outputStringMask, size(outputTensorMask), 'Datatype', 'uint8'); %% , 'ChunkSize', size(outputTensorMask), 'Deflate', compressionLevel
+        h5write(outputFileName, outputStringMask, outputTensorMask);
+
+        h5create(outputFileName, outputStringCNNFeatures, size(outputTensorCNN), 'Datatype', 'single'); %% , 'ChunkSize', size(outputTensorCNN), 'Deflate', compressionLevel
+        h5write(outputFileName, outputStringCNNFeatures, outputTensorCNN);
     end
     
     %% display success message

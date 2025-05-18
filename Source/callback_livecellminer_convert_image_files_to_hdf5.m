@@ -40,10 +40,12 @@ if (~isfolder(inputRootFolder{1}))
 end
 inputRootFolder{1} = [inputRootFolder{1} filesep];
 
+experimentOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'Experiment');
+positionOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'Position');
+
 %% check if current input folder is part of the project
-microscopeIDs = unique(code_alle(:,2));
-experimentIDs = unique(code_alle(:,3));
-positionIDs = unique(code_alle(:,4));
+experimentIDs = unique(code_alle(:,experimentOutputVariable));
+positionIDs = unique(code_alle(:,positionOutputVariable));
 
 answer = questdlg('Select single-cell segmentation method to be applied before image conversion or select none to use the existing one.', 'Reprocess Segmentation?', 'Cellpose', 'Watershed', 'None', 'None');
 if (strcmp(answer, 'Cellpose') || strcmp(answer, 'Watershed'))
@@ -57,7 +59,6 @@ end
 
 if (reprocessSegmentation == true)
     recomputedFeatureIds = [];
-
     if (useCellpose == true)
         cp = cellpose;
     end
@@ -72,36 +73,19 @@ end
 clear inputFolders;
 currentFolder = 1;
 
-for m=microscopeIDs'
-    for e=experimentIDs'
-        for p=positionIDs'
-            microscopeName = zgf_y_bez(2,m).name;
-            experimentName = zgf_y_bez(3,e).name;
-            positionName = zgf_y_bez(4,p).name;
+for e=experimentIDs'
+    for p=positionIDs'
+        experimentName = zgf_y_bez(experimentOutputVariable,e).name;
+        positionName = zgf_y_bez(positionOutputVariable,p).name;
 
-            inputFolders{currentFolder} = callback_livecellminer_find_position_folder(inputRootFolder{1}, microscopeName, experimentName, positionName);
-    
-%             inputFolders{currentFolder} = strrep(inputRootFolder{1}, '\', '/');
-%     
-%             isInMicroscopeFolder = contains(parameter.projekt.pfad, microscopeName);
-%             isInExperimentFolder = contains(parameter.projekt.pfad, experimentName);
-% 
-%             if (~isInMicroscopeFolder)
-%                 inputFolders{currentFolder} = [inputFolders{currentFolder} microscopeName filesep];
-%             end
-% 
-%             if (~isInExperimentFolder)
-%                 inputFolders{currentFolder} = [inputFolders{currentFolder} experimentName filesep];
-%             end
-%     
-%             inputFolders{currentFolder} = strrep([inputFolders{currentFolder} positionName filesep], '\', '/');
-    
-            if (isnumeric(inputFolders{currentFolder}) == 0 && isfolder(inputFolders{currentFolder}))
-                currentFolder = currentFolder+1;
-            end
+        inputFolders{currentFolder} = callback_livecellminer_find_position_folder(inputRootFolder{1}, experimentName, positionName);
+
+        if (isnumeric(inputFolders{currentFolder}) == 0 && isfolder(inputFolders{currentFolder}))
+            currentFolder = currentFolder+1;
         end
     end
 end
+
 
 %% import all projects contained in the root folder
 f = waitbar(0, 'Initializing ...', 'Name', 'Converting cells ...');
@@ -113,46 +97,37 @@ for i=1:length(inputFolders)
 
     fprintf('Attempting to convert image data base %s ...\n', inputFolders{i});
 
-    %% get the current microscope
+    %% get the current input folder
     currentInputFolder = inputFolders{i};   
 
     if (isnumeric(currentInputFolder))
         continue;
     end
     
-    %% identify microscope, experiment and position names
+    %% identify experiment and position names
     splitString = strsplit(currentInputFolder(1:end-1), '/');
-    microscopeName = splitString{end-2};
     experimentName = splitString{end-1};
     positionName = splitString{end};
 
-    microscopeIDs = unique(code_alle(:,2));
-    experimentIDs = unique(code_alle(:,3));
-    positionIDs = unique(code_alle(:,4));
+    experimentIDs = unique(code_alle(:,experimentOutputVariable));
+    positionIDs = unique(code_alle(:,positionOutputVariable));
     
-    microscopeId = 0;
     experimentId = 0;
     positionId = 0;
     
-    for m=microscopeIDs'
-        for e=experimentIDs'
-            for p=positionIDs'
-                
-                if (strcmp(zgf_y_bez(2,m).name, microscopeName) && ...
-                    strcmp(zgf_y_bez(3,e).name, experimentName) && ...
-                    strcmp(zgf_y_bez(4,p).name, positionName))
-                    microscopeId = m;
-                    experimentId = e;
-                    positionId = p;
-                end
+    for e=experimentIDs'
+        for p=positionIDs'
+            
+            if (strcmp(zgf_y_bez(experimentOutputVariable,e).name, experimentName) && ...
+                strcmp(zgf_y_bez(positionOutputVariable,p).name, positionName))
+                experimentId = e;
+                positionId = p;
             end
         end
     end
 
-    %%[microscopeId, experimentId, positionId] = callback_livecellminer_get_output_variables(microscopeList, experimentList, positionList, microscopeName, experimentName, positionName);
-    
     %% perform consistency check
-    currentIndices = find(code_alle(:,3) == experimentId & code_alle(:,4) == positionId);
+    currentIndices = find(code_alle(:,experimentOutputVariable) == experimentId & code_alle(:,positionOutputVariable) == positionId);
 
     if (isempty(currentIndices))
         continue;

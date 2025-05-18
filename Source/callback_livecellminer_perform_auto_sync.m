@@ -125,7 +125,7 @@ for i=1:2:size(d_orgs,1)
             callback_livecellminer_convert_image_files_to_hdf5;
         end
 
-        currentFeaturesCNN = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'cnn'));
+        currentFeaturesCNN = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, bez_code, zgf_y_bez, 'cnn'));
         validTrajectoryProbability = predict(classificationLSTM, currentFeaturesCNN);
 
         %% check if LSTM predicted an invalid track

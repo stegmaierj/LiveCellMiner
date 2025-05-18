@@ -33,31 +33,28 @@ if (~iscell(inputRootFolders) && inputRootFolders == 0)
 end
 
 %% import all subfolders
-[inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolders);
+[inputFolders, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolders);
 
 %% initialize scixminer project variables
 numFeatures = 28;
 d_orgs_new = [];
-code_alle_new = zeros(0, 5);
+code_alle_new = zeros(0, 4);
 zgf_y_bez_new = struct();
-imageFiles = cell(0, 2);
 clear projekt_new;
 
 %% import all projects contained in the root folder
 currentCell = 1;
 currentExperiment = 1;
-currentMicroscope = 1;
 
 for i=1:length(inputFolders)
         
-    %% get the current microscope
+    %% get the current folder
     currentInputFolder = inputFolders{i};
     
     splitString = strsplit(currentInputFolder(1:end-1), '/');
-    microscopeName = splitString{end-2};    
     experimentName = splitString{end-1};
     positionName = splitString{end};
-    [microscopeId, experimentId, positionId] = callback_livecellminer_get_output_variables(microscopeList, experimentList, positionList, microscopeName, experimentName, positionName);    
+    [experimentId, positionId] = callback_livecellminer_get_output_variables(experimentList, positionList, experimentName, positionName);
     
     %% load the current project
     projectName = [currentInputFolder experimentName '_' positionName '_SciXMiner.prjz'];
@@ -82,21 +79,16 @@ for i=1:length(inputFolders)
 
     %% copy the current project to the complete project
     d_orgs_new(end+1:end+numCells, :, :) = d_orgs(validIndices, :, :);
-    code_alle_new(end+1:end+numCells, :) = [ones(numCells, 1), microscopeId * ones(numCells, 1), experimentId * ones(numCells, 1), positionId * ones(numCells, 1), (1:numCells)'];
+    code_alle_new(end+1:end+numCells, :) = [ones(numCells, 1), experimentId * ones(numCells, 1), positionId * ones(numCells, 1), (1:numCells)'];
 
     projekt_new.originalProjectInfo{i}.newIDs = ((size(d_orgs_new,1))-numCells+1):(size(d_orgs_new,1));
 
     %% fill the zgf_y_bez variable
     zgf_y_bez_new(1,1).name = 'All';
-    zgf_y_bez_new(2, microscopeId).name = microscopeName;
-    zgf_y_bez_new(3, experimentId).name = experimentName;
-    zgf_y_bez_new(4, positionId).name = positionName;
+    zgf_y_bez_new(2, experimentId).name = experimentName;
+    zgf_y_bez_new(3, positionId).name = positionName;
     for k=1:numCells
-        zgf_y_bez_new(5, k).name = sprintf('cell_id_%04d.tif', k);
-
-        %% save the image file names to show the montages later on
-        imageFiles{currentCell, 1} = [currentInputFolder 'Raw' filesep sprintf('cell_id_%04d.tif', k)];
-        imageFiles{currentCell, 2} = [currentInputFolder 'Masks' filesep sprintf('mask_cell_id_%04d.tif', k)];
+        zgf_y_bez_new(4, k).name = sprintf('cell_id_%04d', k);
 
         %% increase the cell counter
         currentCell = currentCell + 1;
@@ -109,7 +101,7 @@ end
 code = code_alle_new(:,1);
 code_alle = code_alle_new;
 d_orgs = d_orgs_new;
-bez_code = char('All', 'Microscope', 'Experiment', 'Position', 'Cell');
+bez_code = char('All', 'Experiment', 'Position', 'Cell');
 zgf_y_bez = zgf_y_bez_new;
 projekt = projekt_new;
 %projekt.imageFiles = imageFiles;

@@ -26,16 +26,14 @@
 %%
 
 %% lists all subdirectories and searches for valid position folders containing image data.
-function [inputFolders, microscopeList, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolders)
+function [inputFolders, experimentList, positionList] = callback_livecellminer_get_valid_input_paths(inputRootFolders)
        
     %% initialize folder, experiment and position variables
     currentFolderIndex = 1;
     experimentIndex = 1;
-    microscopeIndex = 1;
     positionIndex = 1;
     
-    %% initialize the cell arrays for files, microscopes, experiments and positions
-    microscopeList = cell(1,1);
+    %% initialize the cell arrays for files, experiments and positions
     experimentList = cell(1,1);
     micronsPerPixel = cell(1,1);
     channelFilter = cell(1,1);
@@ -97,20 +95,13 @@ function [inputFolders, microscopeList, experimentList, positionList] = callback
                 %% set the input folder
                 inputFolders{currentFolderIndex} = currentSubDir; %#ok<AGROW> 
 
-                %% extract the microscope, experiment and position from the file name
-                currentMicroscope = splitString{end-2};
+                %% extract the experiment and position from the file name
                 currentExperiment = splitString{end-1};
                 currentPosition = splitString{end};
 
                 %% check if any of the output variables already exists
-                microscopeFound = false;
                 experimentFound = false;
                 positionFound = false;
-                for j=1:length(microscopeList)
-                   if (strcmp(microscopeList{j}, currentMicroscope))
-                       microscopeFound = true;
-                   end
-                end
 
                 for j=1:length(experimentList)
                    if (strcmp(experimentList{j}, currentExperiment))
@@ -125,10 +116,6 @@ function [inputFolders, microscopeList, experimentList, positionList] = callback
                 end
 
                 %% add output variables if they were not contained yet
-                if (microscopeFound == false)
-                    microscopeList{microscopeIndex} = currentMicroscope;
-                    microscopeIndex = microscopeIndex + 1;
-                end
 
                 if (experimentFound == false)
                     micronsPerPixel{experimentIndex} = '1.0';

@@ -97,5 +97,15 @@ end
 
 %% create new single feature in d_org
 d_org(:, end+1) = frameGrouping;
-dorgbez = char(dorgbez, sprintf('FrameGrouping_NumBins=%d_MA=%s', length(binEdges)-1, answer{3}));
+
+featureName = sprintf('FrameGrouping_NumBins=%d_MA=%s_BinEdgeFrames=[', length(binEdges)-1, answer{3});
+for i=1:length(binEdges)
+    featureName = [featureName sprintf('%i', binEdges(i))];
+    if (i < length(binEdges))
+        featureName = [featureName '_'];
+    end
+end
+featureName = [featureName ']'];
+
+dorgbez = char(dorgbez, featureName);
 aktparawin;

@@ -34,8 +34,14 @@ answer = inputdlg(prompt,dlgtitle,dims,definput);
 
 
 rng(str2double(answer{2}));
-numSelectedCells = str2double(answer{1});
 numCells = size(d_orgs,1);
+
+if (str2double(answer{1}) > (numCells/2))
+    disp('Warning: you selected more cells than are present in the project. Selecting all available cells.')
+end
+
+numSelectedCells = min(str2double(answer{1}), numCells/2);
+
 
 selectedIndices2 = sort(randperm(numCells/2, numSelectedCells) * 2);
 selectedIndices1 = selectedIndices2 - 1;

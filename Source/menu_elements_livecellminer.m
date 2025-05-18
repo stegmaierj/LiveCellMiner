@@ -280,7 +280,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Show';
 elements(mc).tag = 'MI_LiveCellMiner_Show';
-elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots'};
+elements(mc).menu_items = {'MI_LiveCellMiner_ShowHeatMaps', 'MI_LiveCellMiner_ShowLinePlots', 'MI_LiveCellMiner_ShowCurrentSelection', -1, 'MI_LiveCellMiner_ShowCombLinePlots', 'MI_LiveCellMiner_ShowCombBoxPlots', 'MI_LiveCellMiner_ShowCombViolinPlots', 'MI_LiveCellMiner_ShowCombHistogramPlots'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -302,6 +302,17 @@ elements(mc).name = 'Line Plots';
 elements(mc).delete_pointerstatus = 0;
 elements(mc).callback = 'visualizationMode = 2; callback_livecellminer_show_heatmaps(parameter, d_orgs, var_bez, ind_auswahl, bez_code, code_alle, zgf_y_bez, visualizationMode);';
 elements(mc).tag = 'MI_LiveCellMiner_ShowLinePlots';
+%is enabled if at least one single feature exist
+elements(mc).freischalt = {};
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+mc = mc+1;
+elements(mc).uihd_code = [newcolumn mc];
+elements(mc).handle = [];
+elements(mc).name = 'Show Current Selection';
+elements(mc).delete_pointerstatus = 0;
+elements(mc).callback = 'callback_livecellminer_show_current_selection(ind_auswahl, code_alle, zgf_y_bez);';
+elements(mc).tag = 'MI_LiveCellMiner_ShowCurrentSelection';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 

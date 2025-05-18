@@ -62,8 +62,8 @@ for i=selectedIndices'
     mkdir(currentOutputFolderMask);
     mkdir(currentOutputFolderRaw);
 
-    currentRawImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'raw'));
-    currentMaskImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, zgf_y_bez, 'mask'));
+    currentRawImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, bez_code, zgf_y_bez, 'raw'));
+    currentMaskImage = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(i, code_alle, bez_code, zgf_y_bez, 'mask'));
 
     %% save images for each frame
     for j=1:numFrames

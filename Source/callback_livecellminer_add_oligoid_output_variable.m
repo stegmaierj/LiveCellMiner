@@ -41,22 +41,17 @@ end
 
 %% find output variable of the experiment
 experimentId = callback_livecellminer_find_output_variable(bez_code, 'Experiment');
-microscopeId = callback_livecellminer_find_output_variable(bez_code, 'Microscope');
 positionId = callback_livecellminer_find_output_variable(bez_code, 'Position');
 
 %% open the first file and provide selection of which output variable to add.
-%% find all cells belonging to the current experiment and determine the microscope
+%% find all cells belonging to the current experiment
 currentIndices = find(code_alle(:,experimentId) == 1);
-currentMicroscrope = code_alle(currentIndices(1), microscopeId);
 
 %% identify the folder containing the experiment
-currentInputFolder = [inputFolder zgf_y_bez(microscopeId,currentMicroscrope).name filesep];
-if (~isfolder(currentInputFolder))
-    currentInputFolder = inputFolder;
-end
+currentInputFolder = inputFolder;
 
 %% try to load the oligoIds from a text file named identical to the experiment name with txt extension
-oligoIdTextFile = [currentInputFolder zgf_y_bez(experimentId,1).name '.txt'];
+oligoIdTextFile = [currentInputFolder zgf_y_bez(experimentId,1).name filesep zgf_y_bez(experimentId,1).name '.txt'];
 if (~exist(oligoIdTextFile, 'file'))
     disp(['ERROR: OligoID CSV file was not found in the following path: ' oligoIdTextFile]);
     return;
@@ -70,7 +65,7 @@ fclose(fileID);
 prompt = specifiers;
 dlgtitle = 'Which output variables do you want to add?';
 dims = [1 35];
-definput = {'0','1','0'};
+definput = {'0', '1', '0'};
 selectedOutputVariables = inputdlg(prompt,dlgtitle,dims,definput);
 
 
@@ -96,18 +91,14 @@ for o=1:length(selectedOutputVariables)
     %% run through all experiments and add the oligoIDs to each plate
     for i=unique(code_alle(:,experimentId))'
     
-	    %% find all cells belonging to the current experiment and determine the microscope
+	    %% find all cells belonging to the current experiment
         currentIndices = find(code_alle(:,experimentId) == i);
-        currentMicroscrope = code_alle(currentIndices(1), microscopeId);
     
 	    %% identify the folder containing the experiment
-        currentInputFolder = [inputFolder zgf_y_bez(microscopeId,currentMicroscrope).name filesep];
-        if (~isfolder(currentInputFolder))
-            currentInputFolder = inputFolder;
-        end
+        currentInputFolder = inputFolder;
         
 	    %% try to load the oligoIds from a text file named identical to the experiment name with txt extension
-        metaDataTextFile = [currentInputFolder zgf_y_bez(experimentId,i).name '.txt'];
+        metaDataTextFile = [currentInputFolder zgf_y_bez(experimentId,i).name filesep zgf_y_bez(experimentId,i).name '.txt'];
         if (~exist(metaDataTextFile, 'file'))
             disp(['ERROR: meta data CSV file was not found in the following path: ' metaDataTextFile]);
             return;

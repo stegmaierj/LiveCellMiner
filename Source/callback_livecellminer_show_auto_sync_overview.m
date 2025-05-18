@@ -45,26 +45,30 @@ if (experimentId == 0 || oligoId == 0)
     return; 
 end
 
-%% check the number of occurrences for the different output classes and experiments (to ensure there are sufficient samples per treatment).
-currentCounts = zeros(max(code_alle(:,experimentId)), max(code_alle(:,oligoId)));
+experimentIds = unique(code_alle(ind_auswahl,experimentId));
+oligoIds = unique(code_alle(ind_auswahl,oligoId));
 
-experimentIds = unique(code_alle(:,experimentId));
-oligoIds = unique(code_alle(:,oligoId));
+%% check the number of occurrences for the different output classes and experiments (to ensure there are sufficient samples per treatment).
+currentCounts = zeros(length(experimentIds), length(oligoIds));
 
 experimentLabels = cell(length(experimentIds), 1);
 oligoLabels = cell(length(oligoIds), 1);
 
+currentExperiment = 1;
+
 for i=experimentIds'
     
-    experimentLabels{i} = strrep(zgf_y_bez(experimentId,i).name, '_', '\_');
+    experimentLabels{currentExperiment} = strrep(zgf_y_bez(experimentId,i).name, '_', '\_');
+    currentOligoID = 1;
     
     for j=oligoIds'
-        validIndices = find(code_alle(:,experimentId) == i & code_alle(:,oligoId) == j & squeeze(d_orgs(:,1,syncFeature)) > 0);
-        invalidIndices = find(code_alle(:,experimentId) == i & code_alle(:,oligoId) == j & squeeze(d_orgs(:,1,syncFeature)) <= 0);
+        validIndices = ind_auswahl(find(code_alle(ind_auswahl,experimentId) == i & code_alle(ind_auswahl,oligoId) == j & squeeze(d_orgs(ind_auswahl,1,syncFeature)) > 0));
+        invalidIndices = ind_auswahl(find(code_alle(ind_auswahl,experimentId) == i & code_alle(ind_auswahl,oligoId) == j & squeeze(d_orgs(ind_auswahl,1,syncFeature)) <= 0));
             
-        currentCounts(i, j) = length(validIndices);
+        currentCounts(currentExperiment, currentOligoID) = length(validIndices);
         
-        oligoLabels{j} = strrep(zgf_y_bez(oligoId,j).name, '_', '\_');
+        oligoLabels{currentOligoID} = strrep(zgf_y_bez(oligoId,j).name, '_', '\_');
+        currentOligoID = currentOligoID + 1;
         
         if (isempty(validIndices) && isempty(invalidIndices))
             continue;
@@ -73,17 +77,21 @@ for i=experimentIds'
                 
         disp(['Experiment: ' zgf_y_bez(experimentId,i).name ', OligoID: ' zgf_y_bez(oligoId,j).name, ', valid sync information: ' num2str(length(validIndices)) ' / ' num2str(length(validIndices) + length(invalidIndices))]);
     end
+
+    currentExperiment = currentExperiment + 1;
 end
 
-disp(['Total number of valid sync information: ' num2str(sum(currentCounts(:))) ' / ' num2str(size(d_orgs,1))]);
+disp(['Total number of valid sync information: ' num2str(sum(currentCounts(:))) ' / ' num2str(length(ind_auswahl))]);
 
-for i=1:length(oligoLabels)
-    if (isempty(oligoLabels{i}))
-        oligoLabels{i} = '';
-    end    
-end
+%for i=1:length(oligoLabels)
+%    if (isempty(oligoLabels{i}))
+%        oligoLabels{i} = '';
+%    end    
+%end
     
-figure(2);
+fh = figure(2);
+set(fh, 'Units','normalized', 'OuterPosition', [0,0,1,1]);
+
 h = heatmap(currentCounts);
 h.YLabel = 'Experiment';
 h.XLabel = 'OligoID';

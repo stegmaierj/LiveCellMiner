@@ -24,17 +24,12 @@
 % New Tool to Analyze Mitotic Progression", PLOS ONE, 17(7), e0270923, 2022.
 %
 %%
-function dataSetString = callback_livecellminer_create_hdf5_path(cellIndex, code_alle, bez_code, zgf_y_bez, imageType)
+function dataSetString = callback_livecellminer_create_hdf5_path_strings(experimentName, positionName, cellIndex, imageType)
 
-    experimentOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'Experiment');
-    positionOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'Position');
-    cellOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'Cell');
-
-    currentCode = code_alle(cellIndex, :);
     outputString = ['/'...
-                    zgf_y_bez(experimentOutputVariable, currentCode(experimentOutputVariable)).name '/' ...
-                    zgf_y_bez(positionOutputVariable, currentCode(positionOutputVariable)).name '/' ...
-                    zgf_y_bez(cellOutputVariable, currentCode(cellOutputVariable)).name '/'];
+                    experimentName '/' ...
+                    positionName '/' ...
+                    cellIndex '/'];
 
     dataSetString = [outputString imageType];
 end

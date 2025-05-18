@@ -74,7 +74,7 @@ function [] = callback_livecellminer_import_project(parameters)
             [~, ~, ext] = fileparts(inputFiles(f).name);        
             currentOutputFile = [parameters.detectionFolder strrep(inputFiles(f).name, ext, parameters.detectionExtension)]; %#ok<PFBNS> 
 
-            if (isfile(currentOutputFile))
+            if (isfile(currentOutputFile) && ~parameters.reprocessDetection)
                 continue;
             end
 
@@ -122,7 +122,7 @@ function [] = callback_livecellminer_import_project(parameters)
         end
                 
         %% only process if data does not exist yet
-        if (outputDataExists == false)
+        if (outputDataExists == false || parameters.reprocessCellpose)
             parameters.maskFolder = parameters.outputFolderCellPose;
 
             CELLPOSEFilter = '';

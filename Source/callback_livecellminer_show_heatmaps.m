@@ -90,6 +90,7 @@ function [] = callback_livecellminer_show_heatmaps(parameter, d_orgs, var_bez, i
             colordef white; %#ok<COLORDEF>
             set(fh, 'color', 'white');
         end
+        set(fh, 'Units','normalized', 'OuterPosition', [0,0,1,1]);
 
         %% summarize the results of each position either as a heat map, box plots or line plots
         minValue = inf;
@@ -166,6 +167,9 @@ function [] = callback_livecellminer_show_heatmaps(parameter, d_orgs, var_bez, i
                 callback_livecellminer_relative_frame_numbers;
             end
         end
+
+        %% adapt labels and font size of all axes
+        callback_livecellminer_beautify_plots;
     end
 
     colordef white; %#ok<COLORDEF>

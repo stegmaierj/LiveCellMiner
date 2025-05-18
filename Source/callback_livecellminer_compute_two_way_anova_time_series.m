@@ -28,6 +28,7 @@
 %% get the selected single features
 selectedFeatures = parameter.gui.merkmale_und_klassen.ind_zr;
 selectedOutputVariable = parameter.gui.merkmale_und_klassen.ausgangsgroesse;
+experimentOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'Experiment');
 synchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
 
 numGroups = length(unique(code_alle(:,selectedOutputVariable)));
@@ -107,10 +108,10 @@ numOutputClasses = length(selectedOutputClasses);
 for f=selectedFeatures
         
     %% create an output file
-    outputFileName1 = ['TwoWayANOVA_' zgf_y_bez(2,1).name '_' kill_lz(var_bez(f,:)) '_TestResults.csv'];
+    outputFileName1 = ['TwoWayANOVA_' zgf_y_bez(experimentOutputVariable,1).name '_' kill_lz(var_bez(f,:)) '_TestResults.csv'];
     fileHandle1 = fopen([parameter.projekt.pfad filesep outputFileName1], 'wb');
     
-    fprintf(fileHandle1, 'Figure;Feature;Microscope;Time Point;Group1;Group2;P-Value;Sign. (alpha = %.2f);Method;Multiple Testing Correction;Notes\n', parameter.gui.statistikoptionen.p_krit);
+    fprintf(fileHandle1, 'Figure;Feature;Time Point;Group1;Group2;P-Value;Sign. (alpha = %.2f);Method;Multiple Testing Correction;Notes\n', parameter.gui.statistikoptionen.p_krit);
     
     %% get the aligned heat map for the current time series
     [resultHeatMap] = callback_livecellminer_compute_aligned_heatmap(d_orgs, ind_auswahl, synchronizationIndex, f, parameter);
@@ -149,7 +150,7 @@ for f=selectedFeatures
         
         for j=1:size(c,1)
             c(j,end)
-            fprintf(fileHandle1, '%i;%s;%s;%i;%s;%s;%.2e;%i;One-Way ANOVA;%s;Comparing individual time points;\n', 1, kill_lz(var_bez(f,:)), zgf_y_bez(2,1).name, i, gnames{c(j,1)}, gnames{c(j,2)}, c(j,end), c(j,end) < parameter.gui.statistikoptionen.p_krit, multipleTestingMethod);
+            fprintf(fileHandle1, '%i;%s;%i;%s;%s;%.2e;%i;One-Way ANOVA;%s;Comparing individual time points;\n', 1, kill_lz(var_bez(f,:)), i, gnames{c(j,1)}, gnames{c(j,2)}, c(j,end), c(j,end) < parameter.gui.statistikoptionen.p_krit, multipleTestingMethod);
         end
         
         %% Window,  Close figures 
@@ -164,7 +165,7 @@ for f=selectedFeatures
     [c,m,h,gnames] = multcompare(stats, 'CType', multipleTestingMethod);
     
     for j=1:size(c,1)
-        fprintf(fileHandle1, '%i;%s;%s;%s;%s;%s;%.2e;%i;Two-Way ANOVA;%s; Interaction model comparing all selected time points\n', 1,kill_lz(var_bez(f,:)), zgf_y_bez(2,1).name, num2str(timePoints), gnames{c(j,1)}, gnames{c(j,2)}, c(j,end), c(j,end) < parameter.gui.statistikoptionen.p_krit, multipleTestingMethod);
+        fprintf(fileHandle1, '%i;%s;%s;%s;%s;%.2e;%i;Two-Way ANOVA;%s; Interaction model comparing all selected time points\n', 1,kill_lz(var_bez(f,:)), num2str(timePoints), gnames{c(j,1)}, gnames{c(j,2)}, c(j,end), c(j,end) < parameter.gui.statistikoptionen.p_krit, multipleTestingMethod);
     end
     
     %% Window,  Close figures 

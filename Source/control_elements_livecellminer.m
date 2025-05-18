@@ -192,7 +192,7 @@ els(ec).style = 'checkbox';
 %the variable can be use for the access to the element value
 els(ec).variable = 'parameter.gui.livecellminer.timeInMinutes';
 %default value at the start
-els(ec).default = 0;
+els(ec).default = 1;
 %help text in the context menu
 els(ec).tooltext = 'If enabled, frame number will be scaled with the temporal spacing';
 %callback for any action at the element, can be empty

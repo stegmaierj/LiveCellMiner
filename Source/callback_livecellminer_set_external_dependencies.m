@@ -26,7 +26,8 @@
 %%
 
 %% specify the default settings file
-settingsFile = [parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'externalDependencies.txt'];
+currentFileDir = fileparts(mfilename('fullpath'));
+settingsFile = [currentFileDir filesep 'externalDependencies.txt'];
 
 %% load previous path if it exists, otherwise set default paths to have an idea how the paths should be specified.
 previousPathsLoaded = false;

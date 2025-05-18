@@ -115,6 +115,7 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
         else
             set(fh, 'color', 'white');
         end
+        set(fh, 'Units','normalized', 'OuterPosition', [0,0,1,1]);
     
     
         %% summarize the results of each position either as a heat map, box plots or line plots
@@ -124,8 +125,11 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
         globalMaxValue = max(d_org(:, f));
         intensityHistogramStep = (globalMaxValue - globalMinValue) / 100;
     
+        statisticsTable = cell(0, 6);
+        statisticsSpecifiers = {'Feature', 'Experiment', 'Group', 'Mean', 'Std. Dev.', 'Median'};
         currentLegend = char();
         currentSubPlot = 1;
+        currentStats = 1;
     
         if (summarizeSelectedExperiments == false)
             for e=generate_rowvector(selectedExperiments)
@@ -279,6 +283,20 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
                 end
     
                 title(strrep(zgf_y_bez(experimentId,e).name, '_', '\_'));
+                
+                for i=unique(grouping)'
+
+                    currentDataPoints = find(grouping == i);
+                    statisticsTable{currentStats, 1} = kill_lz(dorgbez(f,:));
+                    statisticsTable{currentStats, 2} = strrep(zgf_y_bez(experimentId,e).name, '_', '\_');
+                    statisticsTable{currentStats, 3} = currentLegend(i,:);
+                    statisticsTable{currentStats, 4} = mean(dataPoints(currentDataPoints));
+                    statisticsTable{currentStats, 5} = std(dataPoints(currentDataPoints));
+                    statisticsTable{currentStats, 6} = median(dataPoints(currentDataPoints));
+
+                    currentStats = currentStats + 1;
+                end
+
     
                 %% increment subplot counter
                 currentSubPlot = currentSubPlot + 1;
@@ -435,11 +453,31 @@ function [] = callback_livecellminer_show_combined_boxplots(parameter, d_org, d_
                 zlabel('Number of Cells');
                 axis tight; box off;
             end
+
+            for i=unique(grouping)'
+
+                currentDataPoints = find(grouping == i);
+                statisticsTable{currentStats, 1} = kill_lz(dorgbez(f,:));
+                statisticsTable{currentStats, 2} = 'Combined Experiments';
+                statisticsTable{currentStats, 3} = currentLegend(i,:);
+                statisticsTable{currentStats, 4} = mean(dataPoints(currentDataPoints));
+                statisticsTable{currentStats, 5} = std(dataPoints(currentDataPoints));
+                statisticsTable{currentStats, 6} = median(dataPoints(currentDataPoints));
+
+                %% increment subplot counter
+                currentStats = currentStats + 1;
+            end
     
             title('Combined Experiments');
         end
+
+        %% plot statistics
+        cell2table(statisticsTable, 'VariableNames', statisticsSpecifiers)
+
+        %% adapt labels and font size of all axes
+        callback_livecellminer_beautify_plots;
     end
-    
+
     colordef white; %#ok<COLORDEF>
 
 end

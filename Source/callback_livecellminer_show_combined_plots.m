@@ -104,6 +104,8 @@ for featureIndex = generate_rowvector(selectedFeatures)
     else
         set(fh, 'color', 'white');
     end
+    set(fh, 'Units','normalized', 'OuterPosition', [0,0,1,1]);
+    
     %% summarize the results of each position either as a heat map, box plots or line plots
     minValue = inf;
     maxValue = -inf;
@@ -212,6 +214,9 @@ for featureIndex = generate_rowvector(selectedFeatures)
             end
         end
     end
+
+    %% adapt labels and font size of all axes
+    callback_livecellminer_beautify_plots;
 end
 
 colordef white;
