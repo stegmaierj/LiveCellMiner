@@ -77,7 +77,7 @@ elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
 elements(mc).name = 'Import';
 elements(mc).tag = 'MI_LiveCellMiner_Import';
-elements(mc).menu_items = {'MI_LiveCellMiner_External_Dependencies', 'MI_LiveCellMiner_Import_Project', 'MI_LiveCellMiner_Fuse_Projects', 'MI_LiveCellMiner_ConvertImageSnippetsToHDF5'};
+elements(mc).menu_items = {'MI_LiveCellMiner_External_Dependencies', 'MI_LiveCellMiner_Import_Project', 'MI_LiveCellMiner_Fuse_Projects', 'MI_LiveCellMiner_ReprocessSnippetSegmentation'};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -117,10 +117,10 @@ elements(mc).freischalt = {};
 mc = mc+1;
 elements(mc).uihd_code = [newcolumn mc];
 elements(mc).handle = [];
-elements(mc).name = 'Convert Image Snippets to HDF5';
+elements(mc).name = 'Resegment Image Snippets';
 elements(mc).delete_pointerstatus = 0;
-elements(mc).callback = 'callback_livecellminer_convert_image_files_to_hdf5;';
-elements(mc).tag = 'MI_LiveCellMiner_ConvertImageSnippetsToHDF5';
+elements(mc).callback = 'callback_livecellminer_resegment_image_snippets;';
+elements(mc).tag = 'MI_LiveCellMiner_ReprocessSnippetSegmentation';
 %is enabled if at least one single feature exist
 elements(mc).freischalt = {};
 

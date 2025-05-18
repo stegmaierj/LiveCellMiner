@@ -77,7 +77,11 @@ function [featureNames, featureVector] = callback_livecellminer_extract_nucleus_
     end
 
     %% extract the Haralick features
-    segmentedImage = maskImage.* adjustedRawImg;    % CHECK: might need to write uint16(maskImage).*adjustedRawImg
+    if (isa(maskImage, 'uint8') && isa(adjustedRawImg, 'uint16'))
+        maskImage = uint16(maskImage);
+    end
+
+    segmentedImage = maskImage .* adjustedRawImg;    % CHECK: might need to write uint16(maskImage).*adjustedRawImg
     
     if (debugFigures == true)
         imagesc(segmentedImage);
