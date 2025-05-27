@@ -37,16 +37,18 @@ end
 
 %% find synchronization
 synchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
-ind_auswahl_valid = ind_auswahl(d_orgs(ind_auswahl, 1, synchronizationIndex) > 0);
 
 if (synchronizationIndex == 0)
     disp('Perform synchronization first, as it is needed for the export of an aligned gallery. Synchronization can be done with LiveCellMiner -> Align');
     return;
 end
 
+ind_auswahl_valid = ind_auswahl(d_orgs(ind_auswahl, 1, synchronizationIndex) > 0);
+
+
 %% get the extents of the image snippets
 imageDataBase = callback_livecellminer_get_image_data_base_filename(1, parameter, code_alle, zgf_y_bez, bez_code);
-dummyImage = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(1, code_alle, zgf_y_bez, 'raw')));
+dummyImage = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(1, code_alle, bez_code, zgf_y_bez, 'raw')));
 imageWidth = size(dummyImage, 1);
 imageHeight = size(dummyImage, 2);
 
@@ -86,7 +88,7 @@ for i=1:numCells
         callback_livecellminer_convert_image_files_to_hdf5;
     end
 
-    currentRawImage = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(currentIndex, code_alle, zgf_y_bez, 'raw')));
+    currentRawImage = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(currentIndex, code_alle, bez_code, zgf_y_bez, 'raw')));
 
 
     %% add phase 1 frames
