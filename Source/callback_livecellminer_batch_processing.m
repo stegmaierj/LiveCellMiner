@@ -26,7 +26,7 @@
 %%
 
 %% specify the default settings file
-callback_livecellminer_get_external_dependencies;
+[XPIWITPath, ULTRACKPath] = callback_livecellminer_get_external_dependencies();
 
 %% add external scripts to path
 addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep]);
@@ -63,6 +63,7 @@ for i=1:length(inputFolders)
     parameters = struct();
        
     parameters.XPIWITPath = XPIWITPath;
+    parameters.ULTRACKPath = ULTRACKPath;
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% project-specific parameters and selection of algrithms to use for processing
@@ -146,7 +147,6 @@ for i=1:length(inputFolders)
         disp(['ERROR: Couldn''t find processing pipeline ' parameters.XPIWITDetectionPipeline ' . Make sure the file exists or create a pipeline for the selected physical spacing!']);
     end
 
-    parameters.CELLPOSEEnvironment = CELLPOSEEnvironment; %'/work/scratch/stegmaier/Software/Environments/cellpose/bin/python';
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %%% TMP !!!! %%%%

@@ -25,57 +25,60 @@
 %
 %%
 
-%% specify the default settings file
-currentFileDir = fileparts(mfilename('fullpath'));
-settingsFile = [currentFileDir filesep 'externalDependencies.txt'];
+function [XPIWITPath, ULTRACKPath] = callback_livecellminer_set_external_dependencies()
 
-%% load previous path if it exists, otherwise set default paths to have an idea how the paths should be specified.
-previousPathsLoaded = false;
-if (exist(settingsFile, 'file'))
-    fileHandle = fopen(settingsFile, 'r');
-    currentLine = fgets(fileHandle);
+    %% specify the default settings file
+    currentFileDir = fileparts(mfilename('fullpath'));
+    settingsFile = [currentFileDir filesep 'externalDependencies.txt'];
     
-    if (currentLine > 0)
-        splitString = strsplit(currentLine, ';');
-        XPIWITPath = splitString{1};
-        CELLPOSEEnvironment = splitString{2};
-        fclose(fileHandle);
-        previousPathsLoaded = true;
-    end
-end
-
-%% show some example paths if no previous paths exist
-if (previousPathsLoaded == false)
-    XPIWITPath = 'D:/Programming/XPIWIT/Release/2019/XPIWIT_Windows_x64/Bin/';
-    CELLPOSEEnvironment = 'C:/Environments/cellpose/python.exe';
-end
-
-%% open input dialog for setting the paths
-prompt = {'XPIWIT Path:', 'Cellpose Environment:'};
-dlgtitle = 'Paths to External Dependencies';
-dims = [1 100];
-definput = {XPIWITPath, CELLPOSEEnvironment};
-answer = inputdlg(prompt,dlgtitle,dims,definput);
-
-%% write the new path to disk
-if (~isempty(answer))
-    
-    XPIWITPath = strrep(answer{1}, '\', '/');
-    if (XPIWITPath(end) ~= '/'); XPIWITPath = [XPIWITPath '/']; end
-
-    if (~isfolder(answer{1}))
-        disp('Wrong XPIWIT path provided - please try again and specify path to the Bin folder that contains the XPIWIT(.exe).');
-    end
+    %% load previous path if it exists, otherwise set default paths to have an idea how the paths should be specified.
+    previousPathsLoaded = false;
+    if (exist(settingsFile, 'file'))
+        fileHandle = fopen(settingsFile, 'r');
+        currentLine = fgets(fileHandle);
         
-    CELLPOSEEnvironment = answer{2};
-
-    if (~isfile(answer{2}))
-        disp('Wrong cellpose environment provided - please try again and specify path to the python(.exe) of the Cellpose environment.');
+        if (currentLine > 0)
+            splitString = strsplit(currentLine, ';');
+            XPIWITPath = splitString{1};
+            ULTRACKPath = splitString{2};
+            fclose(fileHandle);
+            previousPathsLoaded = true;
+        end
     end
-
-    fileHandle = fopen(settingsFile, 'wb');
-    fprintf(fileHandle, '%s;%s;%s', XPIWITPath, CELLPOSEEnvironment);
-    fclose(fileHandle);
-else
-    disp('Wrong information provided - please try again and specify folders for the XPIWIT and Cellpose paths and the path to the python.exe of the Cellpose environment.');
+    
+    %% show some example paths if no previous paths exist
+    if (previousPathsLoaded == false)
+        XPIWITPath = 'D:/Programming/XPIWIT/Release/2019/XPIWIT_Windows_x64/Bin/';
+        ULTRACKPath = 'C:/Environments/ultrack/python.exe';
+    end
+    
+    %% open input dialog for setting the paths
+    prompt = {'XPIWIT Path:', 'Ultrack Environment:'};
+    dlgtitle = 'Paths to External Dependencies';
+    dims = [1 100];
+    definput = {XPIWITPath, ULTRACKPath};
+    answer = inputdlg(prompt,dlgtitle,dims,definput);
+    
+    %% write the new path to disk
+    if (~isempty(answer))
+        
+        XPIWITPath = strrep(answer{1}, '\', '/');
+        if (XPIWITPath(end) ~= '/'); XPIWITPath = [XPIWITPath '/']; end
+    
+        if (~isfolder(answer{1}))
+            disp('Wrong XPIWIT path provided - please try again and specify path to the Bin folder that contains the XPIWIT(.exe).');
+        end
+            
+        ULTRACKPath = answer{2};
+    
+        if (~isfile(answer{2}))
+            disp('Wrong cellpose environment provided - please try again and specify path to the python(.exe) of the Ultrack environment.');
+        end
+    
+        fileHandle = fopen(settingsFile, 'wb');
+        fprintf(fileHandle, '%s;%s;%s', XPIWITPath, ULTRACKPath);
+        fclose(fileHandle);
+    else
+        disp('Wrong information provided - please try again and specify folders for the XPIWIT and the path to the python.exe (Windows) or python executable (Unix) of the Ultrack environment.');
+    end
 end
