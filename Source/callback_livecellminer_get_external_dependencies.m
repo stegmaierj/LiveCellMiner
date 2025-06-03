@@ -45,7 +45,6 @@ function [XPIWITPath, ULTRACKPath] = callback_livecellminer_get_external_depende
             previousPathsLoaded = true;
         end
     else
-        callback_livecellminer_set_external_dependencies;
+        [XPIWITPath, ULTRACKPath] = callback_livecellminer_set_external_dependencies();
     end
-
 end
