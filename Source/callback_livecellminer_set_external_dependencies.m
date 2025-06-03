@@ -51,34 +51,45 @@ function [XPIWITPath, ULTRACKPath] = callback_livecellminer_set_external_depende
         XPIWITPath = 'D:/Programming/XPIWIT/Release/2019/XPIWIT_Windows_x64/Bin/';
         ULTRACKPath = 'C:/Environments/ultrack/python.exe';
     end
+
+    questionDlgText = sprintf('Current external dependencies set to \n\n XPIWITPath = %s \n\n ULTRACKPath = %s', XPIWITPath, ULTRACKPath);
     
-    %% open input dialog for setting the paths
-    prompt = {'XPIWIT Path:', 'Ultrack Environment:'};
-    dlgtitle = 'Paths to External Dependencies';
-    dims = [1 100];
-    definput = {XPIWITPath, ULTRACKPath};
-    answer = inputdlg(prompt,dlgtitle,dims,definput);
-    
-    %% write the new path to disk
-    if (~isempty(answer))
+    answer = questdlg(questionDlgText, ...
+	    'External Dependencies', ...
+	    'Ok','Reset','Cancel','Ok');
+
+    % Handle response
+    switch answer
+        case 'Ok'
+            return;
+        case 'Reset'
+            msgBoxHandle = msgbox('Please select the Bin folder of your XPIWIT installation that contains the XPIWIT.sh (Unix) or XPIWIT.exe (Windows).');
+            waitfor(msgBoxHandle);
         
-        XPIWITPath = strrep(answer{1}, '\', '/');
-        if (XPIWITPath(end) ~= '/'); XPIWITPath = [XPIWITPath '/']; end
-    
-        if (~isfolder(answer{1}))
-            disp('Wrong XPIWIT path provided - please try again and specify path to the Bin folder that contains the XPIWIT(.exe).');
-        end
+        
+            XPIWITPath = uigetdir(XPIWITPath, 'Wrong XPIWIT path provided - please try again and specify path to the Bin folder that contains the XPIWIT(.exe).');
+            XPIWITPath = strrep(XPIWITPath, '\', '/');
+            if (XPIWITPath(end) ~= '/'); XPIWITPath = [XPIWITPath '/']; end
+        
+            msgBoxHandle = msgbox('Please select the python executable of the Ultrack environment (e.g., C:/Environments/ultrack/python.exe (Windows) or /opt/anaconda3/envs/ultrack (Unix))');
+            waitfor(msgBoxHandle);
+        
+            ULTRACKPath = uigetdir(ULTRACKPath, 'Wrong information provided - please try again and specify folders for the XPIWIT and the path to the python.exe (Windows) or python executable (Unix) of the Ultrack environment.');
+            ULTRACKPath = strrep(ULTRACKPath, '\', '/');
+            ULTRACKPath = [ULTRACKPath 'python'];
+            if (ispc)
+                ULTRACKPath = [ULTRACKPath '.exe'];
+            end
             
-        ULTRACKPath = answer{2};
-    
-        if (~isfile(answer{2}))
-            disp('Wrong cellpose environment provided - please try again and specify path to the python(.exe) of the Ultrack environment.');
-        end
-    
-        fileHandle = fopen(settingsFile, 'wb');
-        fprintf(fileHandle, '%s;%s;%s', XPIWITPath, ULTRACKPath);
-        fclose(fileHandle);
-    else
-        disp('Wrong information provided - please try again and specify folders for the XPIWIT and the path to the python.exe (Windows) or python executable (Unix) of the Ultrack environment.');
+            %% write the new path to disk
+            if (isfolder(XPIWITPath) && isfile(ULTRACKPath))
+                fileHandle = fopen(settingsFile, 'wb');
+                fprintf(fileHandle, '%s;%s;%s', XPIWITPath, ULTRACKPath);
+                fclose(fileHandle);
+            else
+                disp('Wrong information provided - please try again and specify folders for the XPIWIT and the path to the python.exe (Windows) or python executable (Unix) of the Ultrack environment.');
+            end
+        case 'Cancel'
+            return;
     end
 end
