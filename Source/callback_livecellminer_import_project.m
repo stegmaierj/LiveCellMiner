@@ -61,8 +61,8 @@ function [] = callback_livecellminer_import_project(parameters)
     if (~isfolder(parameters.augmentedMaskFolder)); mkdir(parameters.augmentedMaskFolder); end
 
     %% perform seed detection
-    oldPath = pwd;
-    cd(parameters.XPIWITPath);
+    %oldPath = pwd;
+    %cd(parameters.XPIWITPath);
     
     inputFiles = dir([inputFolder parameters.imageFilter]);
     numInputFiles = length(inputFiles);
@@ -79,17 +79,15 @@ function [] = callback_livecellminer_import_project(parameters)
             end
 
             %% specify the XPIWIT command
-            XPIWITCommand = ['./XPIWIT.sh --output "' outputFolderSeeds '" --input "0, ' inputFolder inputFiles(f).name ', 2, float" --xml "' parameters.XPIWITDetectionPipeline '" --seed 0 --lockfile off --subfolder "filterid, filtername" --outputformat "imagename, filtername" --end'];
+            XPIWITCommand = [parameters.XPIWITPath ' --output "' outputFolderSeeds '" --input "0, ' inputFolder inputFiles(f).name ', 2, float" --xml "' parameters.XPIWITDetectionPipeline '" --seed 0 --lockfile off --subfolder "filterid, filtername" --outputformat "imagename, filtername" --end'];
 
             %% replace slashes by backslashes for windows systems
             if (ispc == true)
-                XPIWITCommand = strrep(XPIWITCommand, './XPIWIT.sh', 'XPIWIT.exe');
                 XPIWITCommand = strrep(XPIWITCommand, '\', '/');
             end
             system(XPIWITCommand);
         end
     end
-    cd(oldPath);
 
     %% perform cell pose segmentation (optional)
     if (parameters.useCellpose == true)
