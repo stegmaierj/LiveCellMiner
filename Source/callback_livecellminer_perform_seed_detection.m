@@ -103,6 +103,8 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
 
                 if (parameters.useTWANG == true)
                     twangSegmentation = imread([parameters.twangFolder twangFiles(i).name]);
+                    twangSegmentation = imclose(twangSegmentation, strel('disk', 5));
+                    
                     regionPropsTWANG = regionprops(twangSegmentation, 'Centroid', 'Area', 'EquivDiameter', 'PixelIdxList');
 
                     for j=1:sum(keepIndices)
@@ -132,6 +134,9 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
 
                 if (parameters.useTWANG == true)
                     twangSegmentation = imread([parameters.twangFolder twangFiles(i).name]);
+
+                    twangSegmentation = imclose(twangSegmentation, strel('disk', 5));
+
                     currentSegmentation = zeros(size(twangSegmentation));
                     regionPropsTWANG = regionprops(twangSegmentation, 'Centroid', 'Area', 'EquivDiameter', 'PixelIdxList');
 
