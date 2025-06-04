@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="859082796" file="/Users/jstegmaier/Programming/SciXMiner/application_specials/livecellminer/LCMProjectImporter.prj" location="/Users/jstegmaier/Programming/SciXMiner/application_specials/livecellminer" name="LCMProjectImporter" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="2784738575" file="/Users/jstegmaier/Programming/SciXMiner/application_specials/livecellminer/LCMProjectImporter.prj" location="/Users/jstegmaier/Programming/SciXMiner/application_specials/livecellminer" name="LCMProjectImporter" target="target.mlapps" target-name="Package App">
     <param.appname>LCMProjectImporter</param.appname>
     <param.authnamewatermark>Johannes Stegmaier</param.authnamewatermark>
     <param.email>johannes.stegmaier@lfb.rwth-aachen.de</param.email>
@@ -8,7 +8,7 @@
     <param.icons />
     <param.summary />
     <param.description />
-    <param.screenshot>/private/var/folders/v2/3l3_4sp56_sdspj8tvjztxrc0000gn/T/tp08bb5a0c_de21_4853_8237_81820e09666c.png</param.screenshot>
+    <param.screenshot>/private/var/folders/v2/3l3_4sp56_sdspj8tvjztxrc0000gn/T/tp27a9c7f8_2676_41e8_a562_2a2b93dbce1a.png</param.screenshot>
     <param.version>1.0</param.version>
     <param.products.name />
     <param.products.id />
@@ -32,7 +32,6 @@
       <file>${PROJECT_ROOT}/LCMProjectImporter.mlapp</file>
     </fileset.main>
     <fileset.depfun>
-      <file>/Users/jstegmaier/Documents/MATLAB/SupportPackages/R2024b/toolbox/medical/supportpackages/cellpose/cellpose/cellpose.p</file>
       <file>${PROJECT_ROOT}/callback_livecellminer_create_xpiwit_pipeline.m</file>
       <file>${PROJECT_ROOT}/callback_livecellminer_get_external_dependencies.m</file>
       <file>${PROJECT_ROOT}/callback_livecellminer_get_valid_input_paths.m</file>
