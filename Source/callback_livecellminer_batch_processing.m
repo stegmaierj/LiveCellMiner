@@ -28,12 +28,22 @@
 %% specify the default settings file
 [XPIWITPath, ULTRACKPath] = callback_livecellminer_get_external_dependencies();
 
+%% open the GUI
+dataStorage = LCMImporterDataStorage();
+importerApp = LCMProjectImporter(dataStorage);
+waitfor(importerApp);
+
+next_function_parameter = [];
+if (isfield(dataStorage.dataArea, 'ConfigurationFile'))
+    next_function_parameter = dataStorage.dataArea.ConfigurationFile;
+end
+
 %% add external scripts to path
 addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep]);
 addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'haralick' filesep]);
 addpath([parameter.allgemein.pfad_gaitcad filesep 'application_specials' filesep 'livecellminer' filesep 'toolbox' filesep 'saveastiff_4.3' filesep]);
 
-if (~isempty(next_function_parameter))
+if (~isempty(next_function_parameter) && isfile(next_function_parameter))
     processingConfigurationFile = next_function_parameter;
     next_function_parameter = [];
 else
@@ -139,6 +149,12 @@ for i=1:length(inputFolders)
     parameters.seedDetectionStdThreshold = configuration.seedDetectionStdThreshold; %% LoG-based seed detection uses only seeds that exceed the mean intensity + x*stdDev.
     parameters.XPIWITDetectionPipeline = callback_livecellminer_create_xpiwit_pipeline(parameters.logMinSigma, parameters.logMaxSigma, parameters.seedDetectionStdThreshold, parameters.micronsPerPixel);
     
+    parameters.minNucleusDiameter = configuration.minNucleusDiameter;
+    parameters.maxNucleusDiameter = configuration.maxNucleusDiameter;
+    parameters.minNucleusAreaPixel = floor(pi * (0.5 * parameters.minNucleusDiameter / parameters.micronsPerPixel)^2);
+    parameters.maxNucleusAreaPixel = ceil(pi * (0.5 * parameters.maxNucleusDiameter / parameters.micronsPerPixel)^2);
+    parameters.maxLinkingDistancePixel = ceil(parameters.maxNucleusDiameter / parameters.micronsPerPixel);
+
     if (parameters.diameterCellpose < 0)
         parameters.diameterCellpose = 0.5 * ((configuration.minNucleusDiameter / parameters.micronsPerPixel) + (configuration.maxNucleusDiameter / parameters.micronsPerPixel));
     end
