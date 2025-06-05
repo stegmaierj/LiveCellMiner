@@ -189,7 +189,7 @@ for i=1:length(inputFolders)
         elapsedTime = toc;
         fprintf(performanceLog, '%s;%f;\n', parameters.inputFolder, elapsedTime);
     else
-        disp(['Project file for ' parameters.inputFolder ' already exists, skipping processing (To reprocess, manually delete the *.prjz and *.mat files in the project directory).' ]);
+        disp(['Project file for ' parameters.inputFolder ' already exists, skipping processing (To reprocess, select the desired reprocessing strategy in the project import GUI).' ]);
     end
 end
 
