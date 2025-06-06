@@ -34,7 +34,13 @@ outputRoot = [outputRoot filesep];
 
 %% get the synchronization time series
 manualSynchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
-selectedIndices = find(d_org(:,1) > 0);
+
+if (manualSynchronizationIndex <= 0)
+    disp('No synchronization information was found! Please run the synchronization first, e.g., using LiveCellMiner -> Align -> Perform Auto Sync or via the manual synchronization GUI');
+    return;
+end
+
+selectedIndices = ind_auswahl;
 
 numFrames = size(d_orgs,2);
 

@@ -136,6 +136,8 @@ for i=1:length(inputFolders)
 
     if (configuration.clusterCutoff > 0)
         parameters.clusterCutoff = configuration.clusterCutoff / parameters.micronsPerPixel; %% cluster cutoff (-1 for automatic detection based on 0.5 * average nearest neighbor distance of the 8 nearest neighbors)
+    else
+        parameters.clusterCutoff = configuration.clusterCutoff;
     end
     parameters.forceNNLinking = configuration.forceNNLinking;
     parameters.maxRadius = configuration.maxRadius / parameters.micronsPerPixel;  %% maximum radius to search for neighboring cells during tracking
