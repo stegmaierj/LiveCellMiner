@@ -122,11 +122,11 @@ def main(hparams):
         config = MainConfig()
         pprint(config)
 
-        config.segmentation_config.min_area = 50
-        config.segmentation_config.max_area = 250
+        config.segmentation_config.min_area = hparams.min_area
+        config.segmentation_config.max_area = hparams.max_area
         config.segmentation_config.n_workers = 8
 
-        config.linking_config.max_distance = 25
+        config.linking_config.max_distance = hparams.max_distance
         config.linking_config.n_workers = 8
 
         config.tracking_config.appear_weight = -1
@@ -211,6 +211,27 @@ if __name__ == '__main__':
         default=False,
         help='Do not reprocess / overwrite previous results by default'
     )
+
+    parent_parser.add_argument(
+        '--min_area',
+        type=int,
+        default=50,
+        help='Segmentation minimum area in pixels'
+    )
+
+    parent_parser.add_argument(
+        '--max_area',
+        type=int,
+        default=250,
+        help='Segmentation maximum area in pixels'
+    )
+
+    parent_parser.add_argument(
+        '--max_distance',
+        type=int,
+        default=25,
+        help='Maximum linking distance in pixels'
+    )    
             
     hyperparams = parent_parser.parse_args()
 
