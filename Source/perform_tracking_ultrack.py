@@ -67,7 +67,7 @@ def main(hparams):
 
     if overwrite or csv_file_missing or graph_file_missing:
 
-        print('Overwrite enabled or files are missing. Reproecssing ...')
+        print('Overwrite enabled or files are missing. Reprocessing ...')
 
         # initialize the mask images
         mask_images = None
@@ -137,7 +137,7 @@ def main(hparams):
         config.tracking_config.solution_gap = 0.0
 
         track(
-            detection=detection,
+            foreground=detection,
             edges=edges,
             config=config,
             overwrite=True,

@@ -134,6 +134,12 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
             else
                 d_orgs(1:size(currentSeeds,1), i, :) = [currentSeeds(:,1:5), currentSeeds(:,3:5), sqrt(2) * currentSeeds(:,2) / parameters.micronsPerPixel, zeros(size(currentSeeds,1),2)];
 
+                currentOutputFileName = [parameters.augmentedMaskFolder strrep(detectionFiles(i).name, '.csv', '.png')];
+                if (isfile(currentOutputFileName) && parameters.reprocessDetection == 0)
+                    fprintf('Finished importing seed image %i / %i\n', i, length(detectionFiles));    
+                    continue;
+                end
+
                 if (parameters.useTWANG == true)
                     twangSegmentation = imread([parameters.twangFolder twangFiles(i).name]);
                     twangSegmentation = imfill(twangSegmentation);
@@ -156,7 +162,7 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
                 end
             end
 
-            imwrite(uint16(currentSegmentation), [parameters.augmentedMaskFolder strrep(detectionFiles(i).name, '.csv', '.png')]);
+            imwrite(uint16(currentSegmentation), currentOutputFileName);
         else
             maskImage = imread([parameters.detectionFolder detectionFiles(i).name]);
             regionProps = regionprops(maskImage, 'Centroid', 'Area', 'EquivDiameter');
