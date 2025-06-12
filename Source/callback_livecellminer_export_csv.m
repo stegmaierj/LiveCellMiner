@@ -25,6 +25,9 @@
 %
 %%
 
+%% get the export selection stored in variable "ind_auswahl"
+callback_livecellminer_get_export_selection;
+
 %% ask which part of the data should be exported
 answer = questdlg('Would you like to export time series or single features?', ...
 	'Export Selection', ...

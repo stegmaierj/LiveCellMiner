@@ -25,6 +25,11 @@
 %
 %%
 
+%% get the export selection stored in variable "ind_auswahl_valid"
+callback_livecellminer_get_export_selection;
+selectedIndices = ind_auswahl;
+
+%% get the output directory
 outputRoot = uigetdir('', 'Please select a folder to export the data to ...');
 if (outputRoot == 0)
     disp('No valid output directory selected. Please select a proper path where you have write permissions!');
@@ -39,10 +44,6 @@ if (manualSynchronizationIndex <= 0)
     disp('No synchronization information was found! Please run the synchronization first, e.g., using LiveCellMiner -> Align -> Perform Auto Sync or via the manual synchronization GUI');
     return;
 end
-
-%% get the export selection stored in variable "ind_auswahl_valid"
-callback_livecellminer_get_export_selection;
-selectedIndices = ind_auswahl_valid;
 
 numFrames = size(d_orgs,2);
 

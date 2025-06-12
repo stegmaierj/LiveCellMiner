@@ -25,6 +25,20 @@
 %
 %%
 
+%% find synchronization
+synchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
+
+if (synchronizationIndex == 0)
+    disp('Perform synchronization first, as it is needed for the export of an aligned gallery. Synchronization can be done with LiveCellMiner -> Align');
+    return;
+end
+
+%% get the export selection stored in variable "ind_auswahl"
+callback_livecellminer_get_export_selection;
+
+%% only export cells with valid sync information
+ind_auswahl_valid = ind_auswahl(d_orgs(ind_auswahl, 1, synchronizationIndex) > 0);
+
 %% warn if too many cells were selected
 if (length(ind_auswahl) > 50)
     answer = questdlg(sprintf('You selected %i cells for image export. Export may be slow. Continue?', length(ind_auswahl)));
@@ -34,19 +48,6 @@ if (length(ind_auswahl) > 50)
         return;
     end
 end
-
-%% find synchronization
-synchronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
-
-if (synchronizationIndex == 0)
-    disp('Perform synchronization first, as it is needed for the export of an aligned gallery. Synchronization can be done with LiveCellMiner -> Align');
-    return;
-end
-
-%ind_auswahl_valid = ind_auswahl(d_orgs(ind_auswahl, 1, synchronizationIndex) > 0);
-
-%% get the export selection stored in variable "ind_auswahl_valid"
-callback_livecellminer_get_export_selection;
 
 %% get the extents of the image snippets
 imageDataBase = callback_livecellminer_get_image_data_base_filename(1, parameter, code_alle, zgf_y_bez, bez_code);
