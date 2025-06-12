@@ -27,20 +27,9 @@
 
 %% get time series and output variable indices
 manualSychronizationIndex = callback_livecellminer_find_time_series(var_bez, 'manualSynchronization');
-experimentOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'Experiment');
-positionOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'Position');
-oligoOutputVariable = callback_livecellminer_find_output_variable(bez_code, 'OligoID');
 
-% MACRO CONFIGURATION WINDOW Data points using classes ...
-auswahl.dat=[];
-auswahl.dat{1}={'All'};
-auswahl.dat{2}={'All'};
-auswahl.dat{3}={'All'};
-auswahl.dat{4}={'All'};
-eval(gaitfindobj_callback('MI_Datenauswahl_Klassen'));
-%eval(get(figure_handle(size(figure_handle,1),1),'callback'));
-
-waitfor(figure_handle(size(figure_handle,1),1))
+%% get the export selection stored in variable "ind_auswahl_valid"
+callback_livecellminer_get_export_selection;
 
 ind_auswahl = ind_auswahl(rem(ind_auswahl,2) == 0);
 aktparawin;

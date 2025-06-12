@@ -40,7 +40,9 @@ if (manualSynchronizationIndex <= 0)
     return;
 end
 
-selectedIndices = ind_auswahl;
+%% get the export selection stored in variable "ind_auswahl_valid"
+callback_livecellminer_get_export_selection;
+selectedIndices = ind_auswahl_valid;
 
 numFrames = size(d_orgs,2);
 

@@ -43,8 +43,10 @@ if (synchronizationIndex == 0)
     return;
 end
 
-ind_auswahl_valid = ind_auswahl(d_orgs(ind_auswahl, 1, synchronizationIndex) > 0);
+%ind_auswahl_valid = ind_auswahl(d_orgs(ind_auswahl, 1, synchronizationIndex) > 0);
 
+%% get the export selection stored in variable "ind_auswahl_valid"
+callback_livecellminer_get_export_selection;
 
 %% get the extents of the image snippets
 imageDataBase = callback_livecellminer_get_image_data_base_filename(1, parameter, code_alle, zgf_y_bez, bez_code);
@@ -72,7 +74,6 @@ end
 
 %% initialize the result array
 resultImage = zeros(imageHeight*numCells, imageWidth*(maxPhase1+maxPhase2+maxPhase3));
-
 
 for i=1:numCells
 

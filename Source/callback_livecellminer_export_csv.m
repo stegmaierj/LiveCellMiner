@@ -79,7 +79,7 @@ if (strcmp(answer, 'Time Series (TS)'))
 
         %% print the specifiers
         fprintf(fileID, '%s%s\n', outputVariables, relativeFrameNumbers);
-        fprintf(fileIDCombined, '%s%s%s\n', outputVariables, 'Metric;', relativeFrameNumbers);
+        fprintf(fileIDCombined, '%s%s%s\n', strrep(outputVariables, 'Cell;', '#Cells;'), 'Metric;', relativeFrameNumbers);
 
         %% export values of all selected cells
         for j=1:length(validIndices)
@@ -103,12 +103,23 @@ if (strcmp(answer, 'Time Series (TS)'))
             currentOutputVariables = [];
             for k=1:size(bez_code,1)
 
-                numCodeValues = length(unique(code_alle(validIndices(currentIndices),k)));
+                %numCodeValues = length(unique(code_alle(validIndices(currentIndices),k)));
+                codeValues = unique(code_alle(validIndices(currentIndices),k));
+                numCodeValues = length(codeValues);
 
-                if (numCodeValues == 1)
-                    currentOutputVariables = [currentOutputVariables zgf_y_bez(k,code_alle(validIndices(currentIndices(1)),k)).name ';' ];
+                codeStrings = [];
+                for l=codeValues'
+                    codeStrings = [codeStrings zgf_y_bez(k,l).name];
+    
+                    if (l ~= codeValues(end))
+                        codeStrings = [codeStrings ', '];
+                    end
+                end
+                    
+                if (strcmp(kill_lz(bez_code(k,:)), 'Cell'))
+                    currentOutputVariables = [currentOutputVariables num2str(length(currentIndices)) ';' ];
                 else
-                    currentOutputVariables = [currentOutputVariables 'Multiple Values' ';' ];
+                    currentOutputVariables = [currentOutputVariables codeStrings ';' ];
                 end
             end
 
@@ -141,7 +152,7 @@ elseif (strcmp(answer, 'Single Features (SF)'))
 
     %% print the specifiers
     fprintf(fileID, '%s%s\n', outputVariables, featureNames);
-    fprintf(fileIDCombined, '%s%s%s\n', outputVariables, 'Metric;', featureNames);
+    fprintf(fileIDCombined, '%s%s%s\n', strrep(outputVariables, 'Cell;', '#Cells;'), 'Metric;', featureNames);
 
     %% export values of all selected cells
     for j=validIndices'
@@ -165,12 +176,23 @@ elseif (strcmp(answer, 'Single Features (SF)'))
         currentOutputVariables = [];
         for k=1:size(bez_code,1)
 
-            numCodeValues = length(unique(code_alle(currentIndices,k)));
+            codeValues = unique(code_alle(currentIndices,k));
+            numCodeValues = length(codeValues);
 
-            if (numCodeValues == 1)
-                currentOutputVariables = [currentOutputVariables zgf_y_bez(k,code_alle(currentIndices(1),k)).name ';' ];
+            codeStrings = [];
+            for l=codeValues'
+                codeStrings = [codeStrings zgf_y_bez(k,l).name];
+
+                if (l ~= codeValues(end))
+                    codeStrings = [codeStrings ', '];
+                end
+            end
+
+
+            if (strcmp(kill_lz(bez_code(k,:)), 'Cell'))
+                currentOutputVariables = [currentOutputVariables num2str(length(currentIndices)) ';' ];
             else
-                currentOutputVariables = [currentOutputVariables 'Multiple Values' ';' ];
+                currentOutputVariables = [currentOutputVariables codeStrings ';' ];
             end
         end
 
