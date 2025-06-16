@@ -48,7 +48,36 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
     
     %% loop through all seed files and extract the raw seed points
     for i=1:numFrames
-       
+
+        currentOutputFileName = [parameters.augmentedMaskFolder strrep(detectionFiles(i).name, '.csv', '.png')];
+        if (isfile(currentOutputFileName) && parameters.reprocessDetection == 0)
+            currentSegmentation = imread(currentOutputFileName);
+            regionProps = regionprops(currentSegmentation, 'Centroid', 'Area', 'EquivDiameter');
+            
+            %% TODO: CHECK IF THE CENTROID COORDINATES NEED TO BE SWAPPED!!!
+            currentSegmentID = 1;
+            for j=1:length(regionProps)
+                if (regionProps(j).Area == 0)
+                    continue;
+                end
+               d_orgs(currentSegmentID, i, :) = [j, regionProps(j).Area, round(regionProps(j).Centroid), 0, round(regionProps(j).Centroid), 0, 0.5*regionProps(j).EquivDiameter, 0, 0]; 
+               currentSegmentID = currentSegmentID + 1;
+            end
+
+            % currentSeeds = dlmread([parameters.detectionFolder detectionFiles(i).name], ';', 1, 0); %#ok<DLMRD> 
+            % currentSeeds(:,1) = currentSeeds(:,1) + 1;
+            % currentSeeds(:,3:4) = (currentSeeds(:,3:4) + 1) / parameters.micronsPerPixel;
+            % currentSeeds(:,5) = 0; %% set z-coordinate to 0 as we're only processing 2D images.
+            % 
+            % figure(2); clf; hold on;
+            % imagesc(currentSegmentation);
+            % plot(currentSeeds(:,3), currentSeeds(:,4), '*g');
+            % plot(d_orgs(:,i,3), d_orgs(:,i,4), '*r');
+
+            fprintf('Finished importing seed image %i / %i\n', i, length(detectionFiles));    
+            continue;
+        end
+
         if (parameters.seedBasedDetection == true)
             try
                 currentSeeds = dlmread([parameters.detectionFolder detectionFiles(i).name], ';', 1, 0); %#ok<DLMRD> 
@@ -100,7 +129,6 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
                 
                 currentSegmentation = zeros(size(cellposeSegmentation));
 
-
                 if (parameters.useTWANG == true)
                     twangSegmentation = imread([parameters.twangFolder twangFiles(i).name]);
                     %twangSegmentation = imclose(twangSegmentation, strel('disk', 5));
@@ -134,12 +162,6 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
             else
                 d_orgs(1:size(currentSeeds,1), i, :) = [currentSeeds(:,1:5), currentSeeds(:,3:5), sqrt(2) * currentSeeds(:,2) / parameters.micronsPerPixel, zeros(size(currentSeeds,1),2)];
 
-                currentOutputFileName = [parameters.augmentedMaskFolder strrep(detectionFiles(i).name, '.csv', '.png')];
-                if (isfile(currentOutputFileName) && parameters.reprocessDetection == 0)
-                    fprintf('Finished importing seed image %i / %i\n', i, length(detectionFiles));    
-                    continue;
-                end
-
                 if (parameters.useTWANG == true)
                     twangSegmentation = imread([parameters.twangFolder twangFiles(i).name]);
                     twangSegmentation = imfill(twangSegmentation);
@@ -164,13 +186,20 @@ function [d_orgs, var_bez] = callback_livecellminer_perform_seed_detection(param
 
             imwrite(uint16(currentSegmentation), currentOutputFileName);
         else
-            maskImage = imread([parameters.detectionFolder detectionFiles(i).name]);
-            regionProps = regionprops(maskImage, 'Centroid', 'Area', 'EquivDiameter');
+            currentSegmentation = imread([parameters.outputFolderCellPose cellposeFiles(i).name]);
+            regionProps = regionprops(currentSegmentation, 'Centroid', 'Area', 'EquivDiameter');
             
             %% TODO: CHECK IF THE CENTROID COORDINATES NEED TO BE SWAPPED!!!
+            currentSegmentID = 1;
             for j=1:length(regionProps)
-               d_orgs(j, i, :) = [j, regionProps(j).Area, round(regionProps(j).Centroid), 0, round(regionProps(j).Centroid), 0, 0.5*regionProps(j).EquivDiameter, 0, 0]; 
+                if (regionProps(j).Area == 0)
+                    continue;
+                end
+               d_orgs(currentSegmentID, i, :) = [j, regionProps(j).Area, round(regionProps(j).Centroid), 0, round(regionProps(j).Centroid), 0, 0.5*regionProps(j).EquivDiameter, 0, 0]; 
+               currentSegmentID = currentSegmentID + 1;
             end
+
+            imwrite(uint16(currentSegmentation), currentOutputFileName);
         end
         
         fprintf('Finished importing seed image %i / %i\n', i, length(detectionFiles));        
