@@ -25,26 +25,38 @@
 %
 %%
 
-function [XPIWITPath, ULTRACKPath] = callback_livecellminer_get_external_dependencies()
+function [XPIWITPath, ULTRACKPath, CELLPOSEPath] = callback_livecellminer_get_external_dependencies()
     
     %% specify the default settings file
     currentFileDir = fileparts(mfilename('fullpath'));
     settingsFile = [currentFileDir filesep 'externalDependencies.txt'];
     
-    %% load previous path if it exists, otherwise set default paths to have an idea how the paths should be specified.
-    previousPathsLoaded = false;
+    XPIWITPath = '';
+    ULTRACKPath = '';
+    CELLPOSEPath = '';
+    
+    %% load previous path if it exists, otherwise set default paths to have an idea how the paths should be specified. 
     if (exist(settingsFile, 'file'))
         fileHandle = fopen(settingsFile, 'r');
         currentLine = fgets(fileHandle);
         
         if (currentLine > 0)
             splitString = strsplit(currentLine, ';');
-            XPIWITPath = splitString{1};
-            ULTRACKPath = splitString{2};
+            
+            if (~isempty(splitString))
+                XPIWITPath = splitString{1};
+            end
+            
+            if (length(splitString) > 1)
+                ULTRACKPath = splitString{2};
+            end
+
+            if (length(splitString) > 2)
+                CELLPOSEPath = splitString{3};
+            end
             fclose(fileHandle);
-            previousPathsLoaded = true;
         end
     else
-        [XPIWITPath, ULTRACKPath] = callback_livecellminer_set_external_dependencies();
+        [XPIWITPath, ULTRACKPath, CELLPOSEPath] = callback_livecellminer_set_external_dependencies();
     end
 end

@@ -25,11 +25,15 @@
 %
 %%
 
-function [XPIWITPath, ULTRACKPath] = callback_livecellminer_set_external_dependencies()
+function [XPIWITPath, ULTRACKPath, CELLPOSEPath] = callback_livecellminer_set_external_dependencies()
 
     %% specify the default settings file
     currentFileDir = fileparts(mfilename('fullpath'));
     settingsFile = [currentFileDir filesep 'externalDependencies.txt'];
+
+    XPIWITPath = '';
+    ULTRACKPath = '';
+    CELLPOSEPath = '';
     
     %% load previous path if it exists, otherwise set default paths to have an idea how the paths should be specified.
     previousPathsLoaded = false;
@@ -39,8 +43,18 @@ function [XPIWITPath, ULTRACKPath] = callback_livecellminer_set_external_depende
         
         if (currentLine > 0)
             splitString = strsplit(currentLine, ';');
-            XPIWITPath = splitString{1};
-            ULTRACKPath = splitString{2};
+            
+            if (~isempty(splitString))
+                XPIWITPath = splitString{1};
+            end
+            
+            if (length(splitString) > 1)
+                ULTRACKPath = splitString{2};
+            end
+
+            if (length(splitString) > 2)
+                CELLPOSEPath = splitString{3};
+            end
             fclose(fileHandle);
             previousPathsLoaded = true;
         end
@@ -51,20 +65,27 @@ function [XPIWITPath, ULTRACKPath] = callback_livecellminer_set_external_depende
         if (ispc)
             XPIWITPath = 'D:/Programming/XPIWIT/Release/2019/XPIWIT_Windows_x64/Bin/XPIWIT.exe';
             ULTRACKPath = 'C:/Environments/ultrack/python.exe';
+            CELLPOSEPath = 'C:/Environments/cellpose/python.exe';
         else
             XPIWITPath = '/Users/myusername/Programming/XPIWIT/Bin/XPIWIT.sh';
             ULTRACKPath = '/opt/anaconda3/envs/ultrack/bin/python';
+            CELLPOSEPath = '/opt/anaconda3/envs/cellpose/bin/python';
         end
     end
 
     dependenciesOK = false;
 
     while ~dependenciesOK
-        questionDlgText = sprintf('Current external dependencies set to \n\n XPIWITPath = %s \n\n ULTRACKPath = %s', XPIWITPath, ULTRACKPath);
+        questionDlgText = sprintf('Current external dependencies set to \n\n XPIWITPath = %s \n\n ULTRACKPath = %s \n\n CELLPOSEPath = %s', XPIWITPath, ULTRACKPath, CELLPOSEPath);
         
         answer = questdlg(questionDlgText, ...
 	        'External Dependencies', ...
-	        'Ok', 'Reset XPIWIT', 'Reset Ultrack', 'Ok');
+	        'Reset XPIWIT', 'Reset Ultrack', 'Reset Cellpose', 'Ok');
+
+        if (isempty(answer))
+            dependenciesOK = true;
+            continue;
+        end
     
         % Handle response
         switch answer
@@ -81,21 +102,26 @@ function [XPIWITPath, ULTRACKPath] = callback_livecellminer_set_external_depende
                 msgBoxHandle = msgbox('Please select the python executable of the Ultrack environment (e.g., C:/Environments/ultrack/python.exe (Windows) or /opt/anaconda3/envs/ultrack/bin/python (Unix))');
                 waitfor(msgBoxHandle);
             
-                [ULTRACKFile, ULTRACKFolder] = uigetfile({'*'}, ULTRACKPath, 'Wrong information provided - please try again and specify folders for the XPIWIT and the path to the python.exe (Windows) or python executable (Unix) of the Ultrack environment.');
+                [ULTRACKFile, ULTRACKFolder] = uigetfile({'*'}, ULTRACKPath, 'Please select the python executable of the Ultrack environment (e.g., C:/Environments/ultrack/python.exe (Windows) or /opt/anaconda3/envs/ultrack/bin/python (Unix))');
                 ULTRACKPath = [ULTRACKFolder ULTRACKFile];
                 ULTRACKPath = strrep(ULTRACKPath, '\', '/');
-                
-            case 'Ok'
-                dependenciesOK = true;
+
+            case 'Reset Cellpose'
+                msgBoxHandle = msgbox('Please select the python executable of the Cellpose environment (e.g., C:/Environments/cellpose/python.exe (Windows) or /opt/anaconda3/envs/cellpose/bin/python (Unix))');
+                waitfor(msgBoxHandle);
+            
+                [CELLPOSEFile, CELLPOSEFolder] = uigetfile({'*'}, CELLPOSEPath, 'Please select the python executable of the Cellpose environment (e.g., C:/Environments/cellpose/python.exe (Windows) or /opt/anaconda3/envs/cellpose/bin/python (Unix))');
+                CELLPOSEPath = [CELLPOSEFolder CELLPOSEFile];
+                CELLPOSEPath = strrep(CELLPOSEPath, '\', '/');
         end
     end
 
     %% write the new path to disk
     if (isfile(XPIWITPath) && isfile(ULTRACKPath))
         fileHandle = fopen(settingsFile, 'wb');
-        fprintf(fileHandle, '%s;%s', XPIWITPath, ULTRACKPath);
+        fprintf(fileHandle, '%s;%s;%s', XPIWITPath, ULTRACKPath, CELLPOSEPath);
         fclose(fileHandle);
     else
-        disp('Wrong information provided - please try again and specify folders for the XPIWIT and the path to the python.exe (Windows) or python executable (Unix) of the Ultrack environment.');
+        disp('Wrong information provided - please try again and specify folders for the XPIWIT and the path to the python.exe (Windows) or python executable (Unix) of the Ultrack and Cellpose environments.');
     end
 end

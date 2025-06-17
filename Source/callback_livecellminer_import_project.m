@@ -128,7 +128,7 @@ function [] = callback_livecellminer_import_project(parameters)
                 CELLPOSEFilter = [' --img_filter ' parameters.channelFilter];
             end
 
-            useMATLABCellpose = true;
+            useMATLABCellpose = false;
             if (useMATLABCellpose == true)
                 cellposeInstance = cellpose(Model='nuclei');
 
@@ -150,7 +150,15 @@ function [] = callback_livecellminer_import_project(parameters)
                 %% removed model_dir as parameter to just use the default location for the models where cell pose downloads it to "--model_dir ' parameters.CELLPOSEModelDir"
                 %% if cellpose does not find the models or if downloading is not permitted, manually install the models to C:\Users\MY_USER_NAME\.cellpose\models
                 %% Moreover, add environment variable "CELLPOSE_LOCAL_MODELS_PATH" pointing to the models directory "C:\Users\MY_USER_NAME\.cellpose\models"
-                CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 ' CELLPOSEFilter ' --pretrained_model nuclei --savedir ' parameters.outputFolderCellPose ' --diameter ' num2str(parameters.diameterCellpose) ' --use_gpu --save_png --no_npy'];
+                %CELLPOSECommand = [parameters.CELLPOSEEnvironment ' -m cellpose --dir ' parameters.inputFolderCellpose ' --chan 0 ' CELLPOSEFilter ' --pretrained_model nuclei --savedir ' parameters.outputFolderCellPose ' --diameter ' num2str(parameters.diameterCellpose) ' --use_gpu --save_png --no_npy'];
+                
+                CELLPOSECommand = [parameters.CELLPOSEPath ' -m cellpose' ...
+                                   ' --dir ' parameters.inputFolderCellpose ...
+                                   ' --savedir ' parameters.outputFolderCellPose ...
+                                   CELLPOSEFilter ...
+                                   ' --pretrained_model nuclei' ...
+                                   ' --save_png --use_gpu'];
+                
                 system(CELLPOSECommand);
             end
         end

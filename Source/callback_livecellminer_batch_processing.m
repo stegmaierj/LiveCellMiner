@@ -26,7 +26,7 @@
 %%
 
 %% specify the default settings file
-[XPIWITPath, ULTRACKPath] = callback_livecellminer_get_external_dependencies();
+[XPIWITPath, ULTRACKPath, CELLPOSEPath] = callback_livecellminer_get_external_dependencies();
 
 %% open the GUI
 dataStorage = LCMImporterDataStorage();
@@ -74,6 +74,7 @@ for i=1:length(inputFolders)
        
     parameters.XPIWITPath = XPIWITPath;
     parameters.ULTRACKPath = ULTRACKPath;
+    parameters.CELLPOSEPath = CELLPOSEPath;
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% project-specific parameters and selection of algrithms to use for processing
