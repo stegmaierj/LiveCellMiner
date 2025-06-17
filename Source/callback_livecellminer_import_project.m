@@ -128,7 +128,7 @@ function [] = callback_livecellminer_import_project(parameters)
                 CELLPOSEFilter = [' --img_filter ' parameters.channelFilter];
             end
 
-            useMATLABCellpose = false;
+            useMATLABCellpose = parameters.useMATLABCellpose;
             if (useMATLABCellpose == true)
                 cellposeInstance = cellpose(Model='nuclei');
 
@@ -156,8 +156,10 @@ function [] = callback_livecellminer_import_project(parameters)
                                    ' --dir ' parameters.inputFolderCellpose ...
                                    ' --savedir ' parameters.outputFolderCellPose ...
                                    CELLPOSEFilter ...
+                                   ' --diameter ' num2str(round(parameters.diameterCellpose)) ...
                                    ' --pretrained_model nuclei' ...
-                                   ' --save_png --use_gpu'];
+                                   ' --save_png --use_gpu --verbose' ...
+                                   ' --norm_percentile 1 99'];
                 
                 system(CELLPOSECommand);
             end

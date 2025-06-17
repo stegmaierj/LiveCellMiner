@@ -79,6 +79,11 @@ for i=1:length(inputFolders)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% project-specific parameters and selection of algrithms to use for processing
     parameters.useCellpose = configuration.useCellpose; %% if enabled, the cellpose algorithm will be used for segmentation instead of the threshold/watershed default algorithm
+    if (isfield(configuration, 'useMATLABCellpose'))
+        parameters.useMATLABCellpose = configuration.useMATLABCellpose;
+    else
+        parameters.useMATLABCellpose = true;
+    end
 
     parameters.reprocessCellpose = configuration.reprocessCellpose;
     parameters.reprocessDetection = configuration.reprocessDetection;
