@@ -127,10 +127,9 @@ parfor c=1:numCells
     end
     
     %% load the entire time series image patches for the current cell
-    rawImages1 = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(c, code_alle, zgf_y_bez, 'raw')));
-    rawImages2 = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(c, code_alle, zgf_y_bez, 'raw2')));
-    maskImages = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(c, code_alle, zgf_y_bez, 'mask'));
-
+    rawImages1 = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(c, code_alle, bez_code, zgf_y_bez, 'raw')));
+    rawImages2 = double(h5read(imageDataBase, callback_livecellminer_create_hdf5_path(c, code_alle, bez_code, zgf_y_bez, 'raw2')));
+    maskImages = h5read(imageDataBase, callback_livecellminer_create_hdf5_path(c, code_alle, bez_code, zgf_y_bez, 'mask'));
 
     %% initialize the current results
     currentResults = zeros(numFrames, numFeatures);
