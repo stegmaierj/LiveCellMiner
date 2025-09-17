@@ -41,7 +41,7 @@ function [XPIWITDetectionPipeline] = callback_livecellminer_create_xpiwit_pipeli
 
     while ~feof(fileIDTemplate)
         currentLine = fgetl(fileIDTemplate);
-        currentLine = strrep(currentLine, '%IMAGE_SPACING%', sprintf('%.02f', imageSpacing));
+        currentLine = strrep(currentLine, '%IMAGE_SPACING%', sprintf('%f', imageSpacing));
         currentLine = strrep(currentLine, '%LOG_STD_THRESHOLD%', sprintf('%f', seedDetectionThreshold));
         currentLine = strrep(currentLine, '%LOG_MIN_SIGMA%', sprintf('%.02f', logMinSigma));
         currentLine = strrep(currentLine, '%LOG_MAX_SIGMA%', sprintf('%.02f', logMaxSigma));

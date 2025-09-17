@@ -122,6 +122,7 @@ def main(hparams):
         config = MainConfig()
         pprint(config)
 
+        config.segmentation_config.threshold = 0.00001
         config.segmentation_config.min_area = hparams.min_area
         config.segmentation_config.max_area = hparams.max_area
         config.segmentation_config.n_workers = 8
