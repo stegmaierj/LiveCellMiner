@@ -63,8 +63,8 @@ function d_orgs_new = callback_livecellminer_perform_backwards_tracking(d_orgs, 
                 
                 distances = mean(nnDistances(:,3:end), 2);
 
-                %currentClusterCutoff = min(0.33 * mean(distances), parameters.maxRadius);
-                currentClusterCutoff = 0.5 * mean(distances);
+                currentClusterCutoff = min(0.33 * mean(distances), parameters.maxRadius);
+                %currentClusterCutoff = 0.5 * mean(distances);
             else
                 currentClusterCutoff = parameters.clusterCutoff;
             end
