@@ -159,9 +159,10 @@ for i=1:length(inputFolders)
     
     parameters.minNucleusDiameter = configuration.minNucleusDiameter;
     parameters.maxNucleusDiameter = configuration.maxNucleusDiameter;
-    parameters.minNucleusAreaPixel = round(floor(pi * (0.5 * parameters.minNucleusDiameter / parameters.micronsPerPixel)^2)); % factor was introduced to prevent exclusion of very small nuclei
+    parameters.minNucleusAreaPixel = round(0.25 * floor(pi * (0.5 * parameters.minNucleusDiameter / parameters.micronsPerPixel)^2)); % factor was introduced to prevent exclusion of very small nuclei
     parameters.maxNucleusAreaPixel = round(2 * ceil(pi * (0.5 * parameters.maxNucleusDiameter / parameters.micronsPerPixel)^2)); % factor was introduced to prevent exclusion of very large nuclei
     parameters.maxLinkingDistancePixel = ceil(parameters.maxNucleusDiameter / parameters.micronsPerPixel);
+    parameters.averageNucleusDiameter = 0.5 * (parameters.minNucleusDiameter + parameters.maxNucleusDiameter);
 
     if (parameters.diameterCellpose < 0)
         parameters.diameterCellpose = 0.5 * ((configuration.minNucleusDiameter / parameters.micronsPerPixel) + (configuration.maxNucleusDiameter / parameters.micronsPerPixel));
