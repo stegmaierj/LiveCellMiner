@@ -85,6 +85,12 @@ for i=1:length(inputFolders)
         parameters.useMATLABCellpose = true;
     end
 
+    if (isfield(configuration, 'useWatershed'))
+        parameters.useWatershed = configuration.useWatershed;
+    else
+        parameters.useWatershed = false;
+    end
+
     parameters.reprocessCellpose = configuration.reprocessCellpose;
     parameters.reprocessDetection = configuration.reprocessDetection;
     parameters.reprocessTracking = configuration.reprocessTracking;

@@ -159,8 +159,8 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
                             currentResults.rawImagePatch2 = croppedImage2;
                         end
 
-                        %% Segment the nuclues of cell
-                        if (~isfield(parameters, 'augmentedMaskFolder'))
+                        %% Segment the nucleus of cell
+                        if (~isfield(parameters, 'augmentedMaskFolder') || parameters.useWatershed)
                             croppedMask = uint16(callback_livecellminer_segment_center_nucleus(croppedImage, singleCenterCC));
                         else
                             croppedMask = uint16(maskImage(rangeX, rangeY));
