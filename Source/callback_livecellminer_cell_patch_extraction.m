@@ -95,8 +95,8 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
             test = 1;
         end
         
-        %parfor j=1:length(cellIDs) %% ENABLE AGAIN AFTER DEBUGGING !!! 
-        for j=1:length(cellIDs)
+        parfor j=1:length(cellIDs) %% ENABLE AGAIN AFTER DEBUGGING !!! 
+        %for j=1:length(cellIDs)
 
             size(rawImage);
             size(maskImage);
@@ -141,7 +141,6 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
                     %% ensure the current index is valid
                     if ~ismember(currentIndex, currentResults.deletionIndices)
 
-                        
                        currentResults.validCell = true;
 
                         %% extract the copped image
@@ -161,7 +160,45 @@ function [featureNames, resultMatrix, deletionIndices, rawImagePatches, maskImag
 
                         %% Segment the nucleus of cell
                         if (~isfield(parameters, 'augmentedMaskFolder') || parameters.useWatershed)
-                            croppedMask = uint16(callback_livecellminer_segment_center_nucleus(croppedImage, singleCenterCC));
+
+                            croppedMask = uint16(callback_livecellminer_segment_center_nucleus(imadjust(uint16(croppedImage)), singleCenterCC));
+
+                            %% identify label that maximally overlaps with the previous segmentation
+                            if (isfield(parameters, 'augmentedMaskFolder'))
+                                prevMask = uint16(maskImage(rangeX, rangeY));
+                                prevMask = imresize(prevMask, [patchWidth, patchWidth], 'nearest');
+                                imageSize = size(prevMask);
+
+                                %% select the center CC in the previous mask
+                                centerLabel = prevMask(round(imageSize(1)/2), round(imageSize(2)/2));
+
+                                if (centerLabel > 0)
+                                    prevMask = uint16(prevMask == centerLabel);
+                                else
+                                    prevMask = callback_livecellminer_isolate_center_nucleus(prevMask);
+                                end                            
+                                
+                                [counts, labels] = groupcounts(croppedMask(prevMask > 0));
+                                [maxValue, maxIndex] = max(counts);
+                                maxLabel = labels(maxIndex);
+                                previousArea = sum(prevMask > 0, 'all');
+                                newArea = sum(croppedMask(:) == maxLabel);
+                    
+                                %% combine previous and current segmentation or fall back to previous one if cellpose failed
+                                if (isempty(find(croppedMask > 0, 1)) || newArea < (0.5*previousArea))
+                                    croppedMask = prevMask;
+                                elseif (maxLabel == 0) %% centroid not located on one of the daughters. In this case, just pick one daughter!
+                                    croppedMask = callback_livecellminer_isolate_center_nucleus(croppedMask);
+                                else
+                                    croppedMask = uint16(croppedMask == maxLabel | prevMask);
+                                    croppedMask = callback_livecellminer_isolate_center_nucleus(croppedMask);
+                                end
+                            end
+
+                            if (length(unique(bwlabel(croppedMask))) > 2)
+                                disp("Spotted double detection!");
+                            end
+                            %%%%
                         else
                             croppedMask = uint16(maskImage(rangeX, rangeY));
                             croppedMask = imresize(croppedMask, [patchWidth, patchWidth], 'nearest');

@@ -222,7 +222,6 @@ for i=1:length(inputFolders)
             % imagesc(currentSegmentation);
 
             nextMaskImage(:,:,j) = currentSegmentation;
-            
         end
 
         toc
